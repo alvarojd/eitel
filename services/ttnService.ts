@@ -6,7 +6,7 @@ const getHexPositions = (count: number): { q: number; r: number }[] => {
   const positions: { q: number; r: number }[] = [];
   const visited = new Set<string>();
   const queue: { q: number; r: number }[] = [{ q: 0, r: 0 }];
-  
+
   visited.add("0,0");
 
   const directions = [
@@ -22,7 +22,7 @@ const getHexPositions = (count: number): { q: number; r: number }[] => {
       const nextQ = current.q + dir.q;
       const nextR = current.r + dir.r;
       const key = `${nextQ},${nextR}`;
-      
+
       if (!visited.has(key)) {
         visited.add(key);
         queue.push({ q: nextQ, r: nextR });
@@ -39,7 +39,7 @@ const determineStatus = (temp: number, hum: number, co2: number, lastSeenStr: st
   if (temp > 30) return SensorStatus.CALOR_EXTREMO;
   if (temp < 18 && hum > 80) return SensorStatus.RIESGO_MOHO;
   if (co2 > 1000) return SensorStatus.AIRE_VICIADO;
-  
+
   return SensorStatus.IDEAL;
 };
 
@@ -65,7 +65,7 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
     return rawData.map((device: any, index: number) => {
       const q = coords[index]?.q || 0;
       const r = coords[index]?.r || 0;
-      
+
       const status = determineStatus(device.temperature, device.humidity, device.co2, device.lastSeen);
 
       return {
@@ -80,7 +80,8 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
         co2: device.co2,
         rssi: device.rssi,
         lastSeen: device.lastSeen,
-        location: `Hex ${q},${r}`
+        location: `Hex ${q},${r}`,
+        registeredAt: device.registeredAt
       };
     });
 

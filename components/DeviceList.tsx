@@ -1,0 +1,83 @@
+import React from 'react';
+import { SensorData, SensorStatus } from '../types';
+import { Cpu, Battery, Signal, Clock, Calendar } from 'lucide-react';
+
+interface DeviceListProps {
+    sensors: SensorData[];
+    onSensorSelect: (sensor: SensorData) => void;
+}
+
+const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect }) => {
+    const formatDate = (dateStr?: string) => {
+        if (!dateStr) return 'Desconocido';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    return (
+        <div className="flex-1 overflow-auto p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sensors.map(sensor => (
+                    <div
+                        key={sensor.id}
+                        onClick={() => onSensorSelect(sensor)}
+                        className="bg-slate-800/50 border border-slate-700 p-5 rounded-2xl hover:border-sky-500/50 hover:bg-slate-800 transition-all cursor-pointer group"
+                    >
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${sensor.status === SensorStatus.IDEAL ? 'bg-emerald-500/10 text-emerald-500' :
+                                        sensor.status === SensorStatus.DESCONECTADO ? 'bg-slate-500/10 text-slate-500' :
+                                            'bg-rose-500/10 text-rose-500'
+                                    }`}>
+                                    <Cpu size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="text-white font-bold group-hover:text-sky-400 transition-colors">{sensor.id}</h3>
+                                    <div className="flex items-center gap-1 text-xs text-slate-500 mt-0.5">
+                                        <Calendar size={12} />
+                                        <span>Registrado: {formatDate(sensor.registeredAt)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${sensor.status === SensorStatus.IDEAL ? 'bg-emerald-500/20 text-emerald-400' :
+                                    sensor.status === SensorStatus.DESCONECTADO ? 'bg-slate-500/20 text-slate-400' :
+                                        'bg-rose-500/20 text-rose-400'
+                                }`}>
+                                {sensor.status.replace('_', ' ')}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mt-4">
+                            <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                                <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
+                                    <Battery size={12} /> Batería
+                                </div>
+                                <div className="text-white font-semibold">{sensor.battery}%</div>
+                            </div>
+                            <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                                <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
+                                    <Signal size={12} /> Señal
+                                </div>
+                                <div className="text-white font-semibold">{sensor.rssi} dBm</div>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between text-xs">
+                            <div className="text-slate-500 flex items-center gap-1">
+                                <Clock size={12} /> Actualizado: {sensor.lastSeen}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+export default DeviceList;

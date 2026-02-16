@@ -20,6 +20,7 @@ export interface SensorData {
   rssi: number; // Signal strength
   lastSeen: string;
   location: string;
+  registeredAt?: string;
 }
 
 export interface Stats {

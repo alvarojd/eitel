@@ -6,18 +6,24 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    // Get the most recent measurement for each unique device
+    // Get the most recent measurement for each unique device + the first seen date
     const { rows } = await sql`
-      SELECT DISTINCT ON (device_id) 
-        device_id, 
-        temperature, 
-        humidity, 
-        co2, 
-        battery, 
-        rssi,
-        created_at
-      FROM measurements
-      ORDER BY device_id, created_at DESC;
+      SELECT DISTINCT ON (m.device_id) 
+        m.device_id, 
+        m.temperature, 
+        m.humidity, 
+        m.co2, 
+        m.battery, 
+        m.rssi,
+        m.created_at,
+        f.first_seen
+      FROM measurements m
+      JOIN (
+        SELECT device_id, MIN(created_at) as first_seen
+        FROM measurements
+        GROUP BY device_id
+      ) f ON m.device_id = f.device_id
+      ORDER BY m.device_id, m.created_at DESC;
     `;
 
     // Calculate "time ago" for lastSeen
@@ -26,7 +32,7 @@ export default async function handler(req: any, res: any) {
       const diffMs = now.getTime() - new Date(row.created_at).getTime();
       const diffMins = Math.floor(diffMs / 60000);
       let lastSeen = 'Hace un momento';
-      
+
       if (diffMins > 60) {
         lastSeen = `Hace ${Math.floor(diffMins / 60)}h`;
       } else if (diffMins > 0) {
@@ -41,7 +47,8 @@ export default async function handler(req: any, res: any) {
         co2: row.co2,
         rssi: row.rssi,
         lastSeen: lastSeen,
-        timestamp: row.created_at
+        timestamp: row.created_at,
+        registeredAt: row.first_seen
       };
     });
 
@@ -51,7 +58,7 @@ export default async function handler(req: any, res: any) {
   } catch (error: any) {
     // If table doesn't exist (error code 42P01), return empty array instead of crashing
     if (error.code === '42P01') {
-        return res.status(200).json([]);
+      return res.status(200).json([]);
     }
     console.error('Database Error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });

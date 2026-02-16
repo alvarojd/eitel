@@ -22,9 +22,9 @@ const payload = {
 };
 
 async function testWebhook() {
-    console.log('Sending test payload to http://localhost:3000/api/webhook...');
+    console.log('Sending test payload to https://ietel.vercel.app/api/webhook...');
     try {
-        const response = await fetch('http://localhost:3000/api/webhook', {
+        const response = await fetch('https://ietel.vercel.app/api/webhook', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
