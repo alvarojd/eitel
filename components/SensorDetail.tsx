@@ -1,30 +1,40 @@
 import React from 'react';
 import { SensorData } from '../types';
 import { STATUS_TEXT_COLORS, STATUS_BG_COLORS, STATUS_LABELS } from '../constants';
-import { Thermometer, Droplets, UserCheck, Signal, Wind, X, MapPin, Clock, BatteryWarning } from 'lucide-react';
+import { Thermometer, Droplets, UserCheck, Signal, Wind, X, MapPin, Clock, Loader2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { fetchSensorHistory } from '../services/ttnService';
 
 interface SensorDetailProps {
   sensor: SensorData | null;
   onClose: () => void;
 }
 
-const generateHistory = (baseTemp: number) => {
-  const data = [];
-  for (let i = 0; i < 12; i++) {
-    // Generate values close to the actual base temperature
-    data.push({
-      time: `${i * 2}:00`,
-      value: parseFloat((baseTemp + (Math.random() * 2 - 1)).toFixed(1))
-    });
-  }
-  return data;
-};
-
 const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
-  if (!sensor) return null;
+  const [historyData, setHistoryData] = React.useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = React.useState(false);
 
-  const data = generateHistory(sensor.temperature);
+  React.useEffect(() => {
+    if (sensor) {
+      const loadHistory = async () => {
+        setLoadingHistory(true);
+        try {
+          const history = await fetchSensorHistory(sensor.id);
+          setHistoryData(Array.isArray(history) ? history : []);
+        } catch (error) {
+          console.error("Error loading history:", error);
+          setHistoryData([]);
+        } finally {
+          setLoadingHistory(false);
+        }
+      };
+      loadHistory();
+    } else {
+      setHistoryData([]);
+    }
+  }, [sensor]);
+
+  if (!sensor) return null;
 
   return (
     <div className="h-full bg-slate-800 flex flex-col border-l border-slate-700 shadow-2xl w-full">
@@ -53,7 +63,6 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
             <Clock size={12} className="mr-1" /> Visto: {sensor.lastSeen}
           </div>
         </div>
-
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 gap-4 mb-8">
@@ -93,25 +102,34 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
         {/* Chart Area */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Temperatura (24h)</h3>
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
-                <defs>
-                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                <XAxis dataKey="time" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
-                <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} domain={['dataMin - 5', 'dataMax + 5']} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                  itemStyle={{ color: '#38bdf8' }}
-                />
-                <Area type="monotone" dataKey="value" stroke="#0ea5e9" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="h-48 w-full bg-slate-900/30 rounded-xl border border-slate-700/30 flex items-center justify-center overflow-hidden">
+            {loadingHistory ? (
+              <div className="flex items-center gap-2 text-slate-500">
+                <Loader2 size={16} className="animate-spin" />
+                <span className="text-xs">Cargando historial...</span>
+              </div>
+            ) : historyData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={historyData}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <XAxis dataKey="time" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                    itemStyle={{ color: '#38bdf8' }}
+                  />
+                  <Area type="monotone" dataKey="value" stroke="#0ea5e9" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-slate-500 text-xs">Sin datos registrados en las últ. 24h</div>
+            )}
           </div>
         </div>
 

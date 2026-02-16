@@ -94,3 +94,14 @@ export const fetchSensorData = async (forceMock: boolean = false): Promise<Senso
     return generateSensors();
   }
 };
+
+export const fetchSensorHistory = async (deviceId: string): Promise<any[]> => {
+  try {
+    const response = await fetch(`/api/history?deviceId=${deviceId}`);
+    if (!response.ok) return [];
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to fetch sensor history:", error);
+    return [];
+  }
+};
