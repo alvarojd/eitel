@@ -5,21 +5,23 @@ import StatsPanel from './components/StatsPanel';
 import SensorDetail from './components/SensorDetail';
 import LegendPanel from './components/LegendPanel';
 import DeviceList from './components/DeviceList';
+import SettingsPanel from './components/SettingsPanel';
 import { getStats } from './services/mockDataService';
 import { fetchSensorData } from './services/ttnService';
 import { SensorData } from './types';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Database, ShieldCheck, PlayCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [sensors, setSensors] = useState<SensorData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('resumen');
+  const [useSimulatedData, setUseSimulatedData] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await fetchSensorData();
+        const data = await fetchSensorData(useSimulatedData);
         setSensors(data);
       } catch (error) {
         console.error("Error polling data", error);
@@ -31,7 +33,7 @@ const App: React.FC = () => {
     loadData();
     const interval = setInterval(loadData, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [useSimulatedData]);
 
   const stats = useMemo(() => getStats(sensors), [sensors]);
 
@@ -47,15 +49,31 @@ const App: React.FC = () => {
     setSelectedSensorId(null);
   };
 
+  const renderSidebar = () => {
+    if (activeTab === 'configuracion') {
+      return (
+        <SettingsPanel
+          useSimulatedData={useSimulatedData}
+          onToggleSimulatedData={(val) => {
+            setLoading(true);
+            setUseSimulatedData(val);
+          }}
+        />
+      );
+    }
+
+    if (selectedSensor) {
+      return <SensorDetail sensor={selectedSensor} onClose={handleCloseDetail} />;
+    }
+
+    return <LegendPanel />;
+  };
+
   return (
     <Layout
       activeTab={activeTab}
       onTabChange={setActiveTab}
-      sidebar={
-        selectedSensor
-          ? <SensorDetail sensor={selectedSensor} onClose={handleCloseDetail} />
-          : <LegendPanel />
-      }
+      sidebar={renderSidebar()}
     >
       <div className="flex flex-col h-full">
         {/* Top Summary Stats */}
@@ -68,7 +86,36 @@ const App: React.FC = () => {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
                 <Loader2 size={48} className="animate-spin text-sky-500 mx-auto mb-4" />
-                <p className="text-slate-400">Conectando a Base de Datos Vercel...</p>
+                <p className="text-slate-400">
+                  {useSimulatedData ? 'Generando simulación...' : 'Conectando a Base de Datos Vercel...'}
+                </p>
+              </div>
+            </div>
+          ) : activeTab === 'configuracion' ? (
+            <div className="flex-1 flex items-center justify-center p-8">
+              <div className="max-w-2xl w-full text-center">
+                <div className="mb-8 flex justify-center">
+                  <div className="w-20 h-20 bg-sky-500/10 rounded-3xl flex items-center justify-center border border-sky-500/20 shadow-inner">
+                    <Database size={40} className="text-sky-400" />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-4">Panel de Herramientas y Datos</h2>
+                <p className="text-slate-400 mb-8 leading-relaxed">
+                  Utiliza el panel derecho para alternar entre el flujo de datos real de TTN o la generación de datos simulados para pruebas de despliegue.
+                </p>
+
+                <div className="grid grid-cols-2 gap-6 text-left">
+                  <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-sky-500/30 transition-colors group">
+                    <ShieldCheck className="text-sky-400 mb-3 group-hover:scale-110 transition-transform" size={24} />
+                    <h3 className="text-white font-semibold mb-2">Modo Real</h3>
+                    <p className="text-xs text-slate-500">Muestra los datos actuales de los nodos LoRaWAN configurados en tu aplicación.</p>
+                  </div>
+                  <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-amber-500/30 transition-colors group">
+                    <PlayCircle className="text-amber-400 mb-3 group-hover:scale-110 transition-transform" size={24} />
+                    <h3 className="text-white font-semibold mb-2">Modo Simulado</h3>
+                    <p className="text-xs text-slate-500">Genera sensores ficticios con comportamiento realista para validar la UI.</p>
+                  </div>
+                </div>
               </div>
             </div>
           ) : sensors.length === 0 ? (

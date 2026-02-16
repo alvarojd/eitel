@@ -43,7 +43,10 @@ const determineStatus = (temp: number, hum: number, co2: number, lastSeenStr: st
   return SensorStatus.IDEAL;
 };
 
-export const fetchSensorData = async (): Promise<SensorData[]> => {
+export const fetchSensorData = async (forceMock: boolean = false): Promise<SensorData[]> => {
+  if (forceMock) {
+    return generateSensors();
+  }
   try {
     // Fetch from our own Vercel Serverless Function
     const response = await fetch('/api/sensors');
