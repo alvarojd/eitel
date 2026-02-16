@@ -124,7 +124,16 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
                     contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
                     itemStyle={{ color: '#38bdf8' }}
                   />
-                  <Area type="monotone" dataKey="value" stroke="#0ea5e9" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#0ea5e9"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorValue)"
+                    dot={{ r: 3, fill: '#0ea5e9', strokeWidth: 0 }}
+                    activeDot={{ r: 5, strokeWidth: 0 }}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
