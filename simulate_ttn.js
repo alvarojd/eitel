@@ -1,15 +1,17 @@
 const fetch = require('node-fetch');
 
 const payload = {
-    end_device_ids: {
-        device_id: "test-device-01"
-    },
     uplink_message: {
         decoded_payload: {
-            temperature: 22.5,
-            humidity: 45.0,
-            CO2: 850,
-            battery_voltage: 3.5
+            "CO2": 563,
+            "battery_voltage": 3.47,
+            "device_id": "0004a30b00f310aa",
+            "device_status": 1,
+            "humidity": 33.48,
+            "payload_type": 1,
+            "payload_variant": 3,
+            "presence": false,
+            "temperature": 25.42
         },
         rx_metadata: [
             {
