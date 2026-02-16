@@ -81,7 +81,8 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
         rssi: device.rssi,
         lastSeen: device.lastSeen,
         location: `Hex ${q},${r}`,
-        registeredAt: device.registeredAt
+        registeredAt: device.registeredAt,
+        presence: device.presence
       };
     });
 

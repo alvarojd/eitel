@@ -15,6 +15,7 @@ export default async function handler(req: any, res: any) {
         m.co2, 
         m.battery, 
         m.rssi,
+        m.presence,
         m.created_at,
         f.first_seen
       FROM measurements m
@@ -48,7 +49,8 @@ export default async function handler(req: any, res: any) {
         rssi: row.rssi,
         lastSeen: lastSeen,
         timestamp: row.created_at,
-        registeredAt: row.first_seen
+        registeredAt: row.first_seen,
+        presence: row.presence
       };
     });
 

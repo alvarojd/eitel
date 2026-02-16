@@ -21,6 +21,7 @@ export interface SensorData {
   lastSeen: string;
   location: string;
   registeredAt?: string;
+  presence?: boolean;
 }
 
 export interface Stats {
