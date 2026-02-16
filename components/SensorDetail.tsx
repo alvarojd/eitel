@@ -92,7 +92,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
 
         {/* Chart Area */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Tendencia Temperatura (24h)</h3>
+          <h3 className="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Temperatura (24h)</h3>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data}>
