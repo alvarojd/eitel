@@ -25,6 +25,7 @@ export default async function handler(req: any, res: any) {
     const { end_device_ids, uplink_message } = req.body;
     const payload = uplink_message?.decoded_payload;
     const rx_metadata = uplink_message?.rx_metadata?.[0];
+    const received_at = uplink_message?.received_at || new Date().toISOString();
 
     // Exact fields requested: CO2, battery_voltage, device_id, humidity, presence, temperature
     const device_id = payload?.device_id || end_device_ids?.device_id;
@@ -53,8 +54,8 @@ export default async function handler(req: any, res: any) {
 
     // 3. Insert Data
     await sql`
-      INSERT INTO measurements (device_id, temperature, humidity, co2, battery, rssi, presence)
-      VALUES (${device_id}, ${temperature}, ${humidity}, ${co2}, ${battery}, ${rssi}, ${presence});
+      INSERT INTO measurements (device_id, temperature, humidity, co2, battery, rssi, presence, created_at)
+      VALUES (${device_id}, ${temperature}, ${humidity}, ${co2}, ${battery}, ${rssi}, ${presence}, ${received_at});
     `;
 
     return res.status(200).json({ success: true });

@@ -17,7 +17,8 @@ const payload = {
             {
                 rssi: -75
             }
-        ]
+        ],
+        received_at: new Date().toISOString()
     }
 };
 
