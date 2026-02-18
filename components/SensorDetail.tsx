@@ -7,32 +7,50 @@ import { fetchSensorHistory } from '../services/ttnService';
 
 interface SensorDetailProps {
   sensor: SensorData | null;
+  isSimulated: boolean;
   onClose: () => void;
 }
 
-const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
+const generateHistory = (baseTemp: number) => {
+  const data = [];
+  const now = new Date();
+  for (let i = 0; i < 24; i++) {
+    const time = new Date(now.getTime() - (23 - i) * 3600000);
+    data.push({
+      time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      value: parseFloat((baseTemp + (Math.random() * 2 - 1)).toFixed(1))
+    });
+  }
+  return data;
+};
+
+const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClose }) => {
   const [historyData, setHistoryData] = React.useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = React.useState(false);
 
   React.useEffect(() => {
     if (sensor) {
-      const loadHistory = async () => {
-        setLoadingHistory(true);
-        try {
-          const history = await fetchSensorHistory(sensor.id);
-          setHistoryData(Array.isArray(history) ? history : []);
-        } catch (error) {
-          console.error("Error loading history:", error);
-          setHistoryData([]);
-        } finally {
-          setLoadingHistory(false);
-        }
-      };
-      loadHistory();
+      if (isSimulated) {
+        setHistoryData(generateHistory(sensor.temperature));
+      } else {
+        const loadHistory = async () => {
+          setLoadingHistory(true);
+          try {
+            const history = await fetchSensorHistory(sensor.id);
+            setHistoryData(Array.isArray(history) ? history : []);
+          } catch (error) {
+            console.error("Error loading history:", error);
+            setHistoryData([]);
+          } finally {
+            setLoadingHistory(false);
+          }
+        };
+        loadHistory();
+      }
     } else {
       setHistoryData([]);
     }
-  }, [sensor]);
+  }, [sensor, isSimulated]);
 
   if (!sensor) return null;
 
@@ -137,7 +155,9 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-slate-500 text-xs">Sin datos registrados en las últ. 24h</div>
+              <div className="text-slate-500 text-xs text-center px-4">
+                {isSimulated ? 'Generando datos...' : 'Sin datos registrados en las últ. 24h'}
+              </div>
             )}
           </div>
         </div>

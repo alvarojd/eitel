@@ -18,7 +18,7 @@ const StatCard: React.FC<{
   <div className="flex items-center p-4 bg-slate-800 rounded-lg border border-slate-700 shadow-lg min-w-[200px] flex-1">
     <div className={`p-3 rounded-md ${bgClass} bg-opacity-20 mr-4 ${textClass}`}>
       <div className={`p-2 rounded ${bgClass}`}>
-         {icon}
+        {icon}
       </div>
     </div>
     <div>
@@ -32,38 +32,38 @@ const StatCard: React.FC<{
 const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
   return (
     <div className="flex flex-wrap gap-4 w-full mb-6">
-      <StatCard 
-        label="Situación Ideal" 
-        count={stats.ideal} 
+      <StatCard
+        label="Situación Ideal"
+        count={stats.ideal}
         subtext="Parámetros óptimos"
         icon={<CheckCircle size={24} />}
         bgClass={STATUS_BG_COLORS[SensorStatus.IDEAL]}
       />
-      <StatCard 
-        label="Riesgo / Aviso" 
-        count={stats.warning} 
-        subtext="Moho o Aire Viciado"
+      <StatCard
+        label="Riesgo / Aviso"
+        count={stats.warning}
+        subtext="Moho, Aire o Frío"
         icon={<AlertTriangle size={24} />}
-        bgClass={STATUS_BG_COLORS[SensorStatus.AIRE_VICIADO]}
+        bgClass={STATUS_BG_COLORS[SensorStatus.RIESGO_MOHO]}
       />
-      <StatCard 
-        label="Crítico" 
-        count={stats.critical} 
-        subtext="Frío/Calor Extremo"
+      <StatCard
+        label="Crítico"
+        count={stats.critical}
+        subtext="Salud / Emergencia"
         icon={<AlertOctagon size={24} />}
-        bgClass={STATUS_BG_COLORS[SensorStatus.CALOR_EXTREMO]}
+        bgClass={STATUS_BG_COLORS[SensorStatus.FRIO_SEVERO]}
       />
-      <StatCard 
-        label="Batería Baja" 
-        count={stats.lowBattery} 
+      <StatCard
+        label="Batería Baja"
+        count={stats.lowBattery}
         subtext="Requiere cambio < 20%"
         icon={<BatteryWarning size={24} />}
         bgClass="bg-blue-500"
         textClass="text-blue-500"
       />
-      <StatCard 
-        label="Desconectados" 
-        count={stats.offline} 
+      <StatCard
+        label="Desconectados"
+        count={stats.offline}
         subtext="Sin señal"
         icon={<WifiOff size={24} />}
         bgClass={STATUS_BG_COLORS[SensorStatus.DESCONECTADO]}

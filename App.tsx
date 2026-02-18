@@ -16,12 +16,16 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('resumen');
-  const [useSimulatedData, setUseSimulatedData] = useState(false);
+
+  // Environment detection helper
+  const isLocal = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1');
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await fetchSensorData(useSimulatedData);
+        const data = await fetchSensorData();
         setSensors(data);
       } catch (error) {
         console.error("Error polling data", error);
@@ -33,7 +37,7 @@ const App: React.FC = () => {
     loadData();
     const interval = setInterval(loadData, 15000);
     return () => clearInterval(interval);
-  }, [useSimulatedData]);
+  }, []);
 
   const stats = useMemo(() => getStats(sensors), [sensors]);
 
@@ -52,18 +56,12 @@ const App: React.FC = () => {
   const renderSidebar = () => {
     if (activeTab === 'configuracion') {
       return (
-        <SettingsPanel
-          useSimulatedData={useSimulatedData}
-          onToggleSimulatedData={(val) => {
-            setLoading(true);
-            setUseSimulatedData(val);
-          }}
-        />
+        <SettingsPanel />
       );
     }
 
     if (selectedSensor) {
-      return <SensorDetail sensor={selectedSensor} onClose={handleCloseDetail} />;
+      return <SensorDetail sensor={selectedSensor} isSimulated={isLocal} onClose={handleCloseDetail} />;
     }
 
     return <LegendPanel />;
@@ -87,7 +85,7 @@ const App: React.FC = () => {
               <div className="text-center">
                 <Loader2 size={48} className="animate-spin text-sky-500 mx-auto mb-4" />
                 <p className="text-slate-400">
-                  {useSimulatedData ? 'Generando simulación...' : 'Conectando a Base de Datos Vercel...'}
+                  {isLocal ? 'Generando simulación local...' : 'Conectando a Base de Datos Vercel...'}
                 </p>
               </div>
             </div>
@@ -104,17 +102,24 @@ const App: React.FC = () => {
                   Utiliza el panel derecho para alternar entre el flujo de datos real de TTN o la generación de datos simulados para pruebas de despliegue.
                 </p>
 
-                <div className="grid grid-cols-2 gap-6 text-left">
-                  <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-sky-500/30 transition-colors group">
-                    <ShieldCheck className="text-sky-400 mb-3 group-hover:scale-110 transition-transform" size={24} />
-                    <h3 className="text-white font-semibold mb-2">Modo Real</h3>
-                    <p className="text-xs text-slate-500">Muestra los datos actuales de los nodos LoRaWAN configurados en tu aplicación.</p>
+                <div className="bg-slate-800/80 p-6 rounded-2xl border border-sky-500/30 text-left shadow-xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <ShieldCheck className="text-sky-400" size={24} />
+                    <h3 className="text-white font-bold text-lg">Modo Automático Activo</h3>
                   </div>
-                  <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-amber-500/30 transition-colors group">
-                    <PlayCircle className="text-amber-400 mb-3 group-hover:scale-110 transition-transform" size={24} />
-                    <h3 className="text-white font-semibold mb-2">Modo Simulado</h3>
-                    <p className="text-xs text-slate-500">Genera sensores ficticios con comportamiento realista para validar la UI.</p>
-                  </div>
+                  <p className="text-sm text-slate-300 leading-relaxed mb-4">
+                    La aplicación ahora detecta automáticamente el entorno de ejecución:
+                  </p>
+                  <ul className="space-y-3 text-sm">
+                    <li className="flex items-center gap-2 text-slate-400">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                      <span><strong>Local:</strong> Datos simulados para pruebas rápidas.</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-slate-400">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span><strong>Vercel / Producción:</strong> Datos reales vía TTN + Postgres.</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>

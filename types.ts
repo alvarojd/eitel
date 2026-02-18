@@ -1,10 +1,14 @@
 export enum SensorStatus {
-  FRIO_SEVERO = 'FRIO_SEVERO',       // Rojo: T < 16
-  CALOR_EXTREMO = 'CALOR_EXTREMO',   // Rojo: T > 30
-  RIESGO_MOHO = 'RIESGO_MOHO',       // Naranja: T < 18 + Hum > 80%
-  AIRE_VICIADO = 'AIRE_VICIADO',     // Naranja: CO2 > 1000 ppm
-  IDEAL = 'IDEAL',                   // Verde: T adecuada + CO2 bajo
-  DESCONECTADO = 'DESCONECTADO',     // Gris
+  FRIO_SEVERO = 'FRIO_SEVERO',           // Rojo: T < 16 + presencia 1h
+  CALOR_EXTREMO = 'CALOR_EXTREMO',       // Rojo: T > 27 + presencia 1h
+  ATMOSFERA_NOCIVA = 'ATMOSFERA_NOCIVA', // Rojo: CO2 > 1500 + presencia 2h
+  RIESGO_MOHO = 'RIESGO_MOHO',           // Naranja: Hum > 70% por 24h
+  AIRE_VICIADO = 'AIRE_VICIADO',         // Naranja: CO2 > 1000 + T < 18 + presencia 2h
+  FRIO_MODERADO = 'FRIO_MODERADO',       // Naranja: T < 18
+  AIRE_SECO = 'AIRE_SECO',               // Naranja: Hum < 30% + presencia 1h
+  IDEAL = 'IDEAL',                       // Verde
+  DESCONECTADO = 'DESCONECTADO',         // Gris
+  AZUL = 'AZUL',                         // Azul: Otros
 }
 
 export interface SensorData {
@@ -22,6 +26,10 @@ export interface SensorData {
   location: string;
   registeredAt?: string;
   presence?: boolean;
+  indicators?: {
+    lowBattery: boolean;
+    longTermNoOccupancy: boolean; // 48h sin presencia
+  };
 }
 
 export interface Stats {

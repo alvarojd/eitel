@@ -1,6 +1,7 @@
 import React from 'react';
 import { SensorData, SensorStatus } from '../types';
 import { Cpu, Battery, Signal, Clock, Calendar } from 'lucide-react';
+import { STATUS_COLORS } from '../constants';
 
 interface DeviceListProps {
     sensors: SensorData[];
@@ -31,9 +32,10 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect }) => {
                     >
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${sensor.status === SensorStatus.IDEAL ? 'bg-emerald-500/10 text-emerald-500' :
-                                        sensor.status === SensorStatus.DESCONECTADO ? 'bg-slate-500/10 text-slate-500' :
-                                            'bg-rose-500/10 text-rose-500'
+                                <div className={`p-2 rounded-lg ${STATUS_COLORS[sensor.status] === '#22c55e' ? 'bg-emerald-500/10 text-emerald-500' :
+                                    STATUS_COLORS[sensor.status] === '#ef4444' ? 'bg-rose-500/10 text-rose-500' :
+                                        STATUS_COLORS[sensor.status] === '#f97316' ? 'bg-orange-500/10 text-orange-500' :
+                                            'bg-slate-500/10 text-slate-500'
                                     }`}>
                                     <Cpu size={20} />
                                 </div>
@@ -45,11 +47,12 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect }) => {
                                     </div>
                                 </div>
                             </div>
-                            <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${sensor.status === SensorStatus.IDEAL ? 'bg-emerald-500/20 text-emerald-400' :
-                                    sensor.status === SensorStatus.DESCONECTADO ? 'bg-slate-500/20 text-slate-400' :
-                                        'bg-rose-500/20 text-rose-400'
+                            <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${STATUS_COLORS[sensor.status] === '#22c55e' ? 'bg-emerald-500/20 text-emerald-400' :
+                                STATUS_COLORS[sensor.status] === '#ef4444' ? 'bg-rose-500/20 text-rose-400' :
+                                    STATUS_COLORS[sensor.status] === '#f97316' ? 'bg-orange-500/20 text-orange-400' :
+                                        'bg-slate-500/20 text-slate-400'
                                 }`}>
-                                {sensor.status.replace('_', ' ')}
+                                {sensor.status.replace(/_/g, ' ')}
                             </div>
                         </div>
 

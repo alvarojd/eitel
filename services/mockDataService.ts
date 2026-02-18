@@ -1,21 +1,21 @@
-import { SensorData, SensorStatus } from '../types';
+import { SensorData, SensorStatus, Stats } from '../types';
 
 // Helper to generate a hex map shape similar to the image
 export const generateSensors = (): SensorData[] => {
   const sensors: SensorData[] = [];
-  const mapRadius = 8; 
-  
+  const mapRadius = 8;
+
   for (let q = -mapRadius; q <= mapRadius; q++) {
     const r1 = Math.max(-mapRadius, -q - mapRadius);
     const r2 = Math.min(mapRadius, -q + mapRadius);
     for (let r = r1; r <= r2; r++) {
-      
+
       // Carve out shapes
       if (Math.abs(q) + Math.abs(r) > 12) continue;
-      if (q > 3 && r < -3) continue; 
-      if (q < -4 && r > 2) continue; 
-      if (q === 0 && r === 0) continue; 
-      
+      if (q > 3 && r < -3) continue;
+      if (q < -4 && r > 2) continue;
+      if (q === 0 && r === 0) continue;
+
       // Determine Status Logic based on probabilities (Environmental)
       const rand = Math.random();
       let status: SensorStatus;
@@ -69,9 +69,9 @@ export const generateSensors = (): SensorData[] => {
       // 15% chance of low battery if connected
       let battery = Math.floor(20 + Math.random() * 80); // Default healthy
       if (status !== SensorStatus.DESCONECTADO && Math.random() > 0.85) {
-         battery = Math.floor(Math.random() * 19); // 0-19% (Low)
+        battery = Math.floor(Math.random() * 19); // 0-19% (Low)
       } else if (status === SensorStatus.DESCONECTADO) {
-         battery = 0;
+        battery = 0;
       }
 
       sensors.push({
@@ -93,14 +93,18 @@ export const generateSensors = (): SensorData[] => {
   return sensors;
 };
 
-export const getStats = (sensors: SensorData[]) => {
+export const getStats = (sensors: SensorData[]): Stats => {
+  const isRed = (s: SensorData) => [SensorStatus.FRIO_SEVERO, SensorStatus.CALOR_EXTREMO, SensorStatus.ATMOSFERA_NOCIVA].includes(s.status);
+  const isOrange = (s: SensorData) => [SensorStatus.RIESGO_MOHO, SensorStatus.AIRE_VICIADO, SensorStatus.FRIO_MODERADO, SensorStatus.AIRE_SECO, SensorStatus.AZUL].includes(s.status);
+  const isGreen = (s: SensorData) => s.status === SensorStatus.IDEAL;
+  const isOffline = (s: SensorData) => s.status === SensorStatus.DESCONECTADO;
+
   return {
     total: sensors.length,
-    critical: sensors.filter(s => s.status === SensorStatus.FRIO_SEVERO || s.status === SensorStatus.CALOR_EXTREMO).length,
-    warning: sensors.filter(s => s.status === SensorStatus.RIESGO_MOHO || s.status === SensorStatus.AIRE_VICIADO).length,
-    ideal: sensors.filter(s => s.status === SensorStatus.IDEAL).length,
-    offline: sensors.filter(s => s.status === SensorStatus.DESCONECTADO).length,
-    // Count low battery independent of status, but exclude disconnected ones usually (or include them if you prefer history)
-    lowBattery: sensors.filter(s => s.status !== SensorStatus.DESCONECTADO && s.battery < 20).length
+    critical: sensors.filter(isRed).length,
+    warning: sensors.filter(isOrange).length,
+    ideal: sensors.filter(isGreen).length,
+    offline: sensors.filter(isOffline).length,
+    lowBattery: sensors.filter(s => s.indicators?.lowBattery || (s.status !== SensorStatus.DESCONECTADO && s.battery < 20)).length
   };
 };

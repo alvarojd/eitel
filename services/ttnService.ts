@@ -43,10 +43,21 @@ const determineStatus = (temp: number, hum: number, co2: number, lastSeenStr: st
   return SensorStatus.IDEAL;
 };
 
-export const fetchSensorData = async (forceMock: boolean = false): Promise<SensorData[]> => {
-  if (forceMock) {
+export const fetchSensorData = async (): Promise<SensorData[]> => {
+  // Automatically use mock data in local development
+  const isLocal = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '0.0.0.0');
+
+  // Use Vite environment flag if available as backup
+  const isDev = (import.meta as any).env?.DEV;
+
+  if (isLocal || isDev) {
+    console.log("Environment: Local. Using simulated data.");
     return generateSensors();
   }
+
   try {
     // Fetch from our own Vercel Serverless Function
     const response = await fetch('/api/sensors');
@@ -69,23 +80,25 @@ export const fetchSensorData = async (forceMock: boolean = false): Promise<Senso
       const q = coords[index]?.q || 0;
       const r = coords[index]?.r || 0;
 
-      const status = determineStatus(device.temperature, device.humidity, device.co2, device.lastSeen);
+      // Use the status provided by the backend if available, otherwise calculate locally (fallback)
+      const status = device.status || determineStatus(device.temperature, device.humidity, device.co2, device.lastSeen);
 
       return {
         id: device.id,
-        name: device.id,
+        name: device.name || device.id,
         q,
         r,
-        status,
+        status: status as SensorStatus,
         battery: device.battery,
         temperature: device.temperature,
         humidity: device.humidity,
         co2: device.co2,
         rssi: device.rssi,
         lastSeen: device.lastSeen,
-        location: `Hex ${q},${r}`,
+        location: device.location || `Hex ${q},${r}`,
         registeredAt: device.registeredAt,
-        presence: device.presence
+        presence: device.presence,
+        indicators: device.indicators
       };
     });
 
