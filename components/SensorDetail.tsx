@@ -1,7 +1,7 @@
 import React from 'react';
 import { SensorData } from '../types';
 import { STATUS_TEXT_COLORS, STATUS_BG_COLORS, STATUS_LABELS } from '../constants';
-import { Thermometer, Droplets, UserCheck, Signal, Wind, X, MapPin, Clock, Loader2 } from 'lucide-react';
+import { Thermometer, Droplets, UserCheck, Signal, Wind, X, MapPin, Clock, Loader2, ExternalLink } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { fetchSensorHistory } from '../services/ttnService';
 
@@ -171,13 +171,32 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
             </span>
           </div>
           <div className="flex justify-between mb-2">
-            <span>Ubicación</span>
-            <span className="text-slate-200">{sensor.location}</span>
-          </div>
-          <div className="flex justify-between">
             <span>Gateway</span>
-            <span className="text-sky-400">TTN Gateway</span>
+            <span className="text-sky-400">{sensor.gatewayId || 'Desconocido'}</span>
           </div>
+          {sensor.latitude && sensor.longitude && (
+            <>
+              <div className="flex justify-between mb-2">
+                <span>Latitud</span>
+                <span className="text-slate-200">{sensor.latitude}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span>Longitud</span>
+                <span className="text-slate-200">{sensor.longitude}</span>
+              </div>
+              <div className="mt-3 pt-3 border-t border-slate-700/50">
+                <a
+                  href={`https://www.google.com/maps?q=${sensor.latitude},${sensor.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded border border-sky-500/20 transition-colors text-[10px] uppercase font-bold tracking-wider"
+                >
+                  <ExternalLink size={12} />
+                  Ver en Google Maps
+                </a>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="mt-8 text-center">

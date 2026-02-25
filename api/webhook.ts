@@ -16,18 +16,18 @@ export default async function handler(req: any, res: any) {
       battery INTEGER,
       rssi INTEGER,
       presence BOOLEAN DEFAULT FALSE,
+      latitude DECIMAL(10,8),
+      longitude DECIMAL(11,8),
+      gateway_id VARCHAR(255),
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );`;
 
     // 2. Parse TTN Payload
-    // The user provided the decoded payload structure directly:
-    // { CO2, battery_voltage, device_id, humidity, presence, temperature, ... }
     const { end_device_ids, uplink_message } = req.body;
     const payload = uplink_message?.decoded_payload;
-    const rx_metadata = uplink_message?.rx_metadata?.[0];
+    const rx_metadata = uplink_message?.rx_metadata;
     const received_at = uplink_message?.received_at || new Date().toISOString();
 
-    // Exact fields requested: CO2, battery_voltage, device_id, humidity, presence, temperature
     const device_id = payload?.device_id || end_device_ids?.device_id;
 
     if (!device_id || !payload) {
@@ -40,6 +40,27 @@ export default async function handler(req: any, res: any) {
     const co2 = payload.CO2 || 0;
     const presence = payload.presence === true;
 
+    // Handle Coordinates and Gateway ID
+    // 1. Check decoded_payload (Sensor GPS)
+    // 2. Check rx_metadata (Gateway location as fallback)
+    let latitude = payload.latitude || payload.lat;
+    let longitude = payload.longitude || payload.lon || payload.lng;
+    let gateway_id = null;
+
+    if (rx_metadata && rx_metadata.length > 0) {
+      // Find the best RSSI gateway 
+      const bestGw = rx_metadata.reduce((prev: any, curr: any) =>
+        ((prev.rssi || -200) > (curr.rssi || -200)) ? prev : curr
+      );
+
+      gateway_id = bestGw.gateway_ids?.gateway_id || bestGw.packet_id;
+
+      if (!latitude && bestGw.location) {
+        latitude = bestGw.location.latitude;
+        longitude = bestGw.location.longitude;
+      }
+    }
+
     // Handle Battery Voltage conversion to Percentage
     let battery = 100;
     if (typeof payload.battery_voltage === 'number') {
@@ -50,12 +71,12 @@ export default async function handler(req: any, res: any) {
       battery = Math.min(100, Math.max(0, Math.round(pct)));
     }
 
-    const rssi = rx_metadata?.rssi || -100;
+    const rssi = rx_metadata?.[0]?.rssi || -100;
 
     // 3. Insert Data
     await sql`
-      INSERT INTO measurements (device_id, temperature, humidity, co2, battery, rssi, presence, created_at)
-      VALUES (${device_id}, ${temperature}, ${humidity}, ${co2}, ${battery}, ${rssi}, ${presence}, ${received_at});
+      INSERT INTO measurements (device_id, temperature, humidity, co2, battery, rssi, presence, latitude, longitude, gateway_id, created_at)
+      VALUES (${device_id}, ${temperature}, ${humidity}, ${co2}, ${battery}, ${rssi}, ${presence}, ${latitude}, ${longitude}, ${gateway_id}, ${received_at});
     `;
 
     return res.status(200).json({ success: true });

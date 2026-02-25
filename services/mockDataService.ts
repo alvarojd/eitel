@@ -86,7 +86,10 @@ export const generateSensors = (): SensorData[] => {
         co2,
         rssi: status === SensorStatus.DESCONECTADO ? 0 : -Math.floor(50 + Math.random() * 70),
         lastSeen,
-        location: `Zona Q${q}R${r}`
+        location: `Zona Q${q}R${r}`,
+        latitude: parseFloat((40.4168 + (Math.random() * 0.1 - 0.05)).toFixed(6)), // Madrid center aprox
+        longitude: parseFloat((-3.7038 + (Math.random() * 0.1 - 0.05)).toFixed(6)),
+        gatewayId: `gtw-${['madrid', 'barcelona', 'valencia'][Math.floor(Math.random() * 3)]}-0${Math.floor(Math.random() * 9) + 1}`
       });
     }
   }

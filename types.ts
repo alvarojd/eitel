@@ -30,6 +30,9 @@ export interface SensorData {
     lowBattery: boolean;
     longTermNoOccupancy: boolean; // 48h sin presencia
   };
+  latitude?: number;
+  longitude?: number;
+  gatewayId?: string;
 }
 
 export interface Stats {

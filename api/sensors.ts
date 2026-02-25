@@ -11,7 +11,7 @@ export default async function handler(req: any, res: any) {
     const { rows } = await sql`
       WITH latest_measurements AS (
         SELECT DISTINCT ON (device_id) 
-          device_id, temperature, humidity, co2, battery, rssi, presence, created_at
+          device_id, temperature, humidity, co2, battery, rssi, presence, latitude, longitude, gateway_id, created_at
         FROM measurements
         ORDER BY device_id, created_at DESC
       ),
@@ -115,6 +115,9 @@ export default async function handler(req: any, res: any) {
         registeredAt: row.first_seen,
         presence: row.presence,
         status: status,
+        latitude: row.latitude ? parseFloat(row.latitude) : undefined,
+        longitude: row.longitude ? parseFloat(row.longitude) : undefined,
+        gatewayId: row.gateway_id,
         indicators: {
           lowBattery: row.battery < 20,
           longTermNoOccupancy: !pres48h
