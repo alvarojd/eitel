@@ -20,7 +20,9 @@ const App: React.FC = () => {
   // Environment detection helper
   const isLocal = typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1');
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '0.0.0.0' ||
+      window.location.hostname.includes('192.168.'));
 
   useEffect(() => {
     const loadData = async () => {

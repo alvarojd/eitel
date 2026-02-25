@@ -48,13 +48,14 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
   const isLocal = typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1' ||
-      window.location.hostname === '0.0.0.0');
+      window.location.hostname === '0.0.0.0' ||
+      window.location.hostname.includes('192.168.'));
 
   // Use Vite environment flag if available as backup
   const isDev = (import.meta as any).env?.DEV;
 
   if (isLocal || isDev) {
-    console.log("Environment: Local. Using simulated data.");
+    console.log("Environment: Local/Dev. Using simulated data.");
     return generateSensors();
   }
 
@@ -62,10 +63,10 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
     // Fetch from our own Vercel Serverless Function
     const response = await fetch('/api/sensors');
 
-    // Graceful fallback for Local Development or API Error (404/500)
+    // Force real data in production: do NOT fall back to mock data
     if (!response.ok) {
-      console.warn(`API unavailable (${response.status}). Using mock data.`);
-      return generateSensors();
+      console.warn(`API unavailable (${response.status}). Returning empty state.`);
+      return [];
     }
 
     const rawData = await response.json();
@@ -106,8 +107,8 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
     });
 
   } catch (error) {
-    console.error("Failed to fetch sensors, falling back to mock:", error);
-    return generateSensors();
+    console.error("Failed to fetch sensors:", error);
+    return [];
   }
 };
 
