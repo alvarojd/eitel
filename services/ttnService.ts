@@ -65,7 +65,8 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
 
     // Force real data in production: do NOT fall back to mock data
     if (!response.ok) {
-      console.warn(`API unavailable (${response.status}). Returning empty state.`);
+      const errorText = await response.text();
+      console.error(`API unavailable (${response.status}): ${errorText}`);
       return [];
     }
 

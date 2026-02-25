@@ -22,6 +22,11 @@ export default async function handler(req: any, res: any) {
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );`;
 
+    // Self-healing migration for existing tables
+    await sql`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS latitude DECIMAL(10,8);`;
+    await sql`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS longitude DECIMAL(11,8);`;
+    await sql`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS gateway_id VARCHAR(255);`;
+
     // 2. Parse TTN Payload
     const { end_device_ids, uplink_message } = req.body;
     const payload = uplink_message?.decoded_payload;
