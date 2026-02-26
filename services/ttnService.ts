@@ -66,11 +66,18 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
     // Force real data in production: do NOT fall back to mock data
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`API unavailable (${response.status}): ${errorText}`);
+      console.error(`API Error [${response.status}]: ${errorText}`);
+      try {
+        const errJson = JSON.parse(errorText);
+        console.error("API Error details:", errJson);
+      } catch (e) {
+        // Not JSON, already logged as text
+      }
       return [];
     }
 
     const rawData = await response.json();
+    console.log(`Successfully fetched ${rawData.length} sensors from API.`);
 
     if (rawData.length === 0) return [];
 
