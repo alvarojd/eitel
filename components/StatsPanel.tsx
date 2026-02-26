@@ -15,16 +15,16 @@ const StatCard: React.FC<{
   bgClass: string;
   textClass?: string;
 }> = ({ label, count, subtext, icon, bgClass, textClass = "text-white" }) => (
-  <div className="flex items-center p-4 bg-slate-800 rounded-lg border border-slate-700 shadow-lg min-w-[200px] flex-1">
-    <div className={`p-3 rounded-md ${bgClass} bg-opacity-20 mr-4 ${textClass}`}>
-      <div className={`p-2 rounded ${bgClass}`}>
-        {icon}
+  <div className="flex items-center p-3 lg:p-4 bg-slate-800 rounded-lg border border-slate-700 shadow-lg min-w-[140px] lg:min-w-[200px] flex-1">
+    <div className={`p-2 lg:p-3 rounded-md ${bgClass} bg-opacity-20 mr-3 lg:mr-4 ${textClass}`}>
+      <div className={`p-1 lg:p-2 rounded ${bgClass}`}>
+        {React.cloneElement(icon as React.ReactElement, { size: 20 })}
       </div>
     </div>
     <div>
-      <div className="text-3xl font-bold text-white leading-none">{count}</div>
-      <div className="text-xs font-bold text-slate-100 uppercase tracking-wider mt-1">{label}</div>
-      <div className="text-xs text-slate-400 mt-0.5">{subtext}</div>
+      <div className="text-xl lg:text-3xl font-bold text-white leading-none">{count}</div>
+      <div className="text-[10px] lg:text-xs font-bold text-slate-100 uppercase tracking-wider mt-1">{label}</div>
+      <div className="text-[10px] lg:text-xs text-slate-400 mt-0.5 hidden sm:block">{subtext}</div>
     </div>
   </div>
 );

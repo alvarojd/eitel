@@ -11,7 +11,7 @@ export default async function handler(req: any, res: any) {
     const { rows } = await sql`
       WITH latest_measurements AS (
         SELECT DISTINCT ON (device_id) 
-          device_id, temperature, humidity, co2, battery, rssi, presence, latitude, longitude, gateway_id, created_at
+          device_id, dev_eui, temperature, humidity, co2, battery, rssi, presence, latitude, longitude, gateway_id, created_at
         FROM measurements
         ORDER BY device_id, created_at DESC
       ),
@@ -105,6 +105,7 @@ export default async function handler(req: any, res: any) {
 
       return {
         id: row.device_id,
+        devEui: row.dev_eui,
         battery: row.battery,
         temperature: temp,
         humidity: hum,

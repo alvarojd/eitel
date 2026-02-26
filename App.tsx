@@ -80,7 +80,7 @@ const App: React.FC = () => {
         <StatsPanel stats={stats} />
 
         {/* Main Content Area */}
-        <div className="flex-1 min-h-0 relative rounded-2xl border border-slate-700/50 shadow-inner bg-slate-900/40 flex">
+        <div className="flex-1 min-h-0 relative rounded-2xl border border-slate-700/50 shadow-inner bg-slate-900/40 flex flex-col lg:flex-row">
 
           {loading && sensors.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">

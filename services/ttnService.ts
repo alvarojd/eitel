@@ -103,6 +103,7 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
         latitude: device.latitude,
         longitude: device.longitude,
         gatewayId: device.gatewayId,
+        devEui: device.devEui,
         indicators: device.indicators
       };
     });

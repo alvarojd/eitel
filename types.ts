@@ -33,6 +33,7 @@ export interface SensorData {
   latitude?: number;
   longitude?: number;
   gatewayId?: string;
+  devEui?: string;
 }
 
 export interface Stats {

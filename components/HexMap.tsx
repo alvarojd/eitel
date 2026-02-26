@@ -60,7 +60,7 @@ const HexMap: React.FC<HexMapProps> = ({ sensors, onSensorSelect, selectedSensor
 
       <svg
         viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}
-        className="w-full h-full max-h-[80vh] select-none filter drop-shadow-2xl"
+        className="w-full h-full max-h-[50vh] lg:max-h-[80vh] select-none filter drop-shadow-2xl"
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>

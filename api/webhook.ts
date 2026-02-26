@@ -10,6 +10,7 @@ export default async function handler(req: any, res: any) {
     await sql`CREATE TABLE IF NOT EXISTS measurements (
       id SERIAL PRIMARY KEY,
       device_id VARCHAR(255) NOT NULL,
+      dev_eui VARCHAR(255),
       temperature DECIMAL(5,2),
       humidity DECIMAL(5,2),
       co2 INTEGER,
@@ -23,6 +24,7 @@ export default async function handler(req: any, res: any) {
     );`;
 
     // Self-healing migration for existing tables
+    await sql`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS dev_eui VARCHAR(255);`;
     await sql`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS latitude DECIMAL(10,8);`;
     await sql`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS longitude DECIMAL(11,8);`;
     await sql`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS gateway_id VARCHAR(255);`;
@@ -33,7 +35,8 @@ export default async function handler(req: any, res: any) {
     const rx_metadata = uplink_message?.rx_metadata;
     const received_at = uplink_message?.received_at || new Date().toISOString();
 
-    const device_id = payload?.device_id || end_device_ids?.device_id;
+    const device_id = end_device_ids?.device_id || payload?.device_id;
+    const dev_eui = end_device_ids?.dev_eui;
 
     if (!device_id || !payload) {
       console.warn('Missing device_id or payload', req.body);
@@ -80,8 +83,8 @@ export default async function handler(req: any, res: any) {
 
     // 3. Insert Data
     await sql`
-      INSERT INTO measurements (device_id, temperature, humidity, co2, battery, rssi, presence, latitude, longitude, gateway_id, created_at)
-      VALUES (${device_id}, ${temperature}, ${humidity}, ${co2}, ${battery}, ${rssi}, ${presence}, ${latitude}, ${longitude}, ${gateway_id}, ${received_at});
+      INSERT INTO measurements (device_id, dev_eui, temperature, humidity, co2, battery, rssi, presence, latitude, longitude, gateway_id, created_at)
+      VALUES (${device_id}, ${dev_eui}, ${temperature}, ${humidity}, ${co2}, ${battery}, ${rssi}, ${presence}, ${latitude}, ${longitude}, ${gateway_id}, ${received_at});
     `;
 
     return res.status(200).json({ success: true });

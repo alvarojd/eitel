@@ -55,7 +55,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
   if (!sensor) return null;
 
   return (
-    <div className="h-full bg-slate-800 flex flex-col border-l border-slate-700 shadow-2xl w-full">
+    <div className="h-full bg-slate-800 flex flex-col shadow-2xl w-full">
       {/* Header */}
       <div className="p-6 border-b border-slate-700 flex justify-between items-start">
         <div>
@@ -63,7 +63,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
             <MapPin size={18} className="text-slate-400" />
             {sensor.name}
           </h2>
-          <p className="text-sm text-slate-400 mt-1">{sensor.id}</p>
+          <p className="text-sm text-slate-400 mt-1">{sensor.devEui || sensor.id}</p>
         </div>
         <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
           <X size={24} />
