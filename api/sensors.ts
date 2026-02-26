@@ -10,38 +10,36 @@ export default async function handler(req: any, res: any) {
     // We use subqueries to check for presence in specific windows and continuous humidity
     const { rows } = await sql`
       WITH latest_measurements AS (
-        SELECT DISTINCT ON (device_id) 
-          device_id, dev_eui, temperature, humidity, co2, battery, rssi, presence, latitude, longitude, gateway_id, created_at
+        SELECT DISTINCT ON (COALESCE(dev_eui, device_id)) 
+          device_id, dev_eui, name, temperature, humidity, co2, battery, rssi, presence, latitude, longitude, gateway_id, created_at
         FROM measurements
-        ORDER BY device_id, created_at DESC
+        ORDER BY COALESCE(dev_eui, device_id), created_at DESC
       ),
       first_seen AS (
-        SELECT device_id, MIN(created_at) as first_seen
+        SELECT COALESCE(dev_eui, device_id) as identifier, MIN(created_at) as first_seen
         FROM measurements
-        GROUP BY device_id
+        GROUP BY identifier
       ),
       presence_info AS (
         SELECT 
-          device_id,
+          COALESCE(dev_eui, device_id) as identifier,
           BOOL_OR(presence) FILTER (WHERE created_at > NOW() - INTERVAL '1 hour') as presence_1h,
           BOOL_OR(presence) FILTER (WHERE created_at > NOW() - INTERVAL '2 hour') as presence_2h,
           BOOL_OR(presence) FILTER (WHERE created_at > NOW() - INTERVAL '48 hour') as presence_48h
         FROM measurements
-        GROUP BY device_id
+        GROUP BY identifier
       ),
       humidity_info AS (
-        -- Check if humidity has been > 70 for the last 24h continuously
-        -- We check if there's any record < 70 in the last 24h
         SELECT 
-          device_id,
+          COALESCE(dev_eui, device_id) as identifier,
           NOT EXISTS (
             SELECT 1 FROM measurements m2 
-            WHERE m2.device_id = m.device_id 
+            WHERE COALESCE(m2.dev_eui, m2.device_id) = COALESCE(m.dev_eui, m.device_id)
             AND m2.created_at > NOW() - INTERVAL '24 hours'
             AND m2.humidity <= 70
           ) as hum_high_24h_cont
         FROM measurements m
-        GROUP BY device_id
+        GROUP BY identifier
       )
       SELECT 
         l.*,
@@ -51,13 +49,14 @@ export default async function handler(req: any, res: any) {
         p.presence_48h,
         h.hum_high_24h_cont
       FROM latest_measurements l
-      JOIN first_seen f ON l.device_id = f.device_id
-      LEFT JOIN presence_info p ON l.device_id = p.device_id
-      LEFT JOIN humidity_info h ON l.device_id = h.device_id;
+      JOIN first_seen f ON COALESCE(l.dev_eui, l.device_id) = f.identifier
+      LEFT JOIN presence_info p ON COALESCE(l.dev_eui, l.device_id) = p.identifier
+      LEFT JOIN humidity_info h ON COALESCE(l.dev_eui, l.device_id) = h.identifier;
     `;
 
     const now = new Date();
     const formattedData = rows.map(row => {
+      // ... (existing date diff logic remains same)
       const diffMs = now.getTime() - new Date(row.created_at).getTime();
       const diffMins = Math.floor(diffMs / 60000);
       let lastSeen = 'Hace un momento';
@@ -76,7 +75,7 @@ export default async function handler(req: any, res: any) {
       const pres48h = row.presence_48h || false;
       const humCont24h = row.hum_high_24h_cont || false;
 
-      // Determine Status based on new logic
+      // Determine Status based on logic
       let status = 'IDEAL';
 
       // Red Priority
@@ -104,8 +103,8 @@ export default async function handler(req: any, res: any) {
       }
 
       return {
-        id: row.device_id,
-        devEui: row.dev_eui,
+        id: row.dev_eui || row.device_id,
+        name: row.name || row.device_id,
         battery: row.battery,
         temperature: temp,
         humidity: hum,
@@ -119,6 +118,7 @@ export default async function handler(req: any, res: any) {
         latitude: row.latitude ? parseFloat(row.latitude) : undefined,
         longitude: row.longitude ? parseFloat(row.longitude) : undefined,
         gatewayId: row.gateway_id,
+        devEui: row.dev_eui,
         indicators: {
           lowBattery: row.battery < 20,
           longTermNoOccupancy: !pres48h
