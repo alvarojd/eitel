@@ -7,6 +7,9 @@ export default async function handler(req: any, res: any) {
 
   try {
     // 1. Get current status and historical flags
+    // Ensure column exists (self-healing migration)
+    await sql`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS name VARCHAR(255);`;
+
     // We use subqueries to check for presence in specific windows and continuous humidity
     const { rows } = await sql`
       WITH latest_measurements AS (
