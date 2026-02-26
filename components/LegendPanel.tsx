@@ -18,11 +18,11 @@ const LegendItem = ({ color, label, desc }: { color: string, label: string, desc
 const LegendPanel = () => {
     return (
         <div className="h-full flex flex-col p-4 bg-slate-800 overflow-y-auto custom-scrollbar">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 mt-1">Estados del Sensor</h3>
+            <h3 className="text-xs font-bold text-slate-400 tracking-widest mb-4 mt-1">Estados del Sensor</h3>
 
             <div className="mb-6 space-y-1">
                 {/* Red Group */}
-                <h4 className="text-[10px] font-bold text-rose-500/80 px-2.5 mb-2 mt-4 uppercase">Crítico (Pobreza/Salud)</h4>
+                <h4 className="text-[10px] font-bold text-rose-500/80 px-2.5 mb-2 mt-4">Crítico (Pobreza/Salud)</h4>
                 <LegendItem
                     color={STATUS_COLORS[SensorStatus.FRIO_SEVERO]}
                     label={STATUS_LABELS[SensorStatus.FRIO_SEVERO]}
@@ -40,7 +40,7 @@ const LegendPanel = () => {
                 />
 
                 {/* Orange Group */}
-                <h4 className="text-[10px] font-bold text-orange-500/80 px-2.5 mb-2 mt-4 uppercase">Riesgo / Aviso</h4>
+                <h4 className="text-[10px] font-bold text-orange-500/80 px-2.5 mb-2 mt-4">Riesgo / Aviso</h4>
                 <LegendItem
                     color={STATUS_COLORS[SensorStatus.RIESGO_MOHO]}
                     label={STATUS_LABELS[SensorStatus.RIESGO_MOHO]}
@@ -63,7 +63,7 @@ const LegendPanel = () => {
                 />
 
                 {/* Green Group */}
-                <h4 className="text-[10px] font-bold text-emerald-500/80 px-2.5 mb-2 mt-4 uppercase">Ideal</h4>
+                <h4 className="text-[10px] font-bold text-emerald-500/80 px-2.5 mb-2 mt-4">Ideal</h4>
                 <LegendItem
                     color={STATUS_COLORS[SensorStatus.IDEAL]}
                     label={STATUS_LABELS[SensorStatus.IDEAL]}
@@ -79,7 +79,7 @@ const LegendPanel = () => {
             </div>
 
             <div className="border-t border-slate-700 my-4 pt-4">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Indicadores Superpuestos</h3>
+                <h3 className="text-xs font-bold text-slate-400 tracking-widest mb-3">Indicadores Superpuestos</h3>
                 <div className="space-y-3">
                     <div className="flex items-center p-2.5 rounded-lg bg-slate-900/50 border border-slate-700/50">
                         <div className="bg-red-100 p-1 rounded">
@@ -107,7 +107,7 @@ const LegendPanel = () => {
             </div>
 
             <div className="border-t border-slate-700 my-2 pt-4">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Estadísticas Rápidas</h3>
+                <h3 className="text-xs font-bold text-slate-400 tracking-widest mb-3">Estadísticas Rápidas</h3>
                 <div className="text-xs text-slate-400 space-y-2">
                     <p>Total Nodos: <span className="text-white font-mono float-right">156</span></p>
                     <p>Uptime: <span className="text-green-400 font-mono float-right">99.8%</span></p>

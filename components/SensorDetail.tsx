@@ -73,7 +73,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
       <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
         {/* Status Badge */}
         <div className="mb-4">
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-900 border ${STATUS_TEXT_COLORS[sensor.status]} border-opacity-30`}>
+          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-slate-900 border ${STATUS_TEXT_COLORS[sensor.status]} border-opacity-30`}>
             <span className={`w-2 h-2 rounded-full mr-2 ${STATUS_BG_COLORS[sensor.status]}`}></span>
             {STATUS_LABELS[sensor.status]}
           </span>
@@ -87,7 +87,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
           <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
             <div className="flex items-center gap-2 text-slate-400 mb-2">
               <Thermometer size={16} />
-              <span className="text-xs uppercase">Temp</span>
+              <span className="text-xs">Temp</span>
             </div>
             <div className="text-2xl font-mono text-white">{sensor.temperature}°C</div>
           </div>
@@ -95,7 +95,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
           <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
             <div className="flex items-center gap-2 text-slate-400 mb-2">
               <Droplets size={16} />
-              <span className="text-xs uppercase">Humedad</span>
+              <span className="text-xs">Humedad</span>
             </div>
             <div className="text-2xl font-mono text-white">{sensor.humidity}%</div>
           </div>
@@ -103,7 +103,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
           <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
             <div className="flex items-center gap-2 text-slate-400 mb-2">
               <Wind size={16} />
-              <span className="text-xs uppercase">CO2</span>
+              <span className="text-xs">CO2</span>
             </div>
             <div className="text-2xl font-mono text-white">{sensor.co2} ppm</div>
           </div>
@@ -111,7 +111,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
           <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
             <div className="flex items-center gap-2 text-slate-400 mb-2">
               <UserCheck size={16} />
-              <span className="text-xs uppercase">Presencia</span>
+              <span className="text-xs">Presencia</span>
             </div>
             <div className="text-2xl font-mono text-white">{sensor.presence ? 'Si' : 'No'}</div>
           </div>
@@ -119,7 +119,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
 
         {/* Chart Area */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Temperatura (24h)</h3>
+          <h3 className="text-sm font-semibold text-slate-300 mb-4 tracking-wider">Temperatura (24h)</h3>
           <div className="h-48 w-full bg-slate-900/30 rounded-xl border border-slate-700/30 flex items-center justify-center overflow-hidden">
             {loadingHistory ? (
               <div className="flex items-center gap-2 text-slate-500">
@@ -189,7 +189,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
                   href={`https://www.google.com/maps?q=${sensor.latitude},${sensor.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded border border-sky-500/20 transition-colors text-[10px] uppercase font-bold tracking-wider"
+                  className="flex items-center justify-center gap-2 w-full py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded border border-sky-500/20 transition-colors text-[10px] font-bold tracking-wider"
                 >
                   <ExternalLink size={12} />
                   Ver en Google Maps

@@ -23,7 +23,7 @@ const StatCard: React.FC<{
     </div>
     <div>
       <div className="text-xl lg:text-3xl font-bold text-white leading-none">{count}</div>
-      <div className="text-[10px] lg:text-xs font-bold text-slate-100 uppercase tracking-wider mt-1">{label}</div>
+      <div className="text-[10px] lg:text-xs font-bold text-slate-100 tracking-wider mt-1">{label}</div>
       <div className="text-[10px] lg:text-xs text-slate-400 mt-0.5 hidden sm:block">{subtext}</div>
     </div>
   </div>

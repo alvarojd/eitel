@@ -51,43 +51,43 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect, active
                     onClick={() => setFilter('all')}
                     className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'all' ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                 >
-                    TODOS
+                    Todos
                 </button>
                 <button
                     onClick={() => setFilter('critico')}
                     className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'critico' ? 'bg-rose-600 text-white' : 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20'}`}
                 >
-                    CRÍTICO
+                    Crítico
                 </button>
                 <button
                     onClick={() => setFilter('riesgo')}
                     className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'riesgo' ? 'bg-orange-600 text-white' : 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20'}`}
                 >
-                    RIESGO / AVISO
+                    Riesgo / Aviso
                 </button>
                 <button
                     onClick={() => setFilter('ideal')}
                     className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'ideal' ? 'bg-emerald-600 text-white' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'}`}
                 >
-                    SITUACIÓN IDEAL
+                    Situación Ideal
                 </button>
                 <button
                     onClick={() => setFilter('bateria_baja')}
                     className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'bateria_baja' ? 'bg-blue-600 text-white' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20'}`}
                 >
-                    BATERÍA BAJA
+                    Batería Baja
                 </button>
                 <button
                     onClick={() => setFilter('ausencia')}
                     className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'ausencia' ? 'bg-slate-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                 >
-                    AUSENCIA PROLONGADA
+                    Ausencia Prolongada
                 </button>
                 <button
                     onClick={() => setFilter('desconectado')}
                     className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'desconectado' ? 'bg-slate-600 text-white' : 'bg-slate-500/10 text-slate-500 hover:bg-slate-500/20'}`}
                 >
-                    DESCONECTADO
+                    Desconectado
                 </button>
             </div>
 

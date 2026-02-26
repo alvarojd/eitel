@@ -59,5 +59,5 @@ export const STATUS_LABELS = {
   [SensorStatus.AIRE_SECO]: 'Aire Seco (Irritación)',
   [SensorStatus.IDEAL]: 'Situación Ideal',
   [SensorStatus.DESCONECTADO]: 'Desconectado',
-  [SensorStatus.AZUL]: 'Otro Estado',
+  [SensorStatus.AZUL]: 'Otros Estados',
 };
