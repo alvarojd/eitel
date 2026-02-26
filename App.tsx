@@ -37,7 +37,7 @@ const App: React.FC = () => {
     };
 
     loadData();
-    const interval = setInterval(loadData, 15000);
+    const interval = setInterval(loadData, 300000); // 5 minutes
     return () => clearInterval(interval);
   }, []);
 
