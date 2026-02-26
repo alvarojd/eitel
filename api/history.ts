@@ -16,7 +16,7 @@ export default async function handler(req: any, res: any) {
         const { rows } = await sql`
       SELECT temperature, humidity, co2, created_at
       FROM measurements
-      WHERE device_id = ${deviceId}
+      WHERE (UPPER(device_id) = UPPER(${deviceId}) OR UPPER(dev_eui) = UPPER(${deviceId}))
       AND created_at > NOW() - INTERVAL '24 hours'
       ORDER BY created_at ASC;
     `;

@@ -16,16 +16,16 @@ export default async function handler(req: any, res: any) {
     // 2. Main Query: Simplified to ensure data is returned
     const { rows } = await sql`
       WITH latest_recs AS (
-        SELECT DISTINCT ON (COALESCE(dev_eui, device_id)) 
+        SELECT DISTINCT ON (UPPER(COALESCE(dev_eui, device_id))) 
           *
         FROM measurements
-        ORDER BY COALESCE(dev_eui, device_id), created_at DESC
+        ORDER BY UPPER(COALESCE(dev_eui, device_id)), created_at DESC
       )
       SELECT 
         l.*,
-        (SELECT MIN(created_at) FROM measurements m2 WHERE COALESCE(m2.dev_eui, m2.device_id) = COALESCE(l.dev_eui, l.device_id)) as first_seen,
+        (SELECT MIN(created_at) FROM measurements m2 WHERE UPPER(COALESCE(m2.dev_eui, m2.device_id)) = UPPER(COALESCE(l.dev_eui, l.device_id))) as first_seen,
         -- Simple Presence check
-        EXISTS(SELECT 1 FROM measurements m3 WHERE COALESCE(m3.dev_eui, m3.device_id) = COALESCE(l.dev_eui, l.device_id) AND m3.presence = true AND m3.created_at > NOW() - INTERVAL '48 hour') as has_recent_presence
+        EXISTS(SELECT 1 FROM measurements m3 WHERE UPPER(COALESCE(m3.dev_eui, m3.device_id)) = UPPER(COALESCE(l.dev_eui, l.device_id)) AND m3.presence = true AND m3.created_at > NOW() - INTERVAL '48 hour') as has_recent_presence
       FROM latest_recs l;
     `;
 
@@ -60,7 +60,7 @@ export default async function handler(req: any, res: any) {
       }
 
       return {
-        id: row.dev_eui || row.device_id,
+        id: (row.dev_eui || row.device_id).toUpperCase(),
         name: row.name || row.device_id,
         battery: row.battery || 0,
         temperature: temp,
@@ -75,7 +75,7 @@ export default async function handler(req: any, res: any) {
         latitude: row.latitude ? parseFloat(row.latitude) : undefined,
         longitude: row.longitude ? parseFloat(row.longitude) : undefined,
         gatewayId: row.gateway_id,
-        devEui: row.dev_eui,
+        devEui: row.dev_eui ? row.dev_eui.toUpperCase() : undefined,
         indicators: {
           lowBattery: (row.battery || 0) < 20,
           longTermNoOccupancy: !row.has_recent_presence

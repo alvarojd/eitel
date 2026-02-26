@@ -37,8 +37,8 @@ export default async function handler(req: any, res: any) {
     const rx_metadata = uplink_message?.rx_metadata;
     const received_at = uplink_message?.received_at || new Date().toISOString();
 
-    const device_id = end_device_ids?.device_id || payload?.device_id;
-    const dev_eui = end_device_ids?.dev_eui;
+    const device_id = (end_device_ids?.device_id || payload?.device_id)?.toUpperCase();
+    const dev_eui = end_device_ids?.dev_eui?.toUpperCase();
     // The user specifically wants the name from TTN's payload "device_id"
     const name = payload?.device_id;
 
