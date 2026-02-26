@@ -146,6 +146,7 @@ const App: React.FC = () => {
               <DeviceList
                 sensors={sensors}
                 onSensorSelect={handleSensorSelect}
+                activeTab={activeTab}
               />
             )
           )}

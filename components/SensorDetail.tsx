@@ -199,11 +199,6 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
           )}
         </div>
 
-        <div className="mt-8 text-center">
-          <button className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-md transition text-sm font-medium">
-            Ver dispositivo en consola TTN
-          </button>
-        </div>
       </div>
     </div>
   );
