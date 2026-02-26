@@ -9,6 +9,8 @@ export default async function handler(req: any, res: any) {
     // 1. Separate Migration to avoid blocking
     try {
       await sql`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS name VARCHAR(255);`;
+      // Backfill name from device_id for older records where name is null
+      await sql`UPDATE measurements SET name = device_id WHERE name IS NULL;`;
     } catch (e) {
       console.warn("Migration warning (non-fatal):", e);
     }
