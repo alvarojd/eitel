@@ -53,10 +53,25 @@ export default async function handler(req: any, res: any) {
     const presence = payload.presence === true;
 
     // Handle Coordinates and Gateway ID
-    // 1. Check decoded_payload (Sensor GPS)
-    // 2. Check rx_metadata (Gateway location as fallback)
-    let latitude = payload.latitude || payload.lat;
-    let longitude = payload.longitude || payload.lon || payload.lng;
+    // Priority:
+    // 1. Decoded Payload (Sensor-reported GPS)
+    // 2. Uplink Message Locations (Registry-set or other sources)
+    // 3. rx_metadata (Gateway location as fallback)
+
+    let latitude = payload.latitude || payload.lat || payload.gps_lat;
+    let longitude = payload.longitude || payload.lon || payload.lng || payload.gps_lng;
+
+    // Check TTN Location registry if not in payload
+    const locations = uplink_message?.locations;
+    if (!latitude && locations) {
+      // Check user-set location or other available sources
+      const locSource = locations.user || locations['frm-payload'] || Object.values(locations)[0];
+      if (locSource) {
+        latitude = (locSource as any).latitude;
+        longitude = (locSource as any).longitude;
+      }
+    }
+
     let gateway_id = null;
 
     if (rx_metadata && rx_metadata.length > 0) {
@@ -67,6 +82,7 @@ export default async function handler(req: any, res: any) {
 
       gateway_id = bestGw.gateway_ids?.gateway_id || bestGw.packet_id;
 
+      // Fallback to gateway location only if still NO individual coordinates found
       if (!latitude && bestGw.location) {
         latitude = bestGw.location.latitude;
         longitude = bestGw.location.longitude;
