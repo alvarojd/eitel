@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Layout from './components/Layout';
 import HexMap from './components/HexMap';
-import StatsPanel from './components/StatsPanel';
+import GeoMap from './components/GeoMap';
 import SensorDetail from './components/SensorDetail';
 import LegendPanel from './components/LegendPanel';
 import DeviceList from './components/DeviceList';
 import SettingsPanel from './components/SettingsPanel';
+import StatsPanel from './components/StatsPanel';
 import { getStats } from './services/mockDataService';
 import { fetchSensorData } from './services/ttnService';
 import { SensorData } from './types';
@@ -135,20 +136,28 @@ const App: React.FC = () => {
                 </p>
               </div>
             </div>
+          ) : activeTab === 'mapa' ? (
+            <GeoMap
+              sensors={sensors}
+              onSensorSelect={handleSensorSelect}
+              selectedSensorId={selectedSensorId}
+            />
+          ) : activeTab === 'alertas' || activeTab === 'dispositivos' ? (
+            <DeviceList
+              sensors={sensors}
+              onSensorSelect={handleSensorSelect}
+              activeTab={activeTab}
+            />
+          ) : activeTab === 'resumen' ? (
+            <HexMap
+              sensors={sensors}
+              onSensorSelect={handleSensorSelect}
+              selectedSensorId={selectedSensorId}
+            />
           ) : (
-            activeTab === 'resumen' ? (
-              <HexMap
-                sensors={sensors}
-                onSensorSelect={handleSensorSelect}
-                selectedSensorId={selectedSensorId}
-              />
-            ) : (
-              <DeviceList
-                sensors={sensors}
-                onSensorSelect={handleSensorSelect}
-                activeTab={activeTab}
-              />
-            )
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-slate-400">Página no encontrada</p>
+            </div>
           )}
 
           {activeTab === 'resumen' && (

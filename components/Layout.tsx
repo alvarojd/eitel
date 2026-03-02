@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Layers, Settings, Bell, Search } from 'lucide-react';
+import { Home, Layers, Settings, Bell, Search, MapPin } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -62,6 +62,13 @@ const Layout: React.FC<LayoutProps> = ({ children, sidebar, activeTab, onTabChan
             label="Resumen"
             active={activeTab === 'resumen'}
             onClick={() => onTabChange('resumen')}
+            isCollapsed={isSidebarCollapsed}
+          />
+          <NavItem
+            icon={<MapPin size={20} />}
+            label="Mapa"
+            active={activeTab === 'mapa'}
+            onClick={() => onTabChange('mapa')}
             isCollapsed={isSidebarCollapsed}
           />
           <NavItem
