@@ -33,14 +33,16 @@ const getHexPositions = (count: number): { q: number; r: number }[] => {
   return positions;
 };
 
-// Determine status based on actual sensor metrics
 const determineStatus = (temp: number, hum: number, co2: number, lastSeenStr: string): number => {
-  if (temp < 16) return 2; // FRIO_SEVERO
-  if (temp > 30) return 3; // CALOR_EXTREMO
-  if (temp < 18 && hum > 80) return 5; // RIESGO_MOHO
-  if (co2 > 1000) return 6; // AIRE_VICIADO
+  if (temp < 16) return 2; // Frio Severo
+  if (temp > 27) return 3; // Calor Extremo
+  if (co2 > 1500) return 4; // Atmosfera Nociva
+  if (hum > 70) return 5; // Riesgo Biologico
+  if (co2 >= 1000) return 6; // Aire Viciado
+  if (temp < 18) return 7; // Frio Moderado
+  if (hum < 30) return 8; // Aire Seco
 
-  return 9; // IDEAL
+  return 9; // Ideal
 };
 
 export const fetchSensorData = async (): Promise<SensorData[]> => {

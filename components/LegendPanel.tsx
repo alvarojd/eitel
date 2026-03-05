@@ -49,12 +49,12 @@ const LegendPanel = () => {
                 <LegendItem
                     color={STATUS_COLORS[6]}
                     label={STATUS_LABELS[6]}
-                    desc="CO2 > 1000 + T < 18"
+                    desc="CO2 >= 1000 ppm"
                 />
                 <LegendItem
                     color={STATUS_COLORS[7]}
                     label={STATUS_LABELS[7]}
-                    desc="T < 18°C (Pobreza leve)"
+                    desc="T < 18°C"
                 />
                 <LegendItem
                     color={STATUS_COLORS[8]}

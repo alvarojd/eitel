@@ -26,11 +26,17 @@ export const generateSensors = (): SensorData[] => {
       else if (rand > 0.90) estado_id = 2; // FRIO_SEVERO
       // 5% Critical Heat
       else if (rand > 0.85) estado_id = 3; // CALOR_EXTREMO
-      // 10% Mold Risk
+      // 2% Noxious Atmosphere
+      else if (rand > 0.83) estado_id = 4; // ATMOSFERA_NOCIVA
+      // 8% Mold Risk
       else if (rand > 0.75) estado_id = 5; // RIESGO_MOHO
       // 10% Bad Air
       else if (rand > 0.65) estado_id = 6; // AIRE_VICIADO
-      // 65% Ideal
+      // 5% Moderate Cold
+      else if (rand > 0.60) estado_id = 7; // FRIO_MODERADO
+      // 5% Dry Air
+      else if (rand > 0.55) estado_id = 8; // AIRE_SECO
+      // 55% Ideal
       else estado_id = 9; // IDEAL
 
 
@@ -44,15 +50,23 @@ export const generateSensors = (): SensorData[] => {
         case 2: // FRIO_SEVERO T < 16
           temperature = parseFloat((10 + Math.random() * 5).toFixed(1)); // 10-15
           break;
-        case 3: // CALOR_EXTREMO T > 30
-          temperature = parseFloat((31 + Math.random() * 5).toFixed(1)); // 31-36
+        case 3: // CALOR_EXTREMO T > 27
+          temperature = parseFloat((28 + Math.random() * 5).toFixed(1)); // 28-33
           break;
-        case 5: // RIESGO_MOHO: T < 18 + Hum > 80
-          temperature = parseFloat((12 + Math.random() * 5).toFixed(1)); // 12-17
-          humidity = Math.floor(81 + Math.random() * 19); // 81-100
+        case 4: // ATMOSFERA_NOCIVA: CO2 > 1500
+          co2 = Math.floor(1501 + Math.random() * 1000);
           break;
-        case 6: // AIRE_VICIADO: CO2 > 1000
-          co2 = Math.floor(1001 + Math.random() * 1000); // 1001-2000
+        case 5: // RIESGO_MOHO: Hum > 70
+          humidity = Math.floor(71 + Math.random() * 29); // 71-100
+          break;
+        case 6: // AIRE_VICIADO: CO2 >= 1000
+          co2 = Math.floor(1000 + Math.random() * 500); // 1000-1500
+          break;
+        case 7: // FRIO_MODERADO: T < 18
+          temperature = parseFloat((16 + Math.random() * 1.9).toFixed(1)); // 16-17.9
+          break;
+        case 8: // AIRE_SECO: Hum < 30
+          humidity = Math.floor(10 + Math.random() * 19); // 10-29
           break;
         case 1: // DESCONECTADO
           lastSeen = `${Math.floor(2 + Math.random() * 10)} horas`;

@@ -77,7 +77,7 @@ export default async function handler(req: any, res: any) {
       estado_id = 4; // Atmosfera Nociva
     } else if (humidity > 70) {
       estado_id = 5; // Riesgo Biologico
-    } else if (co2 > 1000 && temperature < 18) {
+    } else if (co2 >= 1000) {
       estado_id = 6; // Aire Viciado (Confinamiento)
     } else if (temperature < 18) {
       estado_id = 7; // Frio Moderado
