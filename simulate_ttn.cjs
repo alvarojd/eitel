@@ -1,6 +1,10 @@
 const fetch = require('node-fetch');
 
 const payload = {
+    end_device_ids: {
+        device_id: "eui-0004a30b00f310aa",
+        dev_eui: "0004A30B00F310AA"
+    },
     uplink_message: {
         decoded_payload: {
             "CO2": 563,

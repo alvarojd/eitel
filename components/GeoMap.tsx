@@ -145,7 +145,7 @@ const GeoMap: React.FC<GeoMapProps> = ({ sensors, onSensorSelect, selectedSensor
                         <Marker
                             key={sensor.id}
                             position={[sensor.latitude!, sensor.longitude!]}
-                            icon={createCustomIcon(sensor.status)}
+                            icon={createCustomIcon(sensor.estado_id)}
                             eventHandlers={{
                                 click: () => onSensorSelect(sensor)
                             }}
