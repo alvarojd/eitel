@@ -1,6 +1,6 @@
 import React from 'react';
 import { STATUS_LABELS, STATUS_COLORS } from '../constants';
-import { SensorStatus } from '../types';
+
 import { BatteryWarning } from 'lucide-react';
 
 const LegendItem = ({ color, label, desc }: { color: string, label: string, desc: string }) => (
@@ -24,57 +24,57 @@ const LegendPanel = () => {
                 {/* Red Group */}
                 <h4 className="text-[10px] font-bold text-rose-500/80 px-2.5 mb-2 mt-4">Crítico (Pobreza/Salud)</h4>
                 <LegendItem
-                    color={STATUS_COLORS[SensorStatus.FRIO_SEVERO]}
-                    label={STATUS_LABELS[SensorStatus.FRIO_SEVERO]}
-                    desc="T < 16°C + Presencia 1h"
+                    color={STATUS_COLORS[2]}
+                    label={STATUS_LABELS[2]}
+                    desc="T < 16°C"
                 />
                 <LegendItem
-                    color={STATUS_COLORS[SensorStatus.CALOR_EXTREMO]}
-                    label={STATUS_LABELS[SensorStatus.CALOR_EXTREMO]}
-                    desc="T > 27°C + Presencia 1h"
+                    color={STATUS_COLORS[3]}
+                    label={STATUS_LABELS[3]}
+                    desc="T > 27°C"
                 />
                 <LegendItem
-                    color={STATUS_COLORS[SensorStatus.ATMOSFERA_NOCIVA]}
-                    label={STATUS_LABELS[SensorStatus.ATMOSFERA_NOCIVA]}
-                    desc="CO2 > 1500 ppm + Presencia 2h"
+                    color={STATUS_COLORS[4]}
+                    label={STATUS_LABELS[4]}
+                    desc="CO2 > 1500 ppm"
                 />
 
                 {/* Orange Group */}
                 <h4 className="text-[10px] font-bold text-orange-500/80 px-2.5 mb-2 mt-4">Riesgo / Aviso</h4>
                 <LegendItem
-                    color={STATUS_COLORS[SensorStatus.RIESGO_MOHO]}
-                    label={STATUS_LABELS[SensorStatus.RIESGO_MOHO]}
-                    desc="Hum > 70% por 24h continuas"
+                    color={STATUS_COLORS[5]}
+                    label={STATUS_LABELS[5]}
+                    desc="Hum > 70%"
                 />
                 <LegendItem
-                    color={STATUS_COLORS[SensorStatus.AIRE_VICIADO]}
-                    label={STATUS_LABELS[SensorStatus.AIRE_VICIADO]}
-                    desc="CO2 > 1000 + T < 18 + Presencia 2h"
+                    color={STATUS_COLORS[6]}
+                    label={STATUS_LABELS[6]}
+                    desc="CO2 > 1000 + T < 18"
                 />
                 <LegendItem
-                    color={STATUS_COLORS[SensorStatus.FRIO_MODERADO]}
-                    label={STATUS_LABELS[SensorStatus.FRIO_MODERADO]}
+                    color={STATUS_COLORS[7]}
+                    label={STATUS_LABELS[7]}
                     desc="T < 18°C (Pobreza leve)"
                 />
                 <LegendItem
-                    color={STATUS_COLORS[SensorStatus.AIRE_SECO]}
-                    label={STATUS_LABELS[SensorStatus.AIRE_SECO]}
-                    desc="Hum < 30% + Presencia 1h"
+                    color={STATUS_COLORS[8]}
+                    label={STATUS_LABELS[8]}
+                    desc="Hum < 30%"
                 />
 
                 {/* Green Group */}
                 <h4 className="text-[10px] font-bold text-emerald-500/80 px-2.5 mb-2 mt-4">Ideal</h4>
                 <LegendItem
-                    color={STATUS_COLORS[SensorStatus.IDEAL]}
-                    label={STATUS_LABELS[SensorStatus.IDEAL]}
+                    color={STATUS_COLORS[9]}
+                    label={STATUS_LABELS[9]}
                     desc="Condiciones óptimas"
                 />
 
                 {/* Gray Group */}
                 <LegendItem
-                    color={STATUS_COLORS[SensorStatus.DESCONECTADO]}
-                    label={STATUS_LABELS[SensorStatus.DESCONECTADO]}
-                    desc="Sin señal reciente"
+                    color={STATUS_COLORS[1]}
+                    label={STATUS_LABELS[1]}
+                    desc="Sin señal en 2h"
                 />
             </div>
 

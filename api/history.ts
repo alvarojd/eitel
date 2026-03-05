@@ -13,12 +13,14 @@ export default async function handler(req: any, res: any) {
 
     try {
         // Fetch last 24 hours of measurements for this device
+        // Joining devices to allow search by either dev_eui or the user-friendly device_id
         const { rows } = await sql`
-      SELECT temperature, humidity, co2, created_at
-      FROM measurements
-      WHERE (UPPER(device_id) = UPPER(${deviceId}) OR UPPER(dev_eui) = UPPER(${deviceId}))
-      AND created_at > NOW() - INTERVAL '24 hours'
-      ORDER BY created_at ASC;
+      SELECT m.temperature, m.humidity, m.co2, m.created_at
+      FROM measurements m
+      JOIN devices d ON m.dev_eui = d.dev_eui
+      WHERE (UPPER(d.device_id) = UPPER(${deviceId}) OR UPPER(d.dev_eui) = UPPER(${deviceId}))
+      AND m.created_at > NOW() - INTERVAL '24 hours'
+      ORDER BY m.created_at ASC;
     `;
 
         // Map to a more friendly format for the chart

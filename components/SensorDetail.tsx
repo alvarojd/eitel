@@ -73,9 +73,9 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
       <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
         {/* Status Badge */}
         <div className="mb-4">
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-slate-900 border ${STATUS_TEXT_COLORS[sensor.status]} border-opacity-30`}>
-            <span className={`w-2 h-2 rounded-full mr-2 ${STATUS_BG_COLORS[sensor.status]}`}></span>
-            {STATUS_LABELS[sensor.status]}
+          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-slate-900 border ${STATUS_TEXT_COLORS[sensor.estado_id]} border-opacity-30`}>
+            <span className={`w-2 h-2 rounded-full mr-2 ${STATUS_BG_COLORS[sensor.estado_id]}`}></span>
+            {STATUS_LABELS[sensor.estado_id]}
           </span>
           <div className="flex items-center mt-3 text-xs text-slate-500">
             <Clock size={12} className="mr-1" /> Visto: {sensor.lastSeen}

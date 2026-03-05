@@ -1,4 +1,4 @@
-import { SensorData, SensorStatus, Stats } from '../types';
+import { SensorData, Stats } from '../types';
 
 // Helper to generate a hex map shape similar to the image
 export const generateSensors = (): SensorData[] => {
@@ -18,20 +18,20 @@ export const generateSensors = (): SensorData[] => {
 
       // Determine Status Logic based on probabilities (Environmental)
       const rand = Math.random();
-      let status: SensorStatus;
+      let estado_id: number;
 
       // 5% Disconnected
-      if (rand > 0.95) status = SensorStatus.DESCONECTADO;
+      if (rand > 0.95) estado_id = 1;
       // 5% Critical Cold
-      else if (rand > 0.90) status = SensorStatus.FRIO_SEVERO;
+      else if (rand > 0.90) estado_id = 2; // FRIO_SEVERO
       // 5% Critical Heat
-      else if (rand > 0.85) status = SensorStatus.CALOR_EXTREMO;
+      else if (rand > 0.85) estado_id = 3; // CALOR_EXTREMO
       // 10% Mold Risk
-      else if (rand > 0.75) status = SensorStatus.RIESGO_MOHO;
+      else if (rand > 0.75) estado_id = 5; // RIESGO_MOHO
       // 10% Bad Air
-      else if (rand > 0.65) status = SensorStatus.AIRE_VICIADO;
+      else if (rand > 0.65) estado_id = 6; // AIRE_VICIADO
       // 65% Ideal
-      else status = SensorStatus.IDEAL;
+      else estado_id = 9; // IDEAL
 
 
       // Generate Metrics consistent with Status
@@ -40,24 +40,24 @@ export const generateSensors = (): SensorData[] => {
       let co2 = 450;
       let lastSeen = 'Ahora mismo';
 
-      switch (status) {
-        case SensorStatus.FRIO_SEVERO: // T < 16
+      switch (estado_id) {
+        case 2: // FRIO_SEVERO T < 16
           temperature = parseFloat((10 + Math.random() * 5).toFixed(1)); // 10-15
           break;
-        case SensorStatus.CALOR_EXTREMO: // T > 30
+        case 3: // CALOR_EXTREMO T > 30
           temperature = parseFloat((31 + Math.random() * 5).toFixed(1)); // 31-36
           break;
-        case SensorStatus.RIESGO_MOHO: // T < 18 + Hum > 80
+        case 5: // RIESGO_MOHO: T < 18 + Hum > 80
           temperature = parseFloat((12 + Math.random() * 5).toFixed(1)); // 12-17
           humidity = Math.floor(81 + Math.random() * 19); // 81-100
           break;
-        case SensorStatus.AIRE_VICIADO: // CO2 > 1000
+        case 6: // AIRE_VICIADO: CO2 > 1000
           co2 = Math.floor(1001 + Math.random() * 1000); // 1001-2000
           break;
-        case SensorStatus.DESCONECTADO:
+        case 1: // DESCONECTADO
           lastSeen = `${Math.floor(2 + Math.random() * 10)} horas`;
           break;
-        case SensorStatus.IDEAL:
+        case 9: // IDEAL
         default:
           temperature = parseFloat((19 + Math.random() * 9).toFixed(1)); // 19-28
           humidity = Math.floor(30 + Math.random() * 40); // 30-70
@@ -68,9 +68,9 @@ export const generateSensors = (): SensorData[] => {
       // Independent Battery Logic
       // 15% chance of low battery if connected
       let battery = Math.floor(20 + Math.random() * 80); // Default healthy
-      if (status !== SensorStatus.DESCONECTADO && Math.random() > 0.85) {
+      if (estado_id !== 1 && Math.random() > 0.85) {
         battery = Math.floor(Math.random() * 19); // 0-19% (Low)
-      } else if (status === SensorStatus.DESCONECTADO) {
+      } else if (estado_id === 1) {
         battery = 0;
       }
 
@@ -79,12 +79,12 @@ export const generateSensors = (): SensorData[] => {
         name: `Sensor ${q}.${r}`,
         q,
         r,
-        status,
+        estado_id,
         battery,
         temperature,
         humidity,
         co2,
-        rssi: status === SensorStatus.DESCONECTADO ? 0 : -Math.floor(50 + Math.random() * 70),
+        rssi: estado_id === 1 ? 0 : -Math.floor(50 + Math.random() * 70),
         lastSeen,
         location: `Zona Q${q}R${r}`,
         latitude: parseFloat((40.4168 + (Math.random() * 0.1 - 0.05)).toFixed(6)), // Madrid center aprox
@@ -101,10 +101,10 @@ export const generateSensors = (): SensorData[] => {
 };
 
 export const getStats = (sensors: SensorData[]): Stats => {
-  const isRed = (s: SensorData) => [SensorStatus.FRIO_SEVERO, SensorStatus.CALOR_EXTREMO, SensorStatus.ATMOSFERA_NOCIVA].includes(s.status);
-  const isOrange = (s: SensorData) => [SensorStatus.RIESGO_MOHO, SensorStatus.AIRE_VICIADO, SensorStatus.FRIO_MODERADO, SensorStatus.AIRE_SECO, SensorStatus.AZUL].includes(s.status);
-  const isGreen = (s: SensorData) => s.status === SensorStatus.IDEAL;
-  const isOffline = (s: SensorData) => s.status === SensorStatus.DESCONECTADO;
+  const isRed = (s: SensorData) => [2, 3, 4].includes(s.estado_id);
+  const isOrange = (s: SensorData) => [5, 6, 7, 8].includes(s.estado_id);
+  const isGreen = (s: SensorData) => s.estado_id === 9;
+  const isOffline = (s: SensorData) => s.estado_id === 1;
 
   return {
     total: sensors.length,
@@ -112,6 +112,6 @@ export const getStats = (sensors: SensorData[]): Stats => {
     warning: sensors.filter(isOrange).length,
     ideal: sensors.filter(isGreen).length,
     offline: sensors.filter(isOffline).length,
-    lowBattery: sensors.filter(s => s.indicators?.lowBattery || (s.status !== SensorStatus.DESCONECTADO && s.battery < 20)).length
+    lowBattery: sensors.filter(s => s.indicators?.lowBattery || (s.estado_id !== 1 && s.battery < 20)).length
   };
 };

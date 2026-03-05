@@ -1,7 +1,7 @@
 import React from 'react';
-import { SensorData, SensorStatus } from '../types';
+import { SensorData } from '../types';
 import { Cpu, Battery, Signal, Clock, Calendar } from 'lucide-react';
-import { STATUS_COLORS } from '../constants';
+import { STATUS_COLORS, STATUS_LABELS } from '../constants';
 
 interface DeviceListProps {
     sensors: SensorData[];
@@ -25,14 +25,14 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect, active
         });
     };
 
-    const getStatusType = (status: SensorStatus, indicators?: any) => {
+    const getStatusType = (estado_id: number, indicators?: any) => {
         if (filter === 'bateria_baja' && indicators?.lowBattery) return 'bateria_baja';
         if (filter === 'ausencia' && indicators?.longTermNoOccupancy) return 'ausencia';
 
-        if ([SensorStatus.FRIO_SEVERO, SensorStatus.CALOR_EXTREMO, SensorStatus.ATMOSFERA_NOCIVA].includes(status)) return 'critico';
-        if ([SensorStatus.RIESGO_MOHO, SensorStatus.AIRE_VICIADO, SensorStatus.FRIO_MODERADO, SensorStatus.AIRE_SECO].includes(status)) return 'riesgo';
-        if (status === SensorStatus.IDEAL) return 'ideal';
-        if (status === SensorStatus.DESCONECTADO) return 'desconectado';
+        if ([2, 3, 4].includes(estado_id)) return 'critico';
+        if ([5, 6, 7, 8].includes(estado_id)) return 'riesgo';
+        if (estado_id === 9) return 'ideal';
+        if (estado_id === 1) return 'desconectado';
         return 'all';
     };
 
@@ -40,7 +40,7 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect, active
         if (filter === 'all') return true;
         if (filter === 'bateria_baja') return sensor.indicators?.lowBattery;
         if (filter === 'ausencia') return sensor.indicators?.longTermNoOccupancy;
-        return getStatusType(sensor.status) === filter;
+        return getStatusType(sensor.estado_id) === filter;
     });
 
     return (
@@ -101,9 +101,9 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect, active
                         >
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-3 overflow-hidden">
-                                    <div className={`p-2 rounded-lg shrink-0 ${STATUS_COLORS[sensor.status] === '#22c55e' ? 'bg-emerald-500/10 text-emerald-500' :
-                                        STATUS_COLORS[sensor.status] === '#ef4444' ? 'bg-rose-500/10 text-rose-500' :
-                                            STATUS_COLORS[sensor.status] === '#f97316' ? 'bg-orange-500/10 text-orange-500' :
+                                    <div className={`p-2 rounded-lg shrink-0 ${STATUS_COLORS[sensor.estado_id] === '#22c55e' ? 'bg-emerald-500/10 text-emerald-500' :
+                                        STATUS_COLORS[sensor.estado_id] === '#ef4444' ? 'bg-rose-500/10 text-rose-500' :
+                                            STATUS_COLORS[sensor.estado_id] === '#f97316' ? 'bg-orange-500/10 text-orange-500' :
                                                 'bg-slate-500/10 text-slate-500'
                                         }`}>
                                         <Cpu size={20} />
@@ -117,12 +117,12 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect, active
                                         </p>
                                     </div>
                                 </div>
-                                <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase shrink-0 ml-2 ${STATUS_COLORS[sensor.status] === '#22c55e' ? 'bg-emerald-500/20 text-emerald-400' :
-                                    STATUS_COLORS[sensor.status] === '#ef4444' ? 'bg-rose-500/20 text-rose-400' :
-                                        STATUS_COLORS[sensor.status] === '#f97316' ? 'bg-orange-500/20 text-orange-400' :
+                                <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase shrink-0 ml-2 ${STATUS_COLORS[sensor.estado_id] === '#22c55e' ? 'bg-emerald-500/20 text-emerald-400' :
+                                    STATUS_COLORS[sensor.estado_id] === '#ef4444' ? 'bg-rose-500/20 text-rose-400' :
+                                        STATUS_COLORS[sensor.estado_id] === '#f97316' ? 'bg-orange-500/20 text-orange-400' :
                                             'bg-slate-500/20 text-slate-400'
                                     }`}>
-                                    {sensor.status.replace(/_/g, ' ')}
+                                    {STATUS_LABELS[sensor.estado_id]}
                                 </div>
                             </div>
 

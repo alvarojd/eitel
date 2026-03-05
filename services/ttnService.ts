@@ -1,4 +1,4 @@
-import { SensorData, SensorStatus } from '../types';
+import { SensorData } from '../types';
 import { generateSensors } from './mockDataService';
 
 // Helper to generate hex coordinates in a spiral (BFS) to fill from center
@@ -34,13 +34,13 @@ const getHexPositions = (count: number): { q: number; r: number }[] => {
 };
 
 // Determine status based on actual sensor metrics
-const determineStatus = (temp: number, hum: number, co2: number, lastSeenStr: string): SensorStatus => {
-  if (temp < 16) return SensorStatus.FRIO_SEVERO;
-  if (temp > 30) return SensorStatus.CALOR_EXTREMO;
-  if (temp < 18 && hum > 80) return SensorStatus.RIESGO_MOHO;
-  if (co2 > 1000) return SensorStatus.AIRE_VICIADO;
+const determineStatus = (temp: number, hum: number, co2: number, lastSeenStr: string): number => {
+  if (temp < 16) return 2; // FRIO_SEVERO
+  if (temp > 30) return 3; // CALOR_EXTREMO
+  if (temp < 18 && hum > 80) return 5; // RIESGO_MOHO
+  if (co2 > 1000) return 6; // AIRE_VICIADO
 
-  return SensorStatus.IDEAL;
+  return 9; // IDEAL
 };
 
 export const fetchSensorData = async (): Promise<SensorData[]> => {
@@ -90,14 +90,14 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
       const r = coords[index]?.r || 0;
 
       // Use the status provided by the backend if available, otherwise calculate locally (fallback)
-      const status = device.status || determineStatus(device.temperature, device.humidity, device.co2, device.lastSeen);
+      const estado_id = device.estado_id !== undefined ? device.estado_id : determineStatus(device.temperature, device.humidity, device.co2, device.lastSeen);
 
       return {
         id: device.id,
         name: device.name || device.id,
         q,
         r,
-        status: status as SensorStatus,
+        estado_id: estado_id,
         battery: device.battery,
         temperature: device.temperature,
         humidity: device.humidity,

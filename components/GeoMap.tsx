@@ -2,7 +2,7 @@ import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { SensorData, SensorStatus } from '../types';
+import { SensorData } from '../types';
 import { STATUS_COLORS } from '../constants';
 
 // Fix Leaflet marker icons which are often broken in React setups
@@ -25,8 +25,8 @@ interface GeoMapProps {
 }
 
 // Function to create custom colored icons based on sensor status
-const createCustomIcon = (status: SensorStatus) => {
-    const color = STATUS_COLORS[status] || '#64748b';
+const createCustomIcon = (estado_id: number) => {
+    const color = STATUS_COLORS[estado_id] || '#64748b';
 
     // Create an SVG-based icon for the status
     const svgHtml = `
@@ -51,14 +51,14 @@ const createCustomIcon = (status: SensorStatus) => {
 const GeoMap: React.FC<GeoMapProps> = ({ sensors, onSensorSelect, selectedSensorId }) => {
     const [filter, setFilter] = React.useState<string>('all');
 
-    const getStatusType = (status: SensorStatus, indicators?: any) => {
+    const getStatusType = (estado_id: number, indicators?: any) => {
         if (filter === 'bateria_baja' && indicators?.lowBattery) return 'bateria_baja';
         if (filter === 'ausencia' && indicators?.longTermNoOccupancy) return 'ausencia';
 
-        if ([SensorStatus.FRIO_SEVERO, SensorStatus.CALOR_EXTREMO, SensorStatus.ATMOSFERA_NOCIVA].includes(status)) return 'critico';
-        if ([SensorStatus.RIESGO_MOHO, SensorStatus.AIRE_VICIADO, SensorStatus.FRIO_MODERADO, SensorStatus.AIRE_SECO].includes(status)) return 'riesgo';
-        if (status === SensorStatus.IDEAL) return 'ideal';
-        if (status === SensorStatus.DESCONECTADO) return 'desconectado';
+        if ([2, 3, 4].includes(estado_id)) return 'critico';
+        if ([5, 6, 7, 8].includes(estado_id)) return 'riesgo';
+        if (estado_id === 9) return 'ideal';
+        if (estado_id === 1) return 'desconectado';
         return 'all';
     };
 
@@ -69,7 +69,7 @@ const GeoMap: React.FC<GeoMapProps> = ({ sensors, onSensorSelect, selectedSensor
             if (filter === 'all') return true;
             if (filter === 'bateria_baja') return sensor.indicators?.lowBattery;
             if (filter === 'ausencia') return sensor.indicators?.longTermNoOccupancy;
-            return getStatusType(sensor.status) === filter;
+            return getStatusType(sensor.estado_id) === filter;
         });
     }, [sensors, filter]);
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stats, SensorStatus } from '../types';
+import { Stats } from '../types';
 import { STATUS_BG_COLORS } from '../constants';
 import { AlertOctagon, AlertTriangle, CheckCircle, BatteryWarning, WifiOff } from 'lucide-react';
 
@@ -37,21 +37,21 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
         count={stats.ideal}
         subtext="Parámetros óptimos"
         icon={<CheckCircle size={24} />}
-        bgClass={STATUS_BG_COLORS[SensorStatus.IDEAL]}
+        bgClass={STATUS_BG_COLORS[9]}
       />
       <StatCard
         label="Riesgo / Aviso"
         count={stats.warning}
         subtext="Moho, Aire o Frío"
         icon={<AlertTriangle size={24} />}
-        bgClass={STATUS_BG_COLORS[SensorStatus.RIESGO_MOHO]}
+        bgClass={STATUS_BG_COLORS[5]}
       />
       <StatCard
         label="Crítico"
         count={stats.critical}
         subtext="Salud / Emergencia"
         icon={<AlertOctagon size={24} />}
-        bgClass={STATUS_BG_COLORS[SensorStatus.FRIO_SEVERO]}
+        bgClass={STATUS_BG_COLORS[2]}
       />
       <StatCard
         label="Batería Baja"
@@ -64,9 +64,9 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
       <StatCard
         label="Desconectados"
         count={stats.offline}
-        subtext="Sin señal"
+        subtext="Sin señal 2h+"
         icon={<WifiOff size={24} />}
-        bgClass={STATUS_BG_COLORS[SensorStatus.DESCONECTADO]}
+        bgClass={STATUS_BG_COLORS[1]}
       />
     </div>
   );

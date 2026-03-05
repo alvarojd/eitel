@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { SensorData, SensorStatus } from '../types';
+import { SensorData } from '../types';
 import { HEX_SIZE, STATUS_COLORS } from '../constants';
 
 interface HexMapProps {
@@ -74,8 +74,8 @@ const HexMap: React.FC<HexMapProps> = ({ sensors, onSensorSelect, selectedSensor
           const { x, y } = hexToPixel(sensor.q, sensor.r);
           const isSelected = selectedSensorId === sensor.id;
           const isHovered = hoveredId === sensor.id;
-          const color = STATUS_COLORS[sensor.status] || '#3b82f6';
-          const isLowBattery = sensor.indicators?.lowBattery || (sensor.battery < 20 && sensor.status !== SensorStatus.DESCONECTADO);
+          const color = STATUS_COLORS[sensor.estado_id] || '#3b82f6';
+          const isLowBattery = sensor.indicators?.lowBattery || (sensor.battery < 20 && sensor.estado_id !== 1);
           const isNoOccupancy = sensor.indicators?.longTermNoOccupancy;
 
           return (
