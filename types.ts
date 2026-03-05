@@ -30,6 +30,7 @@ export interface Stats {
   ideal: number;    // Verde (9)
   offline: number;  // Gris (1)
   lowBattery: number; // Conteo independiente
+  absenceCount: number; // Ausencia prolongada
 }
 
 export interface TTNConfig {

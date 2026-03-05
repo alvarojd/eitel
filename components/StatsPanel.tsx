@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stats } from '../types';
 import { STATUS_BG_COLORS } from '../constants';
-import { AlertOctagon, AlertTriangle, CheckCircle, BatteryWarning, WifiOff } from 'lucide-react';
+import { AlertOctagon, AlertTriangle, CheckCircle, BatteryWarning, WifiOff, UserX } from 'lucide-react';
 
 interface StatsPanelProps {
   stats: Stats;
@@ -60,6 +60,14 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
         icon={<BatteryWarning size={24} />}
         bgClass="bg-blue-500"
         textClass="text-blue-500"
+      />
+      <StatCard
+        label="Ausencia Prolongada"
+        count={stats.absenceCount}
+        subtext="Sin presencia 48h+"
+        icon={<UserX size={24} />}
+        bgClass="bg-indigo-500"
+        textClass="text-indigo-400"
       />
       <StatCard
         label="Desconectados"

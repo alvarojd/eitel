@@ -126,6 +126,7 @@ export const getStats = (sensors: SensorData[]): Stats => {
     warning: sensors.filter(isOrange).length,
     ideal: sensors.filter(isGreen).length,
     offline: sensors.filter(isOffline).length,
-    lowBattery: sensors.filter(s => s.indicators?.lowBattery || (s.estado_id !== 1 && s.battery < 20)).length
+    lowBattery: sensors.filter(s => s.indicators?.lowBattery || (s.estado_id !== 1 && s.battery < 20)).length,
+    absenceCount: sensors.filter(s => s.indicators?.longTermNoOccupancy).length
   };
 };
