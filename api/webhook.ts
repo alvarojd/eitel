@@ -1,6 +1,6 @@
 import { sql } from '@vercel/postgres';
-import { determineStatus } from '../src/utils/statusEngine';
-import { VercelRequest, VercelResponse } from '../src/types';
+import { determineStatus } from '../src/utils/statusEngine.js';
+import { VercelRequest, VercelResponse } from '../src/types.js';
 
 // --- Sanitization Helpers ---
 function parseNumeric(value: unknown, fallback: number): number {

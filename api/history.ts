@@ -1,5 +1,5 @@
 import { sql } from '@vercel/postgres';
-import { VercelRequest, VercelResponse } from '../src/types';
+import { VercelRequest, VercelResponse } from '../src/types.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET') {
