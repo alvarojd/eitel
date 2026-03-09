@@ -2,8 +2,10 @@ import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { SensorData } from '../types';
-import { STATUS_COLORS } from '../constants';
+import { SensorData } from '../../types';
+import { STATUS_COLORS } from '../../constants';
+import StatusFilterBar from '../common/StatusFilterBar';
+import { filterSensors } from '../../utils/sensorFilters';
 
 // Fix Leaflet marker icons which are often broken in React setups
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -25,10 +27,16 @@ interface GeoMapProps {
 }
 
 // Function to create custom colored icons based on sensor status
-const createCustomIcon = (estado_id: number) => {
+// Cache to store custom icons and avoid re-calculating them on every render
+const iconCache = new Map<number, L.DivIcon>();
+
+const getCustomIcon = (estado_id: number) => {
+    if (iconCache.has(estado_id)) {
+        return iconCache.get(estado_id)!;
+    }
+
     const color = STATUS_COLORS[estado_id] || '#64748b';
 
-    // Create an SVG-based icon for the status
     const svgHtml = `
         <div style="
             background-color: ${color};
@@ -40,37 +48,24 @@ const createCustomIcon = (estado_id: number) => {
         "></div>
     `;
 
-    return L.divIcon({
+    const icon = L.divIcon({
         html: svgHtml,
         className: 'custom-sensor-marker',
         iconSize: [14, 14],
         iconAnchor: [7, 7]
     });
+
+    iconCache.set(estado_id, icon);
+    return icon;
 };
 
 const GeoMap: React.FC<GeoMapProps> = ({ sensors, onSensorSelect, selectedSensorId }) => {
     const [filter, setFilter] = React.useState<string>('all');
 
-    const getStatusType = (estado_id: number, indicators?: any) => {
-        if (filter === 'bateria_baja' && indicators?.lowBattery) return 'bateria_baja';
-        if (filter === 'ausencia' && indicators?.longTermNoOccupancy) return 'ausencia';
-
-        if ([2, 3, 4].includes(estado_id)) return 'critico';
-        if ([5, 6, 7, 8].includes(estado_id)) return 'riesgo';
-        if (estado_id === 9) return 'ideal';
-        if (estado_id === 1) return 'desconectado';
-        return 'all';
-    };
-
     // Filter sensors with coordinates AND matching the active filter
     const filteredSensors = React.useMemo(() => {
-        return sensors.filter(sensor => {
-            if (!sensor.latitude || !sensor.longitude) return false;
-            if (filter === 'all') return true;
-            if (filter === 'bateria_baja') return sensor.indicators?.lowBattery;
-            if (filter === 'ausencia') return sensor.indicators?.longTermNoOccupancy;
-            return getStatusType(sensor.estado_id) === filter;
-        });
+        const withCoords = sensors.filter(s => s.latitude && s.longitude);
+        return filterSensors(withCoords, filter);
     }, [sensors, filter]);
 
     // Default center (e.g., Madrid) if no sensors present
@@ -83,51 +78,7 @@ const GeoMap: React.FC<GeoMapProps> = ({ sensors, onSensorSelect, selectedSensor
 
     return (
         <div className="flex-1 w-full h-full flex flex-col rounded-2xl overflow-hidden border border-slate-700/50 shadow-inner z-0">
-            {/* Filter Bar */}
-            <div className="p-4 border-b border-slate-700/50 flex gap-2 overflow-x-auto no-scrollbar bg-slate-900/40 shrink-0">
-                <button
-                    onClick={() => setFilter('all')}
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${filter === 'all' ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
-                >
-                    Todos
-                </button>
-                <button
-                    onClick={() => setFilter('critico')}
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${filter === 'critico' ? 'bg-rose-600 text-white' : 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20'}`}
-                >
-                    Crítico
-                </button>
-                <button
-                    onClick={() => setFilter('riesgo')}
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${filter === 'riesgo' ? 'bg-orange-600 text-white' : 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20'}`}
-                >
-                    Riesgo / Aviso
-                </button>
-                <button
-                    onClick={() => setFilter('ideal')}
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${filter === 'ideal' ? 'bg-emerald-600 text-white' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'}`}
-                >
-                    Situación Ideal
-                </button>
-                <button
-                    onClick={() => setFilter('bateria_baja')}
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${filter === 'bateria_baja' ? 'bg-blue-600 text-white' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20'}`}
-                >
-                    Batería Baja
-                </button>
-                <button
-                    onClick={() => setFilter('ausencia')}
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${filter === 'ausencia' ? 'bg-slate-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
-                >
-                    Ausencia Prolongada
-                </button>
-                <button
-                    onClick={() => setFilter('desconectado')}
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${filter === 'desconectado' ? 'bg-slate-600 text-white' : 'bg-slate-500/10 text-slate-500 hover:bg-slate-500/20'}`}
-                >
-                    Desconectado
-                </button>
-            </div>
+            <StatusFilterBar activeFilter={filter} onFilterChange={setFilter} />
 
             <div className="flex-1 relative">
                 <MapContainer
@@ -145,7 +96,7 @@ const GeoMap: React.FC<GeoMapProps> = ({ sensors, onSensorSelect, selectedSensor
                         <Marker
                             key={sensor.id}
                             position={[sensor.latitude!, sensor.longitude!]}
-                            icon={createCustomIcon(sensor.estado_id)}
+                            icon={getCustomIcon(sensor.estado_id)}
                             eventHandlers={{
                                 click: () => onSensorSelect(sensor)
                             }}
@@ -175,25 +126,6 @@ const GeoMap: React.FC<GeoMapProps> = ({ sensors, onSensorSelect, selectedSensor
                 </div>
             </div>
 
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-                    background: #0f172a !important;
-                    color: white !important;
-                    border: 1px solid #334155;
-                    padding: 0 !important;
-                }
-                .leaflet-popup-content {
-                    margin: 0 !important;
-                    width: auto !important;
-                    max-width: 150px !important;
-                    white-space: normal !important;
-                    word-wrap: break-word !important;
-                }
-                .leaflet-container {
-                    font-family: inherit;
-                }
-            `}} />
         </div>
     );
 };

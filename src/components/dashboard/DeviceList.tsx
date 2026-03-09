@@ -1,7 +1,9 @@
 import React from 'react';
-import { SensorData } from '../types';
+import { SensorData } from '../../types';
 import { Cpu, Battery, Signal, Clock, Calendar } from 'lucide-react';
-import { STATUS_COLORS, STATUS_LABELS } from '../constants';
+import { STATUS_COLORS, STATUS_LABELS } from '../../constants';
+import StatusFilterBar from '../common/StatusFilterBar';
+import { filterSensors } from '../../utils/sensorFilters';
 
 interface DeviceListProps {
     sensors: SensorData[];
@@ -13,83 +15,11 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect, active
     const [filter, setFilter] = React.useState<string>('all');
     const isAlertsView = activeTab === 'alertas';
 
-    const formatDate = (dateStr?: string) => {
-        if (!dateStr) return 'Desconocido';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
-    const getStatusType = (estado_id: number, indicators?: any) => {
-        if (filter === 'bateria_baja' && indicators?.lowBattery) return 'bateria_baja';
-        if (filter === 'ausencia' && indicators?.longTermNoOccupancy) return 'ausencia';
-
-        if ([2, 3, 4].includes(estado_id)) return 'critico';
-        if ([5, 6, 7, 8].includes(estado_id)) return 'riesgo';
-        if (estado_id === 9) return 'ideal';
-        if (estado_id === 1) return 'desconectado';
-        return 'all';
-    };
-
-    const filteredSensors = sensors.filter(sensor => {
-        if (filter === 'all') return true;
-        if (filter === 'bateria_baja') return sensor.indicators?.lowBattery;
-        if (filter === 'ausencia') return sensor.indicators?.longTermNoOccupancy;
-        return getStatusType(sensor.estado_id) === filter;
-    });
+    const filteredSensors = filterSensors(sensors, filter);
 
     return (
         <div className="flex-1 flex flex-col min-h-0">
-            {/* Filter Bar */}
-            <div className="p-4 border-b border-slate-700/50 flex gap-2 overflow-x-auto no-scrollbar bg-slate-900/10">
-                <button
-                    onClick={() => setFilter('all')}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'all' ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
-                >
-                    Todos
-                </button>
-                <button
-                    onClick={() => setFilter('critico')}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'critico' ? 'bg-rose-600 text-white' : 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20'}`}
-                >
-                    Crítico
-                </button>
-                <button
-                    onClick={() => setFilter('riesgo')}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'riesgo' ? 'bg-orange-600 text-white' : 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20'}`}
-                >
-                    Riesgo / Aviso
-                </button>
-                <button
-                    onClick={() => setFilter('ideal')}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'ideal' ? 'bg-emerald-600 text-white' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'}`}
-                >
-                    Situación Ideal
-                </button>
-                <button
-                    onClick={() => setFilter('bateria_baja')}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'bateria_baja' ? 'bg-blue-600 text-white' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20'}`}
-                >
-                    Batería Baja
-                </button>
-                <button
-                    onClick={() => setFilter('ausencia')}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'ausencia' ? 'bg-slate-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
-                >
-                    Ausencia Prolongada
-                </button>
-                <button
-                    onClick={() => setFilter('desconectado')}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === 'desconectado' ? 'bg-slate-600 text-white' : 'bg-slate-500/10 text-slate-500 hover:bg-slate-500/20'}`}
-                >
-                    Desconectado
-                </button>
-            </div>
+            <StatusFilterBar activeFilter={filter} onFilterChange={setFilter} />
 
             <div className="flex-1 overflow-auto p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

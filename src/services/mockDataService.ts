@@ -1,4 +1,5 @@
 import { SensorData, Stats } from '../types';
+import { EstadoId } from '../utils/statusEngine';
 
 // Helper to generate a hex map shape similar to the image
 export const generateSensors = (): SensorData[] => {
@@ -21,23 +22,23 @@ export const generateSensors = (): SensorData[] => {
       let estado_id: number;
 
       // 5% Disconnected
-      if (rand > 0.95) estado_id = 1;
+      if (rand > 0.95) estado_id = EstadoId.DESCONECTADO;
       // 5% Critical Cold
-      else if (rand > 0.90) estado_id = 2; // FRIO_SEVERO
+      else if (rand > 0.90) estado_id = EstadoId.FRIO_SEVERO;
       // 5% Critical Heat
-      else if (rand > 0.85) estado_id = 3; // CALOR_EXTREMO
+      else if (rand > 0.85) estado_id = EstadoId.CALOR_EXTREMO;
       // 2% Noxious Atmosphere
-      else if (rand > 0.83) estado_id = 4; // ATMOSFERA_NOCIVA
+      else if (rand > 0.83) estado_id = EstadoId.ATMOSFERA_NOCIVA;
       // 8% Mold Risk
-      else if (rand > 0.75) estado_id = 5; // RIESGO_MOHO
+      else if (rand > 0.75) estado_id = EstadoId.RIESGO_MOHO;
       // 10% Bad Air
-      else if (rand > 0.65) estado_id = 6; // AIRE_VICIADO
+      else if (rand > 0.65) estado_id = EstadoId.AIRE_VICIADO;
       // 5% Moderate Cold
-      else if (rand > 0.60) estado_id = 7; // FRIO_MODERADO
+      else if (rand > 0.60) estado_id = EstadoId.FRIO_MODERADO;
       // 5% Dry Air
-      else if (rand > 0.55) estado_id = 8; // AIRE_SECO
+      else if (rand > 0.55) estado_id = EstadoId.AIRE_SECO;
       // 55% Ideal
-      else estado_id = 9; // IDEAL
+      else estado_id = EstadoId.IDEAL;
 
 
       // Generate Metrics consistent with Status
@@ -119,6 +120,11 @@ export const getStats = (sensors: SensorData[]): Stats => {
   const isOrange = (s: SensorData) => [5, 6, 7, 8].includes(s.estado_id);
   const isGreen = (s: SensorData) => s.estado_id === 9;
   const isOffline = (s: SensorData) => s.estado_id === 1;
+  
+  const connectedSensors = sensors.filter(s => s.estado_id !== 1);
+  const avgTemp = connectedSensors.length > 0
+    ? connectedSensors.reduce((acc, s) => acc + s.temperature, 0) / connectedSensors.length
+    : 0;
 
   return {
     total: sensors.length,
@@ -127,6 +133,8 @@ export const getStats = (sensors: SensorData[]): Stats => {
     ideal: sensors.filter(isGreen).length,
     offline: sensors.filter(isOffline).length,
     lowBattery: sensors.filter(s => s.indicators?.lowBattery || (s.estado_id !== 1 && s.battery < 20)).length,
-    absenceCount: sensors.filter(s => s.indicators?.longTermNoOccupancy).length
+    absenceCount: sensors.filter(s => s.indicators?.longTermNoOccupancy).length,
+    avgTemp: parseFloat(avgTemp.toFixed(1)),
+    uptime: 99.8
   };
 };

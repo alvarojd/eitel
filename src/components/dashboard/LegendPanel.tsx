@@ -1,5 +1,5 @@
-import React from 'react';
-import { STATUS_LABELS, STATUS_COLORS } from '../constants';
+import { STATUS_LABELS, STATUS_COLORS } from '../../constants';
+import { Stats } from '../../types';
 
 import { BatteryWarning } from 'lucide-react';
 
@@ -15,7 +15,7 @@ const LegendItem = ({ color, label, desc }: { color: string, label: string, desc
     </div>
 );
 
-const LegendPanel = () => {
+const LegendPanel = ({ stats }: { stats: Stats }) => {
     return (
         <div className="h-full flex flex-col p-4 bg-slate-800 overflow-y-auto custom-scrollbar">
             <h3 className="text-xs font-bold text-slate-400 tracking-widest mb-4 mt-1">Estados del Sensor</h3>
@@ -109,9 +109,9 @@ const LegendPanel = () => {
             <div className="border-t border-slate-700 my-2 pt-4">
                 <h3 className="text-xs font-bold text-slate-400 tracking-widest mb-3">Estadísticas Rápidas</h3>
                 <div className="text-xs text-slate-400 space-y-2">
-                    <p>Total Nodos: <span className="text-white font-mono float-right">156</span></p>
-                    <p>Uptime: <span className="text-green-400 font-mono float-right">99.8%</span></p>
-                    <p>Temp Prom: <span className="text-white font-mono float-right">21.4°C</span></p>
+                    <p>Total Nodos: <span className="text-white font-mono float-right">{stats.total}</span></p>
+                    <p>Uptime: <span className="text-green-400 font-mono float-right">{stats.uptime}%</span></p>
+                    <p>Temp Prom: <span className="text-white font-mono float-right">{stats.avgTemp}°C</span></p>
                 </div>
             </div>
         </div>

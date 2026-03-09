@@ -1,3 +1,11 @@
+export enum Tab {
+  RESUMEN = 'resumen',
+  MAPA = 'mapa',
+  DISPOSITIVOS = 'dispositivos',
+  ALERTAS = 'alertas',
+  CONFIGURACION = 'configuracion'
+}
+
 export interface SensorData {
   id: string;
   name: string;
@@ -31,6 +39,8 @@ export interface Stats {
   offline: number;  // Gris (1)
   lowBattery: number; // Conteo independiente
   absenceCount: number; // Ausencia prolongada
+  avgTemp?: number;
+  uptime?: number;
 }
 
 export interface TTNConfig {
@@ -38,4 +48,26 @@ export interface TTNConfig {
   apiKey: string;
   region: string;
   useSimulatedData?: boolean;
+}
+
+export interface HistoryDataPoint {
+  time: string;
+  value: number;
+  humidity: number;
+  co2: number;
+  timestamp: string;
+}
+
+// Minimal types for Vercel Serverless Functions to avoid 'any'
+export interface VercelRequest {
+  method?: string;
+  body?: any;
+  query: { [key: string]: string | string[] };
+  headers: { [key: string]: string | string[] | undefined };
+}
+
+export interface VercelResponse {
+  status: (code: number) => VercelResponse;
+  json: (data: any) => VercelResponse;
+  setHeader: (name: string, value: string | number | readonly string[]) => VercelResponse;
 }

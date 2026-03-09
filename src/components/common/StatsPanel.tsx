@@ -1,6 +1,6 @@
 import React from 'react';
-import { Stats } from '../types';
-import { STATUS_BG_COLORS } from '../constants';
+import { Stats } from '../../types';
+import { STATUS_BG_COLORS } from '../../constants';
 import { AlertOctagon, AlertTriangle, CheckCircle, BatteryWarning, WifiOff, UserX } from 'lucide-react';
 
 interface StatsPanelProps {

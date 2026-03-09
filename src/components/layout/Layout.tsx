@@ -1,11 +1,14 @@
 import React from 'react';
 import { Home, Layers, Settings, Bell, Search, MapPin } from 'lucide-react';
+import { Tab } from '../../types';
 
 interface LayoutProps {
   children: React.ReactNode;
   sidebar: React.ReactNode;
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+  activeTab: Tab;
+  onTabChange: (tab: Tab) => void;
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
 }
 
 const NavItem = ({ icon, label, active = false, onClick, isCollapsed }: { icon: React.ReactNode, label: string, active?: boolean, onClick: () => void, isCollapsed: boolean }) => (
@@ -18,7 +21,14 @@ const NavItem = ({ icon, label, active = false, onClick, isCollapsed }: { icon: 
   </div>
 );
 
-const Layout: React.FC<LayoutProps> = ({ children, sidebar, activeTab, onTabChange }) => {
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  sidebar, 
+  activeTab, 
+  onTabChange,
+  searchTerm,
+  onSearchChange
+}) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
 
   // Auto-collapse on small screens on initial load
@@ -60,36 +70,36 @@ const Layout: React.FC<LayoutProps> = ({ children, sidebar, activeTab, onTabChan
           <NavItem
             icon={<Home size={20} />}
             label="Resumen"
-            active={activeTab === 'resumen'}
-            onClick={() => onTabChange('resumen')}
+            active={activeTab === Tab.RESUMEN}
+            onClick={() => onTabChange(Tab.RESUMEN)}
             isCollapsed={isSidebarCollapsed}
           />
           <NavItem
             icon={<MapPin size={20} />}
             label="Mapa"
-            active={activeTab === 'mapa'}
-            onClick={() => onTabChange('mapa')}
+            active={activeTab === Tab.MAPA}
+            onClick={() => onTabChange(Tab.MAPA)}
             isCollapsed={isSidebarCollapsed}
           />
           <NavItem
             icon={<Layers size={20} />}
             label="Dispositivos"
-            active={activeTab === 'dispositivos'}
-            onClick={() => onTabChange('dispositivos')}
+            active={activeTab === Tab.DISPOSITIVOS}
+            onClick={() => onTabChange(Tab.DISPOSITIVOS)}
             isCollapsed={isSidebarCollapsed}
           />
           <NavItem
             icon={<Bell size={20} />}
             label="Alertas"
-            active={activeTab === 'alertas'}
-            onClick={() => onTabChange('alertas')}
+            active={activeTab === Tab.ALERTAS}
+            onClick={() => onTabChange(Tab.ALERTAS)}
             isCollapsed={isSidebarCollapsed}
           />
           <NavItem
             icon={<Settings size={20} />}
             label="Configuración"
-            active={activeTab === 'configuracion'}
-            onClick={() => onTabChange('configuracion')}
+            active={activeTab === Tab.CONFIGURACION}
+            onClick={() => onTabChange(Tab.CONFIGURACION)}
             isCollapsed={isSidebarCollapsed}
           />
         </div>
@@ -113,6 +123,8 @@ const Layout: React.FC<LayoutProps> = ({ children, sidebar, activeTab, onTabChan
               <input
                 type="text"
                 placeholder="Buscar sensor..."
+                value={searchTerm}
+                onChange={(e) => onSearchChange(e.target.value)}
                 className="bg-slate-800 text-sm text-white pl-9 pr-4 py-1.5 rounded-full border border-slate-700 focus:outline-none focus:border-sky-500 transition-colors w-40 lg:w-64"
               />
             </div>

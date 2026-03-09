@@ -1,6 +1,22 @@
 import { sql } from '@vercel/postgres';
+import { determineStatus } from '../src/utils/statusEngine';
+import { VercelRequest, VercelResponse } from '../src/types';
 
-export default async function handler(req: any, res: any) {
+// --- Sanitization Helpers ---
+function parseNumeric(value: unknown, fallback: number): number {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+}
+
+function clamp(val: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, val));
+}
+
+function sanitizeString(value: unknown, maxLength: number = 255): string {
+  return String(value ?? '').slice(0, maxLength);
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -12,18 +28,19 @@ export default async function handler(req: any, res: any) {
     const rx_metadata = uplink_message?.rx_metadata;
     const received_at = uplink_message?.received_at || new Date().toISOString();
 
-    const device_id = (end_device_ids?.device_id || payload?.device_id)?.toUpperCase();
-    const dev_eui = (end_device_ids?.dev_eui || '').toUpperCase();
-    const name = end_device_ids?.device_id;
+    const device_id = sanitizeString(end_device_ids?.device_id || payload?.device_id).toUpperCase();
+    const dev_eui = sanitizeString(end_device_ids?.dev_eui).toUpperCase();
+    const name = sanitizeString(end_device_ids?.device_id);
 
     if (!device_id || !payload || !dev_eui) {
       console.warn('Missing device_id, dev_eui or payload', req.body);
       return res.status(400).json({ error: 'Invalid payload: missing dev_eui or decoded_payload' });
     }
 
-    const temperature = parseFloat(payload.temperature) || 0;
-    const humidity = parseFloat(payload.humidity) || 0;
-    const co2 = parseInt(payload.CO2) || 0;
+    // Sanitized & clamped to sensor-realistic ranges
+    const temperature = clamp(parseNumeric(payload.temperature, 0), -40, 80);
+    const humidity    = clamp(parseNumeric(payload.humidity, 0), 0, 100);
+    const co2         = clamp(Math.round(parseNumeric(payload.CO2, 0)), 0, 10000);
     const presence = payload.presence === true;
 
     // Handle Coordinates and Gateway ID
@@ -66,26 +83,8 @@ export default async function handler(req: any, res: any) {
       battery = Math.min(100, Math.max(0, Math.round(payload.battery)));
     }
 
-    // 2. Calculate estado_id based on user requirements (ignoring 1 - Offline)
-    let estado_id = 0; // Default: Otro estado
-
-    if (temperature < 16) {
-      estado_id = 2; // Frio Severo
-    } else if (temperature > 27) {
-      estado_id = 3; // Calor Extremo
-    } else if (co2 > 1500) {
-      estado_id = 4; // Atmosfera Nociva
-    } else if (humidity > 70) {
-      estado_id = 5; // Riesgo Biologico
-    } else if (co2 >= 1000) {
-      estado_id = 6; // Aire Viciado (Confinamiento)
-    } else if (temperature < 18) {
-      estado_id = 7; // Frio Moderado
-    } else if (humidity < 30) {
-      estado_id = 8; // Aire Seco
-    } else if (temperature >= 18 && temperature <= 27 && humidity >= 30 && humidity <= 70 && co2 < 1000) {
-      estado_id = 9; // Situacion ideal (verificando CO2 < 1000 en lugar de > 1000)
-    }
+    // 2. Calculate estado_id using centralized status engine
+    const estado_id = determineStatus({ temperature, humidity, co2 });
 
     // 3. Database Updates
     // A. UPSERT context into `devices` table
@@ -109,8 +108,14 @@ export default async function handler(req: any, res: any) {
     `;
 
     return res.status(200).json({ success: true });
-  } catch (error: any) {
-    console.error('Database Error:', error);
-    return res.status(500).json({ error: error.message || 'Internal Database Error' });
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error('Database Error:', err);
+
+    const isDev = process.env.NODE_ENV === 'development';
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      ...(isDev && { message: err.message, stack: err.stack }),
+    });
   }
 } // NOTE: End of webhook handler

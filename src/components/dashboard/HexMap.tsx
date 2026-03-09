@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { SensorData } from '../types';
-import { HEX_SIZE, STATUS_COLORS } from '../constants';
+import { SensorData } from '../../types';
+import { HEX_SIZE, STATUS_COLORS } from '../../constants';
 
 interface HexMapProps {
   sensors: SensorData[];

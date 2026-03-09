@@ -1,11 +1,12 @@
 import { sql } from '@vercel/postgres';
+import { VercelRequest, VercelResponse } from '../src/types';
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { deviceId } = req.query;
+    const deviceId = String(req.query.deviceId || '');
 
     if (!deviceId) {
         return res.status(400).json({ error: 'Missing deviceId parameter' });
@@ -33,8 +34,14 @@ export default async function handler(req: any, res: any) {
         }));
 
         return res.status(200).json(history);
-    } catch (error: any) {
-        console.error('Database Error:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+    } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        console.error('Database Error:', err);
+
+        const isDev = process.env.NODE_ENV === 'development';
+        return res.status(500).json({
+            error: 'Internal Server Error',
+            ...(isDev && { message: err.message, stack: err.stack }),
+        });
     }
 }

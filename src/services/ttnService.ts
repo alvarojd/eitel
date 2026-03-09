@@ -1,5 +1,7 @@
 import { SensorData } from '../types';
 import { generateSensors } from './mockDataService';
+import { determineStatus } from '../utils/statusEngine';
+import { isLocalEnvironment } from '../utils/environment';
 
 // Helper to generate hex coordinates in a spiral (BFS) to fill from center
 const getHexPositions = (count: number): { q: number; r: number }[] => {
@@ -33,30 +35,12 @@ const getHexPositions = (count: number): { q: number; r: number }[] => {
   return positions;
 };
 
-const determineStatus = (temp: number, hum: number, co2: number, lastSeenStr: string): number => {
-  if (temp < 16) return 2; // Frio Severo
-  if (temp > 27) return 3; // Calor Extremo
-  if (co2 > 1500) return 4; // Atmosfera Nociva
-  if (hum > 70) return 5; // Riesgo Biologico
-  if (co2 >= 1000) return 6; // Aire Viciado
-  if (temp < 18) return 7; // Frio Moderado
-  if (hum < 30) return 8; // Aire Seco
 
-  return 9; // Ideal
-};
 
 export const fetchSensorData = async (): Promise<SensorData[]> => {
-  // Automatically use mock data in local development
-  const isLocal = typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname === '0.0.0.0' ||
-      window.location.hostname.includes('192.168.'));
+  const isLocal = isLocalEnvironment();
 
-  // Use Vite environment flag if available as backup
-  const isDev = (import.meta as any).env?.DEV;
-
-  if (isLocal || isDev) {
+  if (isLocal) {
     console.log("Environment: Local/Dev. Using simulated data.");
     return generateSensors();
   }
@@ -92,7 +76,7 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
       const r = coords[index]?.r || 0;
 
       // Use the status provided by the backend if available, otherwise calculate locally (fallback)
-      const estado_id = device.estado_id !== undefined ? device.estado_id : determineStatus(device.temperature, device.humidity, device.co2, device.lastSeen);
+      const estado_id = device.estado_id !== undefined ? device.estado_id : determineStatus({ temperature: device.temperature, humidity: device.humidity, co2: device.co2 });
 
       return {
         id: device.id,

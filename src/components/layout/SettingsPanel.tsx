@@ -1,10 +1,9 @@
 import React from 'react';
 import { Database, PlayCircle, ShieldCheck, AlertCircle } from 'lucide-react';
+import { isLocalEnvironment } from '../../utils/environment';
 
 const SettingsPanel: React.FC = () => {
-    const isLocal = typeof window !== 'undefined' &&
-        (window.location.hostname === 'localhost' ||
-            window.location.hostname === '127.0.0.1');
+    const isLocal = isLocalEnvironment();
 
     return (
         <div className="h-full bg-slate-800 flex flex-col border-l border-slate-700 shadow-2xl w-full">

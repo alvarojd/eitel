@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres';
+import { VercelRequest, VercelResponse } from '../src/types';
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -76,12 +77,14 @@ export default async function handler(req: any, res: any) {
     res.setHeader('Cache-Control', 'no-store, max-age=0');
     return res.status(200).json(formattedData);
 
-  } catch (error: any) {
-    console.error('CRITICAL Database Error:', error);
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error('CRITICAL Database Error:', err);
+
+    const isDev = process.env.NODE_ENV === 'development';
     return res.status(500).json({
-      error: 'Data source error',
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: 'Internal Server Error',
+      ...(isDev && { message: err.message, stack: err.stack }),
     });
   }
 }

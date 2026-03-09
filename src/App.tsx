@@ -1,29 +1,26 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import Layout from './components/Layout';
-import HexMap from './components/HexMap';
-import GeoMap from './components/GeoMap';
-import SensorDetail from './components/SensorDetail';
-import LegendPanel from './components/LegendPanel';
-import DeviceList from './components/DeviceList';
-import SettingsPanel from './components/SettingsPanel';
-import StatsPanel from './components/StatsPanel';
+import Layout from './components/layout/Layout';
+import HexMap from './components/dashboard/HexMap';
+import GeoMap from './components/map/GeoMap';
+import SensorDetail from './components/dashboard/SensorDetail';
+import LegendPanel from './components/dashboard/LegendPanel';
+import DeviceList from './components/dashboard/DeviceList';
+import SettingsPanel from './components/layout/SettingsPanel';
+import StatsPanel from './components/common/StatsPanel';
 import { getStats } from './services/mockDataService';
 import { fetchSensorData } from './services/ttnService';
-import { SensorData } from './types';
+import { SensorData, Tab } from './types';
+import { isLocalEnvironment } from './utils/environment';
 import { Loader2, Database, ShieldCheck, PlayCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [sensors, setSensors] = useState<SensorData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('resumen');
+  const [activeTab, setActiveTab] = useState<Tab>(Tab.RESUMEN);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Environment detection helper
-  const isLocal = typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname === '0.0.0.0' ||
-      window.location.hostname.includes('192.168.'));
+  const isLocal = isLocalEnvironment();
 
   useEffect(() => {
     const loadData = async () => {
@@ -44,6 +41,16 @@ const App: React.FC = () => {
 
   const stats = useMemo(() => getStats(sensors), [sensors]);
 
+  const filteredSensors = useMemo(() => {
+    if (!searchTerm) return sensors;
+    const lowerSearch = searchTerm.toLowerCase();
+    return sensors.filter(s => 
+      (s.name || '').toLowerCase().includes(lowerSearch) || 
+      (s.devEui || '').toLowerCase().includes(lowerSearch) ||
+      (s.id || '').toLowerCase().includes(lowerSearch)
+    );
+  }, [sensors, searchTerm]);
+
   const selectedSensor = useMemo(() =>
     sensors.find(s => s.id === selectedSensorId) || null,
     [sensors, selectedSensorId]);
@@ -57,7 +64,7 @@ const App: React.FC = () => {
   };
 
   const renderSidebar = () => {
-    if (activeTab === 'configuracion') {
+    if (activeTab === Tab.CONFIGURACION) {
       return (
         <SettingsPanel />
       );
@@ -67,14 +74,16 @@ const App: React.FC = () => {
       return <SensorDetail sensor={selectedSensor} isSimulated={isLocal} onClose={handleCloseDetail} />;
     }
 
-    return <LegendPanel />;
+    return <LegendPanel stats={stats} />;
   };
 
   return (
     <Layout
       activeTab={activeTab}
-      onTabChange={setActiveTab}
+      onTabChange={(tab) => setActiveTab(tab as Tab)}
       sidebar={renderSidebar()}
+      searchTerm={searchTerm}
+      onSearchChange={setSearchTerm}
     >
       <div className="flex flex-col h-full">
         {/* Top Summary Stats */}
@@ -136,21 +145,21 @@ const App: React.FC = () => {
                 </p>
               </div>
             </div>
-          ) : activeTab === 'mapa' ? (
+          ) : activeTab === Tab.MAPA ? (
             <GeoMap
-              sensors={sensors}
+              sensors={filteredSensors}
               onSensorSelect={handleSensorSelect}
               selectedSensorId={selectedSensorId}
             />
-          ) : activeTab === 'alertas' || activeTab === 'dispositivos' ? (
+          ) : (activeTab === Tab.ALERTAS || activeTab === Tab.DISPOSITIVOS) ? (
             <DeviceList
-              sensors={sensors}
+              sensors={filteredSensors}
               onSensorSelect={handleSensorSelect}
               activeTab={activeTab}
             />
-          ) : activeTab === 'resumen' ? (
+          ) : activeTab === Tab.RESUMEN ? (
             <HexMap
-              sensors={sensors}
+              sensors={filteredSensors}
               onSensorSelect={handleSensorSelect}
               selectedSensorId={selectedSensorId}
             />
@@ -160,7 +169,7 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'resumen' && (
+          {activeTab === Tab.RESUMEN && (
             <div className="absolute bottom-6 right-6 flex flex-col gap-2">
               <button className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-white hover:bg-slate-700 border border-slate-600 shadow-lg font-bold text-xl transition-colors">+</button>
               <button className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-white hover:bg-slate-700 border border-slate-600 shadow-lg font-bold text-xl transition-colors">-</button>

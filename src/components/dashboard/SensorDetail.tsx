@@ -1,9 +1,9 @@
 import React from 'react';
-import { SensorData } from '../types';
-import { STATUS_TEXT_COLORS, STATUS_BG_COLORS, STATUS_LABELS } from '../constants';
+import { SensorData, HistoryDataPoint } from '../../types';
+import { STATUS_TEXT_COLORS, STATUS_BG_COLORS, STATUS_LABELS } from '../../constants';
 import { Thermometer, Droplets, UserCheck, Signal, Wind, X, MapPin, Clock, Loader2, ExternalLink } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { fetchSensorHistory } from '../services/ttnService';
+import { fetchSensorHistory } from '../../services/ttnService';
 
 interface SensorDetailProps {
   sensor: SensorData | null;
@@ -11,21 +11,24 @@ interface SensorDetailProps {
   onClose: () => void;
 }
 
-const generateHistory = (baseTemp: number) => {
-  const data = [];
+const generateHistory = (baseTemp: number): HistoryDataPoint[] => {
+  const data: HistoryDataPoint[] = [];
   const now = new Date();
   for (let i = 0; i < 24; i++) {
     const time = new Date(now.getTime() - (23 - i) * 3600000);
     data.push({
       time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      value: parseFloat((baseTemp + (Math.random() * 2 - 1)).toFixed(1))
+      value: parseFloat((baseTemp + (Math.random() * 2 - 1)).toFixed(1)),
+      humidity: 45 + Math.random() * 10,
+      co2: 400 + Math.random() * 200,
+      timestamp: time.toISOString()
     });
   }
   return data;
 };
 
 const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClose }) => {
-  const [historyData, setHistoryData] = React.useState<any[]>([]);
+  const [historyData, setHistoryData] = React.useState<HistoryDataPoint[]>([]);
   const [loadingHistory, setLoadingHistory] = React.useState(false);
 
   React.useEffect(() => {
