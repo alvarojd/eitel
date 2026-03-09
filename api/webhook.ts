@@ -16,25 +16,47 @@ function sanitizeString(value: unknown, maxLength: number = 255): string {
   return String(value ?? '').slice(0, maxLength);
 }
 
+const WEBHOOK_SECRET = process.env.TTN_WEBHOOK_SECRET;
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  // Log incoming request for debugging (sensitive info should be masked in production)
+  const ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'];
+  console.log(`Webhook received from IP: ${ip}`);
+
   try {
-    // 1. Parse TTN Payload
-    const { end_device_ids, uplink_message } = req.body;
+    // 1. Authentication (Shared Secret with TTN)
+    const authHeader = req.headers['x-downlink-apikey'] || req.headers.authorization;
+    if (WEBHOOK_SECRET && authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
+      console.warn('Unauthorized webhook attempt: Secret mismatch or missing.');
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // 2. Parse TTN Payload
+    const { end_device_ids, uplink_message } = req.body || {};
     const payload = uplink_message?.decoded_payload;
     const rx_metadata = uplink_message?.rx_metadata;
     const received_at = uplink_message?.received_at || new Date().toISOString();
 
-    const device_id = sanitizeString(end_device_ids?.device_id || payload?.device_id).toUpperCase();
-    const dev_eui = sanitizeString(end_device_ids?.dev_eui).toUpperCase();
-    const name = sanitizeString(end_device_ids?.device_id);
+    if (!payload) {
+      console.warn('Webhook received without decoded_payload. Check TTN Formatter.', {
+        has_body: !!req.body,
+        has_uplink: !!uplink_message,
+        device_ids: end_device_ids
+      });
+      return res.status(400).json({ error: 'Invalid payload: missing decoded_payload' });
+    }
 
-    if (!device_id || !payload || !dev_eui) {
-      console.warn('Missing device_id, dev_eui or payload', req.body);
-      return res.status(400).json({ error: 'Invalid payload: missing dev_eui or decoded_payload' });
+    const dev_eui = sanitizeString(end_device_ids?.dev_eui || payload?.dev_eui).toUpperCase();
+    const device_id = sanitizeString(end_device_ids?.device_id || payload?.device_id || dev_eui).toUpperCase();
+    const name = sanitizeString(end_device_ids?.device_id || device_id);
+
+    if (!dev_eui || dev_eui === 'UNDEFINED') {
+      console.error('CRITICAL: Missing dev_eui in TTN payload.', req.body);
+      return res.status(400).json({ error: 'Invalid payload: missing dev_eui' });
     }
 
     // Sanitized & clamped to sensor-realistic ranges
