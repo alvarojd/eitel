@@ -1,4 +1,4 @@
-import { SensorData, Stats } from '../types';
+import { SensorData, Stats, HeatmapDeviceRow } from '../types';
 import { EstadoId } from '../utils/statusEngine';
 
 // Helper to generate a hex map shape similar to the image
@@ -137,4 +137,47 @@ export const getStats = (sensors: SensorData[]): Stats => {
     avgTemp: parseFloat(avgTemp.toFixed(1)),
     uptime: 99.8
   };
+};
+
+export const generateMockHeatmapData = (): HeatmapDeviceRow[] => {
+  const sensors = generateSensors().slice(0, 15); // Take a subset for the mock heatmap
+  
+  return sensors.map(sensor => {
+    const data = [];
+    const now = new Date();
+    // Start from 23 hours ago
+    const startHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - 23, 0, 0, 0);
+
+    for (let i = 0; i < 24; i++) {
+        const timestamp = new Date(startHour.getTime() + i * 3600000).toISOString();
+        
+        // Randomly simulate some missing data or different states
+        const hasData = Math.random() > 0.05;
+        let estado_id = sensor.estado_id;
+        
+        // Add some noise to the mock data so it's not totally uniform,
+        // unless it's strictly disconnected
+        if (hasData && estado_id !== 1) {
+             if (Math.random() > 0.8) {
+                 // Drift estado
+                 estado_id = Math.max(2, Math.min(9, estado_id + (Math.random() > 0.5 ? 1 : -1)));
+             }
+        }
+
+        const presence = Math.random() > 0.3; // 70% probability of presence
+
+        data.push({
+            timestamp,
+            estado_id: hasData ? estado_id : 0,
+            hasData,
+            presence: hasData ? presence : false
+        });
+    }
+
+    return {
+        deviceId: sensor.devEui || sensor.id,
+        name: sensor.name,
+        data
+    };
+  });
 };

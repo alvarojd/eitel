@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Layout from './components/layout/Layout';
 import HexMap from './components/dashboard/HexMap';
 import GeoMap from './components/map/GeoMap';
+import CronoPanel from './components/dashboard/CronoPanel';
 import SensorDetail from './components/dashboard/SensorDetail';
 import LegendPanel from './components/dashboard/LegendPanel';
 import DeviceList from './components/dashboard/DeviceList';
@@ -163,6 +164,8 @@ const App: React.FC = () => {
               onSensorSelect={handleSensorSelect}
               selectedSensorId={selectedSensorId}
             />
+          ) : activeTab === Tab.CRONO ? (
+            <CronoPanel />
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <p className="text-slate-400">Página no encontrada</p>

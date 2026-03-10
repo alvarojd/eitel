@@ -1,5 +1,5 @@
-import { SensorData } from '../types';
-import { generateSensors } from './mockDataService';
+import { SensorData, HeatmapDeviceRow } from '../types';
+import { generateSensors, generateMockHeatmapData } from './mockDataService';
 import { determineStatus } from '../utils/statusEngine';
 import { isLocalEnvironment } from '../utils/environment';
 
@@ -114,6 +114,27 @@ export const fetchSensorHistory = async (deviceId: string): Promise<any[]> => {
     return await response.json();
   } catch (error) {
     console.error("Failed to fetch sensor history:", error);
+    return [];
+  }
+};
+
+export const fetchHeatmapData = async (): Promise<HeatmapDeviceRow[]> => {
+  const isLocal = isLocalEnvironment();
+
+  if (isLocal) {
+    console.log("Environment: Local/Dev. Using simulated heatmap data.");
+    return generateMockHeatmapData();
+  }
+
+  try {
+    const response = await fetch('/api/heatmap');
+    if (!response.ok) {
+       console.error(`Heatmap API Error [${response.status}]`);
+       return [];
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to fetch heatmap data:", error);
     return [];
   }
 };

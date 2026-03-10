@@ -3,7 +3,8 @@ export enum Tab {
   MAPA = 'mapa',
   DISPOSITIVOS = 'dispositivos',
   ALERTAS = 'alertas',
-  CONFIGURACION = 'configuracion'
+  CONFIGURACION = 'configuracion',
+  CRONO = 'crono'
 }
 
 export interface SensorData {
@@ -56,6 +57,19 @@ export interface HistoryDataPoint {
   humidity: number;
   co2: number;
   timestamp: string;
+}
+
+export interface HeatmapDataPoint {
+  timestamp: string;
+  estado_id: number;
+  hasData: boolean;
+  presence: boolean;
+}
+
+export interface HeatmapDeviceRow {
+  deviceId: string;
+  name: string;
+  data: HeatmapDataPoint[]; // Should contain 24 entries ideally
 }
 
 // Minimal types for Vercel Serverless Functions to avoid 'any'

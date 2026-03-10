@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Layers, Settings, Bell, Search, MapPin } from 'lucide-react';
+import { Home, Layers, Settings, Bell, Search, MapPin, CalendarClock } from 'lucide-react';
 import { Tab } from '../../types';
 
 interface LayoutProps {
@@ -79,6 +79,13 @@ const Layout: React.FC<LayoutProps> = ({
             label="Mapa"
             active={activeTab === Tab.MAPA}
             onClick={() => onTabChange(Tab.MAPA)}
+            isCollapsed={isSidebarCollapsed}
+          />
+          <NavItem
+            icon={<CalendarClock size={20} />}
+            label="Crono"
+            active={activeTab === Tab.CRONO}
+            onClick={() => onTabChange(Tab.CRONO)}
             isCollapsed={isSidebarCollapsed}
           />
           <NavItem
