@@ -134,8 +134,7 @@ export const getStats = (sensors: SensorData[]): Stats => {
     offline: sensors.filter(isOffline).length,
     lowBattery: sensors.filter(s => s.indicators?.lowBattery || (s.estado_id !== 1 && s.battery < 20)).length,
     absenceCount: sensors.filter(s => s.indicators?.longTermNoOccupancy).length,
-    avgTemp: parseFloat(avgTemp.toFixed(1)),
-    uptime: 99.8
+    avgTemp: parseFloat(avgTemp.toFixed(1))
   };
 };
 

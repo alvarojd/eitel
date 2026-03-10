@@ -109,8 +109,7 @@ const LegendPanel = ({ stats }: { stats: Stats }) => {
             <div className="border-t border-slate-700 my-2 pt-4">
                 <h3 className="text-xs font-bold text-slate-400 tracking-widest mb-3">Estadísticas Rápidas</h3>
                 <div className="text-xs text-slate-400 space-y-2">
-                    <p>Total Nodos: <span className="text-white font-mono float-right">{stats.total}</span></p>
-                    <p>Uptime: <span className="text-green-400 font-mono float-right">{stats.uptime}%</span></p>
+                    <p>Nodos Activos: <span className="text-white font-mono float-right">{stats.total - stats.offline}/{stats.total}</span></p>
                     <p>Temp Prom: <span className="text-white font-mono float-right">{stats.avgTemp}°C</span></p>
                 </div>
             </div>

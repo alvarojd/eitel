@@ -152,7 +152,7 @@ const App: React.FC = () => {
               onSensorSelect={handleSensorSelect}
               selectedSensorId={selectedSensorId}
             />
-          ) : (activeTab === Tab.ALERTAS || activeTab === Tab.DISPOSITIVOS) ? (
+          ) : activeTab === Tab.DISPOSITIVOS ? (
             <DeviceList
               sensors={filteredSensors}
               onSensorSelect={handleSensorSelect}

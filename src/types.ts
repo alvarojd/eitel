@@ -2,7 +2,6 @@ export enum Tab {
   RESUMEN = 'resumen',
   MAPA = 'mapa',
   DISPOSITIVOS = 'dispositivos',
-  ALERTAS = 'alertas',
   CONFIGURACION = 'configuracion',
   CRONO = 'crono'
 }
@@ -41,7 +40,6 @@ export interface Stats {
   lowBattery: number; // Conteo independiente
   absenceCount: number; // Ausencia prolongada
   avgTemp?: number;
-  uptime?: number;
 }
 
 export interface TTNConfig {

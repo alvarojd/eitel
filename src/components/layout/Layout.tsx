@@ -96,13 +96,6 @@ const Layout: React.FC<LayoutProps> = ({
             isCollapsed={isSidebarCollapsed}
           />
           <NavItem
-            icon={<Bell size={20} />}
-            label="Alertas"
-            active={activeTab === Tab.ALERTAS}
-            onClick={() => onTabChange(Tab.ALERTAS)}
-            isCollapsed={isSidebarCollapsed}
-          />
-          <NavItem
             icon={<Settings size={20} />}
             label="Configuración"
             active={activeTab === Tab.CONFIGURACION}
@@ -135,9 +128,6 @@ const Layout: React.FC<LayoutProps> = ({
                 className="bg-slate-800 text-sm text-white pl-9 pr-4 py-1.5 rounded-full border border-slate-700 focus:outline-none focus:border-sky-500 transition-colors w-40 lg:w-64"
               />
             </div>
-            <button className="p-2 text-slate-400 hover:text-white bg-slate-800 rounded-full border border-slate-700 flex-shrink-0">
-              <Bell size={18} />
-            </button>
           </div>
         </header>
 
