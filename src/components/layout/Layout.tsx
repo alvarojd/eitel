@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Layers, Settings, Bell, Search, MapPin, CalendarClock } from 'lucide-react';
+import { Home, Layers, Settings, Bell, Search, MapPin, CalendarClock, FileText } from 'lucide-react';
 import { Tab } from '../../types';
 
 interface LayoutProps {
@@ -51,9 +51,9 @@ const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className="h-screen w-screen bg-slate-900 flex flex-col lg:flex-row overflow-hidden">
+    <div className="h-screen w-screen bg-slate-900 flex flex-col lg:flex-row overflow-hidden print:bg-white print:h-auto print:w-auto print:block">
       {/* Main Navigation (Side or Top when collapsed on mobile) */}
-      <nav className={`bg-slate-850 flex ${isSidebarCollapsed ? 'w-full h-16 flex-row lg:w-16 lg:h-full lg:flex-col' : 'w-full h-auto lg:w-64 lg:h-full flex-col'} border-r border-b lg:border-b-0 border-slate-800 z-30 flex-shrink-0 transition-all duration-300 ease-in-out`}>
+      <nav className={`bg-slate-850 flex ${isSidebarCollapsed ? 'w-full h-16 flex-row lg:w-16 lg:h-full lg:flex-col' : 'w-full h-auto lg:w-64 lg:h-full flex-col'} border-r border-b lg:border-b-0 border-slate-800 z-30 flex-shrink-0 transition-all duration-300 ease-in-out print:hidden`}>
         <div
           className={`flex items-center ${isSidebarCollapsed ? 'w-16 h-16 lg:w-full lg:h-16 justify-center' : 'w-full h-16 justify-between px-6'} border-r lg:border-r-0 lg:border-b border-slate-800 cursor-pointer hover:bg-slate-800/50 flex-shrink-0`}
           onClick={toggleSidebar}
@@ -89,6 +89,13 @@ const Layout: React.FC<LayoutProps> = ({
             isCollapsed={isSidebarCollapsed}
           />
           <NavItem
+            icon={<FileText size={20} />}
+            label="Informes"
+            active={activeTab === Tab.INFORMES}
+            onClick={() => onTabChange(Tab.INFORMES)}
+            isCollapsed={isSidebarCollapsed}
+          />
+          <NavItem
             icon={<Layers size={20} />}
             label="Dispositivos"
             active={activeTab === Tab.DISPOSITIVOS}
@@ -113,9 +120,9 @@ const Layout: React.FC<LayoutProps> = ({
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col relative h-full overflow-hidden">
+      <main className="flex-1 flex flex-col relative h-full overflow-hidden print:overflow-visible print:h-auto print:block">
         {/* Top Header */}
-        <header className="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4 lg:px-6 absolute top-0 left-0 right-0 z-10">
+        <header className="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4 lg:px-6 absolute top-0 left-0 right-0 z-10 print:hidden">
           <h1 className="text-sm lg:text-xl font-semibold text-white truncate mr-2">Energía Inteligente para Todos</h1>
           <div className="flex items-center gap-2 lg:gap-4">
             <div className="relative hidden md:block">
@@ -132,14 +139,14 @@ const Layout: React.FC<LayoutProps> = ({
         </header>
 
         {/* Dashboard Content */}
-        <div className="flex-1 overflow-y-auto lg:overflow-hidden pt-16 flex flex-col lg:flex-row">
+        <div className="flex-1 overflow-y-auto lg:overflow-hidden pt-16 flex flex-col lg:flex-row print:pt-0 print:block print:h-auto">
           {/* Center Canvas */}
-          <div className="flex-1 p-4 lg:p-6 overflow-hidden flex flex-col relative min-h-[400px] lg:min-h-0">
+          <div className="flex-1 p-4 lg:p-6 overflow-hidden flex flex-col relative min-h-[400px] lg:min-h-0 print:p-0 print:block print:h-auto print:min-h-0">
             {children}
           </div>
 
           {/* Right Panel - Context Aware */}
-          <div className="w-full lg:w-80 bg-slate-800 border-t lg:border-t-0 lg:border-l border-slate-700 flex-shrink-0 z-20 shadow-xl relative min-h-[500px] lg:min-h-0">
+          <div className="w-full lg:w-80 bg-slate-800 border-t lg:border-t-0 lg:border-l border-slate-700 flex-shrink-0 z-20 shadow-xl relative min-h-[500px] lg:min-h-0 print:hidden">
             {sidebar}
           </div>
         </div>

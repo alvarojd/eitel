@@ -3,7 +3,8 @@ export enum Tab {
   MAPA = 'mapa',
   DISPOSITIVOS = 'dispositivos',
   CONFIGURACION = 'configuracion',
-  CRONO = 'crono'
+  CRONO = 'crono',
+  INFORMES = 'informes'
 }
 
 export interface SensorData {

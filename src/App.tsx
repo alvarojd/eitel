@@ -8,6 +8,7 @@ import LegendPanel from './components/dashboard/LegendPanel';
 import DeviceList from './components/dashboard/DeviceList';
 import SettingsPanel from './components/layout/SettingsPanel';
 import StatsPanel from './components/common/StatsPanel';
+import ReportsPanel from './components/reports/ReportsPanel';
 import { getStats } from './services/mockDataService';
 import { fetchSensorData } from './services/ttnService';
 import { SensorData, Tab } from './types';
@@ -87,8 +88,10 @@ const App: React.FC = () => {
       onSearchChange={setSearchTerm}
     >
       <div className="flex flex-col h-full">
-        {/* Top Summary Stats */}
-        <StatsPanel stats={stats} />
+        {/* Top Summary Stats - Only show in Resumen and Mapa */}
+        {(activeTab === Tab.RESUMEN || activeTab === Tab.MAPA) && (
+          <StatsPanel stats={stats} />
+        )}
 
         {/* Main Content Area */}
         <div className="flex-1 min-h-0 relative rounded-2xl border border-slate-700/50 shadow-inner bg-slate-900/40 flex flex-col lg:flex-row">
@@ -166,6 +169,8 @@ const App: React.FC = () => {
             />
           ) : activeTab === Tab.CRONO ? (
             <CronoPanel />
+          ) : activeTab === Tab.INFORMES ? (
+            <ReportsPanel sensors={sensors} />
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <p className="text-slate-400">Página no encontrada</p>

@@ -138,6 +138,48 @@ export const getStats = (sensors: SensorData[]): Stats => {
   };
 };
 
+export const generateReportData = (sensors: SensorData[], days: number): any[] => {
+  const data: any[] = [];
+  const now = new Date();
+  const startHour = new Date(now.getFullYear(), now.getMonth(), now.getDate() - days, now.getHours(), 0, 0, 0);
+  const totalHours = days * 24;
+
+  sensors.forEach(sensor => {
+     for (let i = 0; i < totalHours; i++) {
+        const timestamp = new Date(startHour.getTime() + i * 3600000).toISOString();
+        
+        const hasData = Math.random() > 0.05; // 5% chance of missing data point
+        
+        if (hasData) {
+            // Generate some random realistic readings similar to the sensor's current state
+            // Let's add some drift to the base
+            let temp = sensor.temperature + (Math.random() * 4 - 2);
+            let hum = sensor.humidity + (Math.random() * 10 - 5);
+            let co2 = Math.max(400, (sensor.co2 || 400) + (Math.random() * 200 - 100));
+            temp = parseFloat(temp.toFixed(1));
+            hum = Math.max(0, Math.min(100, Math.floor(hum)));
+            co2 = Math.floor(co2);
+            
+            // Randomly toggle presence (simulating behavior)
+            // e.g., higher presence during the day
+            const h = new Date(timestamp).getHours();
+            const isDayTime = h >= 8 && h <= 22;
+            const presence = isDayTime ? Math.random() > 0.4 : Math.random() > 0.8;
+
+            data.push({
+               timestamp,
+               deviceId: sensor.id,
+               temperature: temp,
+               humidity: hum,
+               co2,
+               presence
+            });
+        }
+     }
+  });
+  return data;
+};
+
 export const generateMockHeatmapData = (): HeatmapDeviceRow[] => {
   const sensors = generateSensors().slice(0, 15); // Take a subset for the mock heatmap
   
