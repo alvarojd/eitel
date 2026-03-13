@@ -4,7 +4,7 @@ import { HistoryDataPoint } from '../../utils/reportUtils';
 import { generateReportData } from '../../services/mockDataService';
 import GlobalReport from './GlobalReport';
 import DeviceReport from './DeviceReport';
-import { Printer, Loader2 } from 'lucide-react';
+import { Printer, Loader2, FileText } from 'lucide-react';
 
 interface ReportsPanelProps {
   sensors: SensorData[];
@@ -55,6 +55,31 @@ const ReportsPanel: React.FC<ReportsPanelProps> = ({ sensors }) => {
     window.print();
   };
 
+  const handleExportCSV = () => {
+    const params = new URLSearchParams();
+    
+    if (reportType === 'device' && selectedDeviceId) {
+      const sensor = sensors.find(s => s.id === selectedDeviceId);
+      if (sensor?.devEui) {
+        params.append('devEui', sensor.devEui);
+      }
+    }
+
+    if (timeRange === 'week') {
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      params.append('startDate', weekAgo.toISOString());
+      params.append('endDate', now.toISOString());
+    } else if (timeRange === 'month') {
+      const now = new Date();
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      params.append('startDate', monthAgo.toISOString());
+      params.append('endDate', now.toISOString());
+    }
+
+    window.open(`/api/export-csv?${params.toString()}`, '_blank');
+  };
+
   return (
     <div className="flex flex-col h-full bg-slate-900 lg:rounded-2xl lg:overflow-hidden border border-slate-700/50 print:border-none print:h-auto print:bg-white print:overflow-visible">
       {/* Header & Controls (Hidden when printing) */}
@@ -63,13 +88,22 @@ const ReportsPanel: React.FC<ReportsPanelProps> = ({ sensors }) => {
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             Análisis de Confort
           </h2>
-          <button 
-            onClick={handlePrint}
-            className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors border border-slate-600 shadow-sm"
-          >
-            <Printer size={18} />
-            <span className="text-sm font-medium">Imprimir / PDF</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg transition-colors border border-sky-500/50 shadow-sm shadow-sky-900/20"
+            >
+              <FileText size={18} />
+              <span className="text-sm font-medium">Exportar CSV</span>
+            </button>
+            <button 
+              onClick={handlePrint}
+              className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors border border-slate-600 shadow-sm"
+            >
+              <Printer size={18} />
+              <span className="text-sm font-medium">Imprimir / PDF</span>
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-4">

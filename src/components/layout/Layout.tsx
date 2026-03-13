@@ -1,6 +1,7 @@
 import React from 'react';
-import { Home, Layers, Settings, Bell, Search, MapPin, CalendarClock, FileText } from 'lucide-react';
+import { Home, Layers, Settings, Bell, Search, MapPin, CalendarClock, FileText, LogOut, User as UserIcon } from 'lucide-react';
 import { Tab } from '../../types';
+import { useAuth } from '../auth/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ const Layout: React.FC<LayoutProps> = ({
   onSearchChange
 }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+  const { user, isAdmin, logout } = useAuth();
 
   // Auto-collapse on small screens on initial load
   React.useEffect(() => {
@@ -42,8 +44,6 @@ const Layout: React.FC<LayoutProps> = ({
     };
 
     handleResize();
-    // We don't necessarily want to force it on every resize if the user manually toggled it,
-    // but for initial load it's good.
   }, []);
 
   const toggleSidebar = () => {
@@ -102,13 +102,36 @@ const Layout: React.FC<LayoutProps> = ({
             onClick={() => onTabChange(Tab.DISPOSITIVOS)}
             isCollapsed={isSidebarCollapsed}
           />
-          <NavItem
-            icon={<Settings size={20} />}
-            label="Configuración"
-            active={activeTab === Tab.CONFIGURACION}
-            onClick={() => onTabChange(Tab.CONFIGURACION)}
-            isCollapsed={isSidebarCollapsed}
-          />
+          {isAdmin && (
+            <NavItem
+              icon={<Settings size={20} />}
+              label="Configuración"
+              active={activeTab === Tab.CONFIGURACION}
+              onClick={() => onTabChange(Tab.CONFIGURACION)}
+              isCollapsed={isSidebarCollapsed}
+            />
+          )}
+        </div>
+
+        <div className={`p-4 border-t border-slate-800 transition-all duration-300 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
+          <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'flex-col' : ''}`}>
+             <div className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 text-sky-400">
+               <UserIcon size={16} />
+             </div>
+             {!isSidebarCollapsed && (
+               <div className="flex-1 min-w-0">
+                 <p className="text-sm font-medium text-white truncate">{user?.username || 'Usuario'}</p>
+                 <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">{user?.role || 'Visitante'}</p>
+               </div>
+             )}
+             <button 
+               onClick={logout}
+               className={`p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all ${isSidebarCollapsed ? '' : 'ml-auto'}`}
+               title="Cerrar sesión"
+             >
+               <LogOut size={18} />
+             </button>
+          </div>
         </div>
 
         {!isSidebarCollapsed && (
@@ -123,7 +146,12 @@ const Layout: React.FC<LayoutProps> = ({
       <main className="flex-1 flex flex-col relative h-full overflow-hidden print:overflow-visible print:h-auto print:block">
         {/* Top Header */}
         <header className="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4 lg:px-6 absolute top-0 left-0 right-0 z-10 print:hidden">
-          <h1 className="text-sm lg:text-xl font-semibold text-white truncate mr-2">Energía Inteligente para Todos</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-sm lg:text-xl font-semibold text-white truncate">IE TEL - Dashbord IoT</h1>
+            {isAdmin && (
+               <span className="hidden sm:inline-block px-2 py-0.5 bg-sky-500/10 border border-sky-500/20 rounded text-[10px] text-sky-400 font-bold uppercase tracking-widest">Admin</span>
+            )}
+          </div>
           <div className="flex items-center gap-2 lg:gap-4">
             <div className="relative hidden md:block">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />

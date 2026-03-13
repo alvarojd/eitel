@@ -14,8 +14,11 @@ import { fetchSensorData } from './services/ttnService';
 import { SensorData, Tab } from './types';
 import { isLocalEnvironment } from './utils/environment';
 import { Loader2, Database, ShieldCheck, PlayCircle } from 'lucide-react';
+import { useAuth } from './components/auth/AuthContext';
+import Login from './components/auth/Login';
 
 const App: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [sensors, setSensors] = useState<SensorData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
@@ -78,6 +81,10 @@ const App: React.FC = () => {
 
     return <LegendPanel stats={stats} />;
   };
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
 
   return (
     <Layout

@@ -82,5 +82,6 @@ export interface VercelRequest {
 export interface VercelResponse {
   status: (code: number) => VercelResponse;
   json: (data: any) => VercelResponse;
+  send: (data: any) => VercelResponse;
   setHeader: (name: string, value: string | number | readonly string[]) => VercelResponse;
 }
