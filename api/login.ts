@@ -41,8 +41,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login Error:', error);
-    return res.status(500).json({ error: 'Error interno del servidor' });
+    return res.status(500).json({ 
+      error: 'Error interno del servidor',
+      details: error.message,
+      hint: 'Asegúrate de haber inicializado la base de datos visitando /api/setup'
+    });
   }
 }
