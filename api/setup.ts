@@ -26,6 +26,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
     `;
 
+    // Normalizar IDs existentes
+    await sql`UPDATE devices SET device_id = LOWER(device_id)`;
+
     // 2. Check if admin exists
     const { rows } = await sql`SELECT * FROM users WHERE username = 'admin'`;
     

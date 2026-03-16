@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const dev_eui = sanitizeString(end_device_ids?.dev_eui || payload?.dev_eui).toUpperCase();
-    const device_id = sanitizeString(end_device_ids?.device_id || payload?.device_id || dev_eui).toUpperCase();
+    const device_id = sanitizeString(end_device_ids?.device_id || payload?.device_id || dev_eui).toLowerCase();
     const name = sanitizeString(end_device_ids?.device_id || device_id);
 
     if (!dev_eui || dev_eui === 'UNDEFINED') {

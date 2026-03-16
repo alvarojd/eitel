@@ -88,11 +88,15 @@ const DeviceReport: React.FC<DeviceReportProps> = ({ sensor, data, presenceFilte
             <div className="mt-4 flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
               <MapPin size={16} className="text-sky-500 shrink-0 mt-0.5" />
               <div>
-                <p>{sensor.location}</p>
                 {sensor.latitude && sensor.longitude && (
-                   <p className="text-xs text-slate-400 mt-1">
+                   <a 
+                     href={`https://www.google.com/maps?q=${sensor.latitude},${sensor.longitude}`}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="text-xs text-sky-500 hover:text-sky-400 transition-colors mt-1 block"
+                   >
                      {sensor.latitude}, {sensor.longitude}
-                   </p>
+                   </a>
                 )}
               </div>
             </div>
