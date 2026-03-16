@@ -9,10 +9,8 @@ import DeviceList from './components/dashboard/DeviceList';
 import SettingsPanel from './components/layout/SettingsPanel';
 import StatsPanel from './components/common/StatsPanel';
 import ReportsPanel from './components/reports/ReportsPanel';
-import { getStats } from './services/mockDataService';
 import { fetchSensorData } from './services/ttnService';
-import { SensorData, Tab } from './types';
-import { isLocalEnvironment } from './utils/environment';
+import { SensorData, Tab, Stats } from './types';
 import { Loader2, Database, ShieldCheck, PlayCircle } from 'lucide-react';
 import { useAuth } from './components/auth/AuthContext';
 import Login from './components/auth/Login';
@@ -24,8 +22,6 @@ const App: React.FC = () => {
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>(Tab.RESUMEN);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const isLocal = isLocalEnvironment();
 
   useEffect(() => {
     const loadData = async () => {
@@ -44,7 +40,28 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const stats = useMemo(() => getStats(sensors), [sensors]);
+  const stats = useMemo((): Stats => {
+    const isRed = (s: SensorData) => [2, 3, 4].includes(s.estado_id);
+    const isOrange = (s: SensorData) => [5, 6, 7, 8].includes(s.estado_id);
+    const isGreen = (s: SensorData) => s.estado_id === 9;
+    const isOffline = (s: SensorData) => s.estado_id === 1;
+    
+    const connectedSensors = sensors.filter(s => s.estado_id !== 1);
+    const avgTemp = connectedSensors.length > 0
+      ? connectedSensors.reduce((acc, s) => acc + s.temperature, 0) / connectedSensors.length
+      : 0;
+
+    return {
+      total: sensors.length,
+      critical: sensors.filter(isRed).length,
+      warning: sensors.filter(isOrange).length,
+      ideal: sensors.filter(isGreen).length,
+      offline: sensors.filter(isOffline).length,
+      lowBattery: sensors.filter(s => s.indicators?.lowBattery || (s.estado_id !== 1 && s.battery < 20)).length,
+      absenceCount: sensors.filter(s => s.indicators?.longTermNoOccupancy).length,
+      avgTemp: parseFloat(avgTemp.toFixed(1))
+    };
+  }, [sensors]);
 
   const filteredSensors = useMemo(() => {
     if (!searchTerm) return sensors;
@@ -76,7 +93,7 @@ const App: React.FC = () => {
     }
 
     if (selectedSensor) {
-      return <SensorDetail sensor={selectedSensor} isSimulated={isLocal} onClose={handleCloseDetail} />;
+      return <SensorDetail sensor={selectedSensor} onClose={handleCloseDetail} />;
     }
 
     return <LegendPanel stats={stats} />;
@@ -108,7 +125,7 @@ const App: React.FC = () => {
               <div className="text-center">
                 <Loader2 size={48} className="animate-spin text-sky-500 mx-auto mb-4" />
                 <p className="text-slate-400">
-                  {isLocal ? 'Generando simulación local...' : 'Conectando a Base de Datos Vercel...'}
+                  Conectando a Base de Datos Vercel...
                 </p>
               </div>
             </div>
@@ -128,19 +145,19 @@ const App: React.FC = () => {
                 <div className="bg-slate-800/80 p-6 rounded-2xl border border-sky-500/30 text-left shadow-xl">
                   <div className="flex items-center gap-3 mb-4">
                     <ShieldCheck className="text-sky-400" size={24} />
-                    <h3 className="text-white font-bold text-lg">Modo Automático Activo</h3>
+                    <h3 className="text-white font-bold text-lg">Conexión a Datos Reales</h3>
                   </div>
                   <p className="text-sm text-slate-300 leading-relaxed mb-4">
-                    La aplicación ahora detecta automáticamente el entorno de ejecución:
+                    La aplicación está conectada directamente a la infraestructura de producción:
                   </p>
                   <ul className="space-y-3 text-sm">
                     <li className="flex items-center gap-2 text-slate-400">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                      <span><strong>Local:</strong> Datos simulados para pruebas rápidas.</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span><strong>Entorno de Datos:</strong> TTN + Postgres (Neon DB).</span>
                     </li>
                     <li className="flex items-center gap-2 text-slate-400">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      <span><strong>Vercel / Producción:</strong> Datos reales vía TTN + Postgres.</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                      <span><strong>Endpoints:</strong> /api/sensors, /api/history, /api/reports.</span>
                     </li>
                   </ul>
                 </div>

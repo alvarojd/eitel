@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { SensorData } from '../../types';
 import { HistoryDataPoint } from '../../utils/reportUtils';
-import { generateReportData } from '../../services/mockDataService';
+import { fetchReportData } from '../../services/ttnService';
 import GlobalReport from './GlobalReport';
 import DeviceReport from './DeviceReport';
 import { Printer, Loader2, FileText } from 'lucide-react';
@@ -25,30 +25,30 @@ const ReportsPanel: React.FC<ReportsPanelProps> = ({ sensors }) => {
     }
   }, [sensors, selectedDeviceId]);
 
-  // Fetch / Generate data when filters change
+  // Fetch data when filters change
   useEffect(() => {
     if (sensors.length === 0) return;
     
-    setIsLoading(true);
-    // Determine days
-    const days = timeRange === 'week' ? 7 : 30;
-    
-    // In a real app, we'd fetch from backend: 
-    // fetch(`/api/reports?type=${reportType}&days=${days}&device=${selectedDeviceId}`)
-    
-    // Simulate API delay
-    const timer = setTimeout(() => {
-       let dataToProcess = sensors;
-       if (reportType === 'device' && selectedDeviceId) {
-           dataToProcess = sensors.filter(s => s.id === selectedDeviceId);
-       }
-       
-       const generated = generateReportData(dataToProcess, days);
-       setReportData(generated);
-       setIsLoading(false);
-    }, 600);
-    
-    return () => clearTimeout(timer);
+    const loadReport = async () => {
+      setIsLoading(true);
+      const days = timeRange === 'week' ? 7 : 30;
+      
+      const devEui = reportType === 'device' && selectedDeviceId 
+        ? sensors.find(s => s.id === selectedDeviceId)?.devEui 
+        : undefined;
+
+      try {
+        const data = await fetchReportData(days, devEui);
+        setReportData(data);
+      } catch (error) {
+        console.error("Error loading report data:", error);
+        setReportData([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadReport();
   }, [sensors, reportType, timeRange, selectedDeviceId]);
 
   const handlePrint = () => {

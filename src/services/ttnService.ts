@@ -1,5 +1,4 @@
 import { SensorData, HeatmapDeviceRow } from '../types';
-import { generateSensors, generateMockHeatmapData } from './mockDataService';
 import { determineStatus } from '../utils/statusEngine';
 import { isLocalEnvironment } from '../utils/environment';
 
@@ -38,13 +37,6 @@ const getHexPositions = (count: number): { q: number; r: number }[] => {
 
 
 export const fetchSensorData = async (): Promise<SensorData[]> => {
-  const isLocal = isLocalEnvironment();
-
-  if (isLocal) {
-    console.log("Environment: Local/Dev. Using simulated data.");
-    return generateSensors();
-  }
-
   try {
     // Fetch from our own Vercel Serverless Function
     const response = await fetch('/api/sensors');
@@ -119,13 +111,6 @@ export const fetchSensorHistory = async (deviceId: string): Promise<any[]> => {
 };
 
 export const fetchHeatmapData = async (): Promise<HeatmapDeviceRow[]> => {
-  const isLocal = isLocalEnvironment();
-
-  if (isLocal) {
-    console.log("Environment: Local/Dev. Using simulated heatmap data.");
-    return generateMockHeatmapData();
-  }
-
   try {
     const response = await fetch('/api/heatmap');
     if (!response.ok) {
@@ -135,6 +120,26 @@ export const fetchHeatmapData = async (): Promise<HeatmapDeviceRow[]> => {
     return await response.json();
   } catch (error) {
     console.error("Failed to fetch heatmap data:", error);
+    return [];
+  }
+};
+
+export const fetchReportData = async (days: number, devEui?: string): Promise<any[]> => {
+  try {
+    const url = devEui 
+      ? `/api/reports?days=${days}&devEui=${devEui}` 
+      : `/api/reports?days=${days}`;
+    const response = await fetch(url);
+    if (!response.ok) return [];
+    
+    const data = await response.json();
+    return data.map((d: any) => ({
+      ...d,
+      time: new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      value: d.temperature // for charts compatibility
+    }));
+  } catch (error) {
+    console.error("Failed to fetch report data:", error);
     return [];
   }
 };

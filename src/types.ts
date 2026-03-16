@@ -47,7 +47,6 @@ export interface TTNConfig {
   appId: string;
   apiKey: string;
   region: string;
-  useSimulatedData?: boolean;
 }
 
 export interface HistoryDataPoint {
