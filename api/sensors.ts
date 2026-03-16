@@ -109,18 +109,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'DELETE') {
-    const { devEui, deleteHistoryOnly } = req.body || {};
+    // Try to parse body if it is a string (Vercel sometimes passes it directly as a string instead of JSON object)
+    let bodyData = req.body;
+    if (typeof req.body === 'string') {
+      try {
+        bodyData = JSON.parse(req.body);
+      } catch (e) {
+        bodyData = {};
+      }
+    }
+    
+    // Fallback to query arguments for safety
+    const devEui = bodyData?.devEui || req.query?.devEui;
+    const deleteHistoryOnly = bodyData?.deleteHistoryOnly !== undefined 
+      ? bodyData.deleteHistoryOnly 
+      : (req.query?.deleteHistoryOnly === 'true');
+
     if (!devEui) return res.status(400).json({ error: 'devEui es obligatorio' });
 
     try {
-      if (deleteHistoryOnly === true) {
+      const devEuiStr = String(devEui).toUpperCase();
+      if (deleteHistoryOnly) {
         // Just clear history
-        await sql`DELETE FROM measurements WHERE dev_eui = ${devEui.toUpperCase()}`;
+        await sql`DELETE FROM measurements WHERE dev_eui = ${devEuiStr}`;
         return res.status(200).json({ success: true, message: 'Historial borrado' });
       } else {
         // Complete deletion (cascading if enforced, but let's be explicit)
-        await sql`DELETE FROM measurements WHERE dev_eui = ${devEui.toUpperCase()}`;
-        await sql`DELETE FROM devices WHERE dev_eui = ${devEui.toUpperCase()}`;
+        await sql`DELETE FROM measurements WHERE dev_eui = ${devEuiStr}`;
+        await sql`DELETE FROM devices WHERE dev_eui = ${devEuiStr}`;
         return res.status(200).json({ success: true, message: 'Dispositivo y datos eliminados' });
       }
     } catch (error) {

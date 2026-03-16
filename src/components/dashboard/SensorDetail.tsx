@@ -104,7 +104,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, isSimulated, onClos
     
     setIsSaving(true);
     try {
-      const res = await fetch('/api/sensors', {
+      const res = await fetch(`/api/sensors?devEui=${encodeURIComponent(sensor.devEui || sensor.id)}&deleteHistoryOnly=${onlyHistory}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
