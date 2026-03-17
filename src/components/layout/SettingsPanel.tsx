@@ -425,7 +425,7 @@ const SettingsPanel: React.FC = () => {
                         </div>
                         <div className="flex justify-between text-[11px]">
                             <span className="text-slate-500">Database:</span>
-                            <span className="text-slate-300">Postgres (Neon)</span>
+                            <span className="text-slate-300">Postgres (Supabase)</span>
                         </div>
                         <div className="flex justify-between text-[11px]">
                             <span className="text-slate-500">Red:</span>

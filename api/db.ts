@@ -3,7 +3,7 @@ import pg from 'pg';
 const { Pool } = pg;
 
 // CRITICAL: Bypass for self-signed certificates in serverless environments
-// This is necessary for some Supabase/Neon connections on Vercel
+// This is necessary for some Supabase connections on Vercel
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const connectionString = 

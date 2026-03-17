@@ -158,7 +158,7 @@ const App: React.FC = () => {
                   <ul className="space-y-3 text-sm">
                     <li className="flex items-center gap-2 text-slate-400">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      <span><strong>Entorno de Datos:</strong> TTN + Postgres (Neon DB).</span>
+                      <span><strong>Entorno de Datos:</strong> TTN + Postgres (Supabase).</span>
                     </li>
                     <li className="flex items-center gap-2 text-slate-400">
                       <div className="w-1.5 h-1.5 rounded-full bg-sky-400" />
