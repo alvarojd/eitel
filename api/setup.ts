@@ -26,7 +26,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
     `;
 
-    // Normalizar IDs existentes
+    await sql`
+      CREATE TABLE IF NOT EXISTS devices (
+        dev_eui TEXT PRIMARY KEY,
+        device_id TEXT NOT NULL,
+        name TEXT,
+        battery INTEGER DEFAULT 100,
+        rssi INTEGER DEFAULT -100,
+        latitude DECIMAL,
+        longitude DECIMAL,
+        gateway_id TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS measurements (
+        id BIGSERIAL PRIMARY KEY,
+        dev_eui TEXT REFERENCES devices(dev_eui) ON DELETE CASCADE,
+        temperature DECIMAL NOT NULL,
+        humidity DECIMAL NOT NULL,
+        co2 INTEGER NOT NULL,
+        presence BOOLEAN DEFAULT FALSE,
+        estado_id INTEGER NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Optimización: Índices para mejorar el rendimiento
+    await sql`CREATE INDEX IF NOT EXISTS idx_measurements_dev_eui_time ON measurements (dev_eui, created_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_measurements_time ON measurements (created_at DESC)`;
+
+    // Normalización de IDs existentes
     await sql`UPDATE devices SET device_id = LOWER(device_id)`;
 
     // 2. Check if admin exists
