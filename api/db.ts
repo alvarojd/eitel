@@ -8,9 +8,14 @@ const connectionString =
   process.env.DATABASE_URL || 
   process.env.SUPABASE_POSTGRES_URL;
 
+// Force SSL mode for serverless environments
+process.env.PGSSLMODE = 'no-verify';
+
 const pool = new Pool({
   connectionString,
-  ssl: connectionString?.includes('supabase') ? { rejectUnauthorized: false } : false
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Internal function to handle the tagged template literal
