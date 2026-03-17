@@ -102,11 +102,32 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
 
         {/* Chart Area */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-slate-300 mb-4 tracking-wider uppercase flex items-center gap-2">
-            <Clock size={14} className="text-sky-500" />
-            Tendencia (24h)
-          </h3>
-          <div className="h-48 w-full bg-slate-900/30 rounded-xl border border-slate-700/30 flex items-center justify-center overflow-hidden">
+          <div className="text-center mb-6">
+            <h3 className="text-sm font-semibold text-slate-100 mb-3 tracking-widest uppercase">
+              VARIACIÓN DE TEMPERATURA AMBIENTE
+            </h3>
+            <div className="flex justify-center flex-wrap gap-4 text-[10px] font-medium text-slate-300">
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-2 rounded-sm bg-[#526d82]"></div>
+                <span>FRIO &lt;18°C</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-2 rounded-sm bg-[#4a7c59]"></div>
+                <span>CONFORT 18-27°C</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-2 rounded-sm bg-[#9a4545]"></div>
+                <span>CALOR &gt;27°C</span>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            className="h-64 w-full rounded-xl border border-slate-700/50 flex items-center justify-center overflow-hidden"
+            style={{
+              background: 'linear-gradient(to bottom, #9a4545cc 0%, #9a4545cc 18.75%, #4a7c59cc 18.75%, #4a7c59cc 75%, #526d82cc 75%, #526d82cc 100%)'
+            }}
+          >
             {loadingHistory ? (
               <div className="flex items-center gap-2 text-slate-500">
                 <Loader2 size={16} className="animate-spin" />
@@ -114,34 +135,38 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
               </div>
             ) : historyData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={historyData}>
-                  <defs>
-                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                  <XAxis dataKey="time" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} domain={[10, 35]} />
+                <AreaChart data={historyData} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" vertical={true} strokeOpacity={0.15} />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="#ffffff" 
+                    fontSize={10} 
+                    tickLine={true} 
+                    axisLine={true}
+                    label={{ value: 'Eje del Tiempo', position: 'bottom', offset: 0, fill: '#ffffff', fontSize: 10, opacity: 0.8 }}
+                  />
+                  <YAxis 
+                    stroke="#ffffff" 
+                    fontSize={10} 
+                    tickLine={true} 
+                    axisLine={true} 
+                    domain={[14, 30]}
+                    label={{ value: 'Temperatura °C', angle: -90, position: 'insideLeft', fill: '#ffffff', fontSize: 10, opacity: 0.8 }}
+                  />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                    itemStyle={{ color: '#38bdf8' }}
+                    itemStyle={{ color: '#ffffff' }}
                   />
-                  {/* Background Color Bands */}
-                  <ReferenceArea y1={0} y2={18} fill="#0ea5e9" fillOpacity={0.1} isFront={false} stroke="none" />
-                  <ReferenceArea y1={18} y2={27} fill="#10b981" fillOpacity={0.1} isFront={false} stroke="none" />
-                  <ReferenceArea y1={27} y2={50} fill="#f43f5e" fillOpacity={0.1} isFront={false} stroke="none" />
                   
                   <Area
                     type="monotone"
                     dataKey="value"
-                    stroke="#0ea5e9"
+                    stroke="#ffffff"
                     strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorValue)"
-                    dot={{ r: 3, fill: '#0ea5e9', strokeWidth: 0 }}
-                    activeDot={{ r: 5, strokeWidth: 0 }}
+                    fill="none"
+                    fillOpacity={0}
+                    dot={false}
+                    activeDot={{ r: 4, fill: '#ffffff', strokeWidth: 0 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
