@@ -174,7 +174,7 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
 
           {/* Right Panel - Context Aware */}
-          <div className="w-full lg:w-80 bg-slate-800 border-t lg:border-t-0 lg:border-l border-slate-700 flex-shrink-0 z-20 shadow-xl relative min-h-[500px] lg:min-h-0 print:hidden">
+          <div className="w-full lg:w-[416px] bg-slate-800 border-t lg:border-t-0 lg:border-l border-slate-700 flex-shrink-0 z-20 shadow-xl relative min-h-[500px] lg:min-h-0 print:hidden">
             {sidebar}
           </div>
         </div>

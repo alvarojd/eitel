@@ -2,7 +2,7 @@ import React from 'react';
 import { SensorData, HistoryDataPoint } from '../../types';
 import { STATUS_TEXT_COLORS, STATUS_BG_COLORS, STATUS_LABELS } from '../../constants';
 import { Thermometer, Droplets, UserCheck, Signal, Wind, X, MapPin, Clock, Loader2, ExternalLink, Save, Trash2, AlertTriangle, ShieldAlert } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { fetchSensorHistory } from '../../services/ttnService';
 import { useAuth } from '../auth/AuthContext';
 
@@ -123,11 +123,16 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                   <XAxis dataKey="time" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
+                  <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} domain={[10, 35]} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
                     itemStyle={{ color: '#38bdf8' }}
                   />
+                  {/* Background Color Bands */}
+                  <ReferenceArea y1={0} y2={18} fill="#0ea5e9" fillOpacity={0.1} isFront={false} stroke="none" />
+                  <ReferenceArea y1={18} y2={27} fill="#10b981" fillOpacity={0.1} isFront={false} stroke="none" />
+                  <ReferenceArea y1={27} y2={50} fill="#f43f5e" fillOpacity={0.1} isFront={false} stroke="none" />
+                  
                   <Area
                     type="monotone"
                     dataKey="value"
