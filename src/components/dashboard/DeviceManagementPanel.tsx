@@ -3,6 +3,8 @@ import { SensorData } from '../../types';
 import { X, MapPin, Save, Trash2, AlertTriangle, ShieldAlert, Loader2, Info } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
+import MapPicker from '../common/MapPicker';
+
 interface DeviceManagementPanelProps {
   sensor: SensorData | null;
   onClose: () => void;
@@ -18,6 +20,7 @@ const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, o
   const [isSaving, setIsSaving] = React.useState(false);
   const [deleteHistoryOnly, setDeleteHistoryOnly] = React.useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const [showMapPicker, setShowMapPicker] = React.useState(false);
 
   React.useEffect(() => {
     if (sensor) {
@@ -68,6 +71,11 @@ const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, o
     }
   };
 
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setEditLat(lat.toFixed(6));
+    setEditLng(lng.toFixed(6));
+  };
+
   const handleDelete = async (onlyHistory: boolean) => {
     if (!window.confirm(onlyHistory ? '¿Borrar historial de mediciones?' : '¿Eliminar dispositivo permanentemente del sistema?')) return;
     
@@ -96,6 +104,14 @@ const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, o
 
   return (
     <div className="h-full bg-slate-800 flex flex-col shadow-2xl w-full border-l border-slate-700">
+      {showMapPicker && (
+        <MapPicker 
+          initialLat={editLat ? parseFloat(editLat) : undefined}
+          initialLng={editLng ? parseFloat(editLng) : undefined}
+          onSelect={handleLocationSelect}
+          onClose={() => setShowMapPicker(false)}
+        />
+      )}
       {/* Header */}
       <div className="p-6 border-b border-slate-700 flex justify-between items-center">
         <div>
@@ -119,9 +135,17 @@ const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, o
 
         {/* Edit Configuration */}
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-sky-400 uppercase tracking-widest flex items-center gap-2">
-            <MapPin size={14} /> Configuración y Ubicación
-          </h3>
+          <div className="flex justify-between items-center">
+            <h3 className="text-xs font-bold text-sky-400 uppercase tracking-widest flex items-center gap-2">
+              <MapPin size={14} /> Configuración y Ubicación
+            </h3>
+            <button 
+              onClick={() => setShowMapPicker(true)}
+              className="text-[10px] font-bold text-sky-400 hover:text-sky-300 transition-colors uppercase flex items-center gap-1.5 bg-sky-400/5 px-2 py-1 rounded border border-sky-400/20"
+            >
+              <MapPin size={12} /> Seleccionar en Mapa
+            </button>
+          </div>
           
           <div className="space-y-4 bg-slate-900/40 p-5 rounded-2xl border border-slate-700/40">
             <div>
@@ -135,7 +159,7 @@ const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, o
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="relative">
                 <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1.5 ml-1">Latitud</label>
                 <input 
                   value={editLat}
@@ -144,7 +168,7 @@ const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, o
                   placeholder="40.315..."
                 />
               </div>
-              <div>
+              <div className="relative">
                 <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1.5 ml-1">Longitud</label>
                 <input 
                   value={editLng}

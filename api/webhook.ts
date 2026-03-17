@@ -115,11 +115,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       VALUES (${dev_eui}, ${device_id}, ${name}, ${battery}, ${rssi}, ${latitude || null}, ${longitude || null}, ${gateway_id}, ${received_at})
       ON CONFLICT (dev_eui) DO UPDATE 
       SET 
-        name = EXCLUDED.name,
+        name = COALESCE(devices.name, EXCLUDED.name),
         battery = EXCLUDED.battery,
         rssi = EXCLUDED.rssi,
-        latitude = COALESCE(EXCLUDED.latitude, devices.latitude),
-        longitude = COALESCE(EXCLUDED.longitude, devices.longitude),
+        latitude = COALESCE(devices.latitude, EXCLUDED.latitude),
+        longitude = COALESCE(devices.longitude, EXCLUDED.longitude),
         gateway_id = EXCLUDED.gateway_id;
     `;
 
