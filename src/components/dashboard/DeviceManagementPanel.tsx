@@ -159,21 +159,23 @@ const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, o
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="relative">
-                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1.5 ml-1">Latitud</label>
+              <div className="relative group cursor-pointer" onClick={() => setShowMapPicker(true)}>
+                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1.5 ml-1 cursor-pointer group-hover:text-sky-400 transition-colors">Latitud</label>
                 <input 
                   value={editLat}
-                  onChange={e => setEditLat(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition-all"
+                  readOnly
+                  onClick={() => setShowMapPicker(true)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white cursor-pointer group-hover:border-sky-500/50 transition-all outline-none"
                   placeholder="40.315..."
                 />
               </div>
-              <div className="relative">
-                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1.5 ml-1">Longitud</label>
+              <div className="relative group cursor-pointer" onClick={() => setShowMapPicker(true)}>
+                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1.5 ml-1 cursor-pointer group-hover:text-sky-400 transition-colors">Longitud</label>
                 <input 
                   value={editLng}
-                  onChange={e => setEditLng(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition-all"
+                  readOnly
+                  onClick={() => setShowMapPicker(true)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white cursor-pointer group-hover:border-sky-500/50 transition-all outline-none"
                   placeholder="-3.720..."
                 />
               </div>
