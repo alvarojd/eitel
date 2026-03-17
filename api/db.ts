@@ -12,17 +12,6 @@ const pool = new Pool({
   }
 });
 
-/**
- * Compatibility layer for @vercel/postgres
- * This allows us to keep using the `sql` tagged template literal syntax
- */
-export const sql = {
-  query: (text: string, values?: any[]) => pool.query(text, values),
-  async connect() {
-    return pool.connect();
-  }
-};
-
 // Internal function to handle the tagged template literal
 async function sqlTag(strings: TemplateStringsArray, ...values: any[]) {
   // Convert template literal to standard postgres query
@@ -33,8 +22,15 @@ async function sqlTag(strings: TemplateStringsArray, ...values: any[]) {
   return pool.query(text, values);
 }
 
-// Attach the tag function to the sql object
-Object.assign(sql, sqlTag);
+/**
+ * Compatibility layer for @vercel/postgres
+ * This allows us to keep using the `sql` tagged template literal syntax
+ */
+export const sql: any = sqlTag;
+
+// Attach helper methods to the sql function
+sql.query = (text: string, values?: any[]) => pool.query(text, values);
+sql.connect = async () => pool.connect();
 
 // Re-export type for consistency
 export type { QueryResult } from 'pg';
