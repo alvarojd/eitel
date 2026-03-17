@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from './db.js';
 import { comparePassword, generateToken } from '../src/utils/auth.js';
 import { VercelRequest, VercelResponse } from '../src/types.js';
 

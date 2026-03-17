@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from './db.js';
 import { authorize, hashPassword } from '../src/utils/auth.js';
 import { VercelRequest, VercelResponse } from '../src/types.js';
 import { logAction } from './audit-logs.js';
