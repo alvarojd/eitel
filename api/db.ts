@@ -2,8 +2,13 @@
 import pg from 'pg';
 const { Pool } = pg;
 
-// Use POSTGRES_URL for Supabase connection (it's the same environmental variable name we will use in Vercel)
+// Use POSTGRES_URL for Supabase connection
 const connectionString = process.env.POSTGRES_URL;
+
+// Bypass for "self-signed certificate" in serverless environments
+if (connectionString) {
+  process.env.PGSSLMODE = 'no-verify';
+}
 
 const pool = new Pool({
   connectionString,
