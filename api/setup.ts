@@ -57,6 +57,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await sql`CREATE INDEX IF NOT EXISTS idx_measurements_dev_eui_time ON measurements (dev_eui, created_at DESC)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_measurements_time ON measurements (created_at DESC)`;
 
+    // Seguridad: Activar Row Level Security (RLS)
+    await sql`ALTER TABLE users ENABLE ROW LEVEL SECURITY`;
+    await sql`ALTER TABLE devices ENABLE ROW LEVEL SECURITY`;
+    await sql`ALTER TABLE measurements ENABLE ROW LEVEL SECURITY`;
+    await sql`ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY`;
+
     // Normalización de IDs existentes
     await sql`UPDATE devices SET device_id = LOWER(device_id)`;
 
