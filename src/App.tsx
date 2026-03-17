@@ -6,6 +6,7 @@ import CronoPanel from './components/dashboard/CronoPanel';
 import SensorDetail from './components/dashboard/SensorDetail';
 import LegendPanel from './components/dashboard/LegendPanel';
 import DeviceList from './components/dashboard/DeviceList';
+import DeviceManagementPanel from './components/dashboard/DeviceManagementPanel';
 import SettingsPanel from './components/layout/SettingsPanel';
 import StatsPanel from './components/common/StatsPanel';
 import ReportsPanel from './components/reports/ReportsPanel';
@@ -16,7 +17,7 @@ import { useAuth } from './components/auth/AuthContext';
 import Login from './components/auth/Login';
 
 const App: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [sensors, setSensors] = useState<SensorData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
@@ -90,6 +91,10 @@ const App: React.FC = () => {
       return (
         <SettingsPanel />
       );
+    }
+
+    if (activeTab === Tab.DISPOSITIVOS && isAdmin) {
+      return <DeviceManagementPanel sensor={selectedSensor} onClose={handleCloseDetail} />;
     }
 
     if (selectedSensor) {

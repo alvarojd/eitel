@@ -118,11 +118,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         bodyData = {};
       }
     }
-    
+
     // Fallback to query arguments for safety
     const devEui = bodyData?.devEui || req.query?.devEui;
-    const deleteHistoryOnly = bodyData?.deleteHistoryOnly !== undefined 
-      ? bodyData.deleteHistoryOnly 
+    const deleteHistoryOnly = bodyData?.deleteHistoryOnly !== undefined
+      ? bodyData.deleteHistoryOnly
       : (req.query?.deleteHistoryOnly === 'true');
 
     if (!devEui) return res.status(400).json({ error: 'devEui es obligatorio' });
