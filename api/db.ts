@@ -2,19 +2,15 @@
 import pg from 'pg';
 const { Pool } = pg;
 
-// Use POSTGRES_URL for Supabase connection
-const connectionString = process.env.POSTGRES_URL;
-
-// Bypass for "self-signed certificate" in serverless environments
-if (connectionString) {
-  process.env.PGSSLMODE = 'no-verify';
-}
+// Try to find the connection string in common environment variables
+const connectionString = 
+  process.env.POSTGRES_URL || 
+  process.env.DATABASE_URL || 
+  process.env.SUPABASE_POSTGRES_URL;
 
 const pool = new Pool({
   connectionString,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: connectionString?.includes('supabase') ? { rejectUnauthorized: false } : false
 });
 
 // Internal function to handle the tagged template literal
