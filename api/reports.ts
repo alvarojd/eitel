@@ -17,6 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (devEui) {
       ({ rows } = await sql`
         SELECT 
+          m.dev_eui,
           date_trunc('hour', m.created_at) AS timestamp,
           AVG(m.temperature) AS temperature,
           AVG(m.humidity) AS humidity,
@@ -25,12 +26,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         FROM measurements m
         WHERE m.dev_eui = ${String(devEui).toUpperCase()}
         AND m.created_at >= NOW() - (${numDays} || ' days')::interval
-        GROUP BY date_trunc('hour', m.created_at)
+        GROUP BY m.dev_eui, date_trunc('hour', m.created_at)
         ORDER BY timestamp ASC;
       `);
     } else {
       ({ rows } = await sql`
         SELECT 
+          m.dev_eui,
           date_trunc('hour', m.created_at) AS timestamp,
           AVG(m.temperature) AS temperature,
           AVG(m.humidity) AS humidity,
@@ -38,7 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           BOOL_OR(m.presence) AS presence
         FROM measurements m
         WHERE m.created_at >= NOW() - (${numDays} || ' days')::interval
-        GROUP BY date_trunc('hour', m.created_at)
+        GROUP BY m.dev_eui, date_trunc('hour', m.created_at)
         ORDER BY timestamp ASC;
       `);
     }
@@ -48,7 +50,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       temperature: parseFloat(r.temperature) || 0,
       humidity: parseFloat(r.humidity) || 0,
       co2: Math.round(parseFloat(r.co2)) || 0,
-      presence: r.presence === true
+      presence: r.presence === true,
+      deviceId: r.dev_eui
     }));
 
     return res.status(200).json(formattedData);
