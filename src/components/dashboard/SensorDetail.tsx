@@ -5,6 +5,7 @@ import { Thermometer, Droplets, UserCheck, Signal, Wind, X, MapPin, Clock, Loade
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { fetchSensorHistory } from '../../services/ttnService';
 import { useAuth } from '../auth/AuthContext';
+import { calculateLinkQuality } from '../../utils/linkQuality';
 
 interface SensorDetailProps {
   sensor: SensorData | null;
@@ -180,10 +181,27 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
 
         {/* Technical Details */}
         <div className="bg-slate-900/80 rounded-lg p-4 text-xs font-mono text-slate-400 border border-slate-700">
+          {(() => {
+            const lq = calculateLinkQuality(sensor.rssi, sensor.snr);
+            return (
+              <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-700/50">
+               <span className="text-slate-300 font-sans tracking-wide uppercase font-bold text-[10px] flex items-center gap-1.5"><Signal size={12} className={lq.textColor}/> Calidad del Enlace</span>
+                <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold tracking-wider bg-slate-800 ${lq.textColor}`}>
+                  {lq.score}% - {lq.label}
+                </span>
+              </div>
+            );
+          })()}
           <div className="flex justify-between mb-2">
             <span>RSSI (Señal)</span>
-            <span className={sensor.rssi > -80 ? "text-green-400" : "text-yellow-400"}>
-              {sensor.rssi} dBm <Signal size={10} className="inline ml-1" />
+            <span className={sensor.rssi > -80 ? "text-emerald-400" : "text-yellow-400"}>
+              {sensor.rssi} dBm
+            </span>
+          </div>
+          <div className="flex justify-between mb-2">
+            <span>SNR (Ruido)</span>
+            <span className={(sensor.snr || 0) > 0 ? "text-emerald-400" : "text-rose-400"}>
+              {sensor.snr || 0} dB
             </span>
           </div>
           <div className="flex justify-between mb-2">

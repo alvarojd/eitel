@@ -18,6 +18,7 @@ export interface SensorData {
   humidity: number;
   co2?: number;
   rssi: number; // Signal strength
+  snr?: number; // Signal-to-noise ratio
   lastSeen: string;
   location: string;
   registeredAt?: string;

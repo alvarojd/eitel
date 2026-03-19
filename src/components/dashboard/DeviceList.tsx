@@ -4,6 +4,7 @@ import { Cpu, Battery, Signal, Clock } from 'lucide-react';
 import { STATUS_COLORS, STATUS_LABELS } from '../../constants';
 import StatusFilterBar from '../common/StatusFilterBar';
 import { filterSensors } from '../../utils/sensorFilters';
+import { calculateLinkQuality } from '../../utils/linkQuality';
 
 interface DeviceListProps {
     sensors: SensorData[];
@@ -57,19 +58,29 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect }) => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 mt-4">
+                            <div className="flex flex-col gap-3 mt-4">
                                 <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
                                     <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
                                         <Battery size={12} /> Batería
                                     </div>
                                     <div className="text-white font-semibold">{sensor.battery}%</div>
                                 </div>
-                                <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
-                                    <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
-                                        <Signal size={12} /> Señal
-                                    </div>
-                                    <div className="text-white font-semibold">{sensor.rssi} dBm</div>
-                                </div>
+                                {(() => {
+                                    const lq = calculateLinkQuality(sensor.rssi, sensor.snr);
+                                    return (
+                                        <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                                            <div className="text-xs text-slate-500 mb-1 flex items-center justify-between">
+                                                <div className="flex items-center gap-1">
+                                                    <Signal size={12} className={lq.textColor} /> Enlace
+                                                </div>
+                                                <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold bg-slate-800 border overflow-hidden whitespace-nowrap overflow-ellipsis ${lq.textColor} border-[currentColor] border-opacity-30`}>
+                                                    {lq.label}
+                                                </span>
+                                            </div>
+                                            <div className="text-white font-semibold">{lq.score}%</div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between text-xs">

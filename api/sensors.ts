@@ -9,7 +9,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { rows } = await sql`
         WITH latest_recs AS (
           SELECT DISTINCT ON (d.dev_eui) 
-            d.dev_eui, d.device_id, d.name, d.battery, d.rssi, d.latitude, d.longitude, d.gateway_id, d.created_at as registered_at,
+            d.dev_eui, d.device_id, d.name, d.battery, d.rssi, d.snr, d.latitude, d.longitude, d.gateway_id, d.created_at as registered_at,
             m.temperature, m.humidity, m.co2, m.presence, m.estado_id, m.created_at as measured_at
           FROM devices d
           LEFT JOIN measurements m ON d.dev_eui = m.dev_eui
@@ -56,6 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           humidity: row.humidity ? parseFloat(row.humidity) : 0,
           co2: row.co2 || 0,
           rssi: row.rssi || 0,
+          snr: row.snr ? parseFloat(row.snr) : 0,
           lastSeen,
           timestamp: row.measured_at,
           registeredAt: row.registered_at,

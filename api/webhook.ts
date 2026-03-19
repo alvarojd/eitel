@@ -80,12 +80,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let gateway_id = null;
     let rssi = -100;
+    let snr = 0;
     if (rx_metadata && rx_metadata.length > 0) {
       const bestGw = rx_metadata.reduce((prev: any, curr: any) =>
         ((prev.rssi || -200) > (curr.rssi || -200)) ? prev : curr
       );
       gateway_id = bestGw.gateway_ids?.gateway_id || bestGw.packet_id;
       rssi = bestGw.rssi || -100;
+      snr = bestGw.snr || 0;
 
       if (!latitude && bestGw.location) {
         latitude = bestGw.location.latitude;
@@ -111,13 +113,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 3. Database Updates
     // A. UPSERT context into `devices` table
     await sql`
-      INSERT INTO devices (dev_eui, device_id, name, battery, rssi, latitude, longitude, gateway_id, created_at)
-      VALUES (${dev_eui}, ${device_id}, ${name}, ${battery}, ${rssi}, ${latitude || null}, ${longitude || null}, ${gateway_id}, ${received_at})
+      INSERT INTO devices (dev_eui, device_id, name, battery, rssi, snr, latitude, longitude, gateway_id, created_at)
+      VALUES (${dev_eui}, ${device_id}, ${name}, ${battery}, ${rssi}, ${snr}, ${latitude || null}, ${longitude || null}, ${gateway_id}, ${received_at})
       ON CONFLICT (dev_eui) DO UPDATE 
       SET 
         name = COALESCE(devices.name, EXCLUDED.name),
         battery = EXCLUDED.battery,
         rssi = EXCLUDED.rssi,
+        snr = EXCLUDED.snr,
         latitude = COALESCE(devices.latitude, EXCLUDED.latitude),
         longitude = COALESCE(devices.longitude, EXCLUDED.longitude),
         gateway_id = EXCLUDED.gateway_id;

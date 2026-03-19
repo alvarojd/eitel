@@ -197,7 +197,7 @@ const App: React.FC = () => {
               selectedSensorId={selectedSensorId}
             />
           ) : activeTab === Tab.CRONO ? (
-            <CronoPanel />
+            <CronoPanel sensors={sensors} onSensorSelect={handleSensorSelect} />
           ) : activeTab === Tab.INFORMES ? (
             <ReportsPanel sensors={sensors} />
           ) : (

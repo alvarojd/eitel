@@ -33,6 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         name TEXT,
         battery INTEGER DEFAULT 100,
         rssi INTEGER DEFAULT -100,
+        snr DECIMAL DEFAULT 0,
         latitude DECIMAL,
         longitude DECIMAL,
         gateway_id TEXT,
@@ -62,6 +63,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await sql`ALTER TABLE devices ENABLE ROW LEVEL SECURITY`;
     await sql`ALTER TABLE measurements ENABLE ROW LEVEL SECURITY`;
     await sql`ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY`;
+
+    // Políticas de seguridad (Para quitar advertencias en Supabase)
+    await sql`DROP POLICY IF EXISTS "Deny all public access" ON users`;
+    await sql`CREATE POLICY "Deny all public access" ON users FOR ALL USING (false)`;
+
+    await sql`DROP POLICY IF EXISTS "Deny all public access" ON devices`;
+    await sql`CREATE POLICY "Deny all public access" ON devices FOR ALL USING (false)`;
+
+    await sql`DROP POLICY IF EXISTS "Deny all public access" ON measurements`;
+    await sql`CREATE POLICY "Deny all public access" ON measurements FOR ALL USING (false)`;
+
+    await sql`DROP POLICY IF EXISTS "Deny all public access" ON audit_logs`;
+    await sql`CREATE POLICY "Deny all public access" ON audit_logs FOR ALL USING (false)`;
 
     // Normalización de IDs existentes
     await sql`UPDATE devices SET device_id = LOWER(device_id)`;

@@ -3,8 +3,14 @@ import { HeatmapDeviceRow, HeatmapDataPoint } from '../../types';
 import { fetchHeatmapData } from '../../services/ttnService';
 import { STATUS_BG_COLORS, STATUS_LABELS } from '../../constants';
 import { Loader2, X } from 'lucide-react';
+import { SensorData } from '../../types';
 
-const CronoPanel: React.FC = () => {
+interface CronoPanelProps {
+  sensors: SensorData[];
+  onSensorSelect: (sensor: SensorData) => void;
+}
+
+const CronoPanel: React.FC<CronoPanelProps> = ({ sensors, onSensorSelect }) => {
   const [data, setData] = useState<HeatmapDeviceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPoint, setSelectedPoint] = useState<{
@@ -85,6 +91,13 @@ const CronoPanel: React.FC = () => {
     });
   };
 
+  const handleRowClick = (deviceId: string) => {
+    const sensor = sensors.find(s => s.id === deviceId);
+    if (sensor) {
+      onSensorSelect(sensor);
+    }
+  };
+
   return (
     <div className="flex-1 overflow-auto h-full p-6 text-white bg-slate-900 rounded-2xl shadow-inner border border-slate-700/50 relative">
       <h2 className="text-xl lg:text-3xl font-bold mb-4 lg:mb-8 text-white tracking-tight flex items-center gap-3">
@@ -105,8 +118,11 @@ const CronoPanel: React.FC = () => {
           {data.map((row) => (
             <div key={row.deviceId} className="flex h-10 group">
               {/* Device Label */}
-              <div className="w-48 flex-shrink-0 flex items-center pr-4 border-r border-slate-800">
-                <span className="text-sm font-medium text-slate-300 truncate group-hover:text-white transition-colors" title={row.name}>
+              <div 
+                className="w-48 flex-shrink-0 flex items-center pr-4 border-r border-slate-800 cursor-pointer hover:bg-slate-800/30 transition-all"
+                onClick={() => handleRowClick(row.deviceId)}
+              >
+                <span className="text-sm font-medium text-slate-300 truncate group-hover:text-sky-400 transition-colors" title={row.name}>
                   {row.name}
                 </span>
               </div>
