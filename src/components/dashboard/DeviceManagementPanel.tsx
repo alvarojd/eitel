@@ -8,9 +8,10 @@ import MapPicker from '../common/MapPicker';
 interface DeviceManagementPanelProps {
   sensor: SensorData | null;
   onClose: () => void;
+  onRequireUpdate?: () => void;
 }
 
-const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, onClose }) => {
+const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, onClose, onRequireUpdate }) => {
   const { token } = useAuth();
   
   // Form state
@@ -62,6 +63,7 @@ const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, o
       });
       if (res.ok) {
         // We close the panel to force a refresh on the main list
+        if (onRequireUpdate) onRequireUpdate();
         onClose();
       }
     } catch (e) {
@@ -93,6 +95,7 @@ const DeviceManagementPanel: React.FC<DeviceManagementPanelProps> = ({ sensor, o
         })
       });
       if (res.ok) {
+        if (onRequireUpdate) onRequireUpdate();
         onClose();
       }
     } catch (e) {

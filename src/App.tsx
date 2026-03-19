@@ -24,18 +24,18 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>(Tab.RESUMEN);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await fetchSensorData();
-        setSensors(data);
-      } catch (error) {
-        console.error("Error polling data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadData = async () => {
+    try {
+      const data = await fetchSensorData();
+      setSensors(data);
+    } catch (error) {
+      console.error("Error polling data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 300000); // 5 minutes
     return () => clearInterval(interval);
@@ -94,7 +94,7 @@ const App: React.FC = () => {
     }
 
     if (activeTab === Tab.DISPOSITIVOS && isAdmin) {
-      return <DeviceManagementPanel sensor={selectedSensor} onClose={handleCloseDetail} />;
+      return <DeviceManagementPanel sensor={selectedSensor} onClose={handleCloseDetail} onRequireUpdate={loadData} />;
     }
 
     if (selectedSensor) {
