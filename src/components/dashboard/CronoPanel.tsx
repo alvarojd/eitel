@@ -91,8 +91,8 @@ const CronoPanel: React.FC<CronoPanelProps> = ({ sensors, onSensorSelect }) => {
     });
   };
 
-  const handleRowClick = (deviceId: string) => {
-    const sensor = sensors.find(s => s.id === deviceId);
+  const handleRowClick = (deviceId: string, rowName: string) => {
+    const sensor = sensors.find(s => s.id === deviceId || s.devEui === deviceId || s.name === rowName || s.name === deviceId);
     if (sensor) {
       onSensorSelect(sensor);
     }
@@ -120,7 +120,7 @@ const CronoPanel: React.FC<CronoPanelProps> = ({ sensors, onSensorSelect }) => {
               {/* Device Label */}
               <div 
                 className="w-48 flex-shrink-0 flex items-center pr-4 border-r border-slate-800 cursor-pointer hover:bg-slate-800/30 transition-all"
-                onClick={() => handleRowClick(row.deviceId)}
+                onClick={() => handleRowClick(row.deviceId, row.name)}
               >
                 <span className="text-sm font-medium text-slate-300 truncate group-hover:text-sky-400 transition-colors" title={row.name}>
                   {row.name}

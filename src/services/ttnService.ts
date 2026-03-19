@@ -81,6 +81,7 @@ export const fetchSensorData = async (): Promise<SensorData[]> => {
         humidity: device.humidity,
         co2: device.co2,
         rssi: device.rssi,
+        snr: device.snr,
         lastSeen: device.lastSeen,
         location: device.location || `Hex ${q},${r}`,
         registeredAt: device.registeredAt,
