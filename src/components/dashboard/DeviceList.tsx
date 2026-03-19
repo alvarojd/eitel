@@ -57,30 +57,42 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect }) => {
                                     {STATUS_LABELS[sensor.estado_id]}
                                 </div>
                             </div>
-
-                            <div className="flex flex-col gap-3 mt-4">
-                                <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
-                                    <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
-                                        <Battery size={12} /> Batería
-                                    </div>
-                                    <div className="text-white font-semibold">{sensor.battery}%</div>
-                                </div>
+                            
+                            {/* Technical Details */}
+                            <div className="mt-4 bg-slate-900/80 rounded-lg p-3 text-xs font-mono text-slate-400 border border-slate-700 shadow-inner">
                                 {(() => {
                                     const lq = calculateLinkQuality(sensor.rssi, sensor.snr);
                                     return (
-                                        <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
-                                            <div className="text-xs text-slate-500 mb-1 flex items-center justify-between">
-                                                <div className="flex items-center gap-1">
-                                                    <Signal size={12} className={lq.textColor} /> Enlace
-                                                </div>
-                                                <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold bg-slate-800 border overflow-hidden whitespace-nowrap overflow-ellipsis ${lq.textColor} border-[currentColor] border-opacity-30`}>
-                                                    {lq.label}
-                                                </span>
-                                            </div>
-                                            <div className="text-white font-semibold">{lq.score}%</div>
+                                        <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-700/50">
+                                            <span className="text-slate-300 font-sans tracking-wide uppercase font-bold text-[10px] flex items-center gap-1.5"><Signal size={12} className={lq.textColor}/> Calidad Enlace</span>
+                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider bg-slate-800 border overflow-hidden whitespace-nowrap overflow-ellipsis ${lq.textColor} border-[currentColor] border-opacity-30`}>
+                                                {lq.score}% - {lq.label}
+                                            </span>
                                         </div>
                                     );
                                 })()}
+                                <div className="flex justify-between mb-2">
+                                    <span className="flex items-center gap-1"><Battery size={12} className="text-slate-500" /> Batería</span>
+                                    <span className={sensor.battery > 20 ? "text-emerald-400" : "text-rose-400"}>
+                                        {sensor.battery}%
+                                    </span>
+                                </div>
+                                <div className="flex justify-between mb-2">
+                                    <span>RSSI (Señal)</span>
+                                    <span className={sensor.rssi > -80 ? "text-emerald-400" : "text-yellow-400"}>
+                                        {sensor.rssi} dBm
+                                    </span>
+                                </div>
+                                <div className="flex justify-between mb-2">
+                                    <span>SNR (Ruido)</span>
+                                    <span className={(sensor.snr || 0) > 0 ? "text-emerald-400" : "text-rose-400"}>
+                                        {sensor.snr || 0} dB
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Gateway</span>
+                                    <span className="text-sky-400 truncate max-w-[100px]" title={sensor.gatewayId || 'Desconocido'}>{sensor.gatewayId || 'Desconocido'}</span>
+                                </div>
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between text-xs">
