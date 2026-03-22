@@ -8,30 +8,32 @@ interface HexMapProps {
   selectedSensorId: string | null;
 }
 
+// Math for Hexagon Pointy-topped
+const hexWidth = Math.sqrt(3) * HEX_SIZE;
+const hexHeight = 2 * HEX_SIZE;
+
+// Calculate pixel coordinates from axial (q, r)
+const hexToPixel = (q: number, r: number) => {
+  const x = HEX_SIZE * Math.sqrt(3) * (q + r / 2);
+  const y = HEX_SIZE * 3 / 2 * r;
+  return { x, y };
+};
+
+// Generate the polygon points for a single hex centered at 0,0
+const getHexPoints = () => {
+  const pts = [];
+  for (let i = 0; i < 6; i++) {
+    const angle_deg = 60 * i - 30;
+    const angle_rad = Math.PI / 180 * angle_deg;
+    pts.push(`${HEX_SIZE * Math.cos(angle_rad)},${HEX_SIZE * Math.sin(angle_rad)}`);
+  }
+  return pts.join(' ');
+};
+
+const HEX_POINTS = getHexPoints();
+
 const HexMap: React.FC<HexMapProps> = ({ sensors, onSensorSelect, selectedSensorId }) => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-
-  // Math for Hexagon Pointy-topped
-  const hexWidth = Math.sqrt(3) * HEX_SIZE;
-  const hexHeight = 2 * HEX_SIZE;
-
-  // Calculate pixel coordinates from axial (q, r)
-  const hexToPixel = (q: number, r: number) => {
-    const x = HEX_SIZE * Math.sqrt(3) * (q + r / 2);
-    const y = HEX_SIZE * 3 / 2 * r;
-    return { x, y };
-  };
-
-  // Generate the polygon points for a single hex centered at 0,0
-  const points = useMemo(() => {
-    const pts = [];
-    for (let i = 0; i < 6; i++) {
-      const angle_deg = 60 * i - 30;
-      const angle_rad = Math.PI / 180 * angle_deg;
-      pts.push(`${HEX_SIZE * Math.cos(angle_rad)},${HEX_SIZE * Math.sin(angle_rad)}`);
-    }
-    return pts.join(' ');
-  }, []);
 
   // Calculate ViewBox
   const { minX, maxX, minY, maxY } = useMemo(() => {
@@ -90,7 +92,7 @@ const HexMap: React.FC<HexMapProps> = ({ sensors, onSensorSelect, selectedSensor
             >
               {/* Hexagon Shape */}
               <polygon
-                points={points}
+                points={HEX_POINTS}
                 fill={color}
                 fillOpacity={isSelected || isHovered ? 1 : 0.8}
                 stroke={isSelected ? '#fff' : '#0f172a'}
