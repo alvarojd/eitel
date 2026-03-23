@@ -15,7 +15,7 @@ interface SensorDetailProps {
 const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
   const [historyData, setHistoryData] = React.useState<HistoryDataPoint[]>([]);
   const [loadingHistory, setLoadingHistory] = React.useState(false);
-  
+
   React.useEffect(() => {
     if (sensor) {
       const loadHistory = async () => {
@@ -123,11 +123,8 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
             </div>
           </div>
 
-          <div 
-            className="h-64 w-full rounded-xl border border-slate-700/50 flex items-center justify-center overflow-hidden"
-            style={{
-              background: 'linear-gradient(to bottom, #9a4545cc 0%, #9a4545cc 18.75%, #4a7c59cc 18.75%, #4a7c59cc 75%, #526d82cc 75%, #526d82cc 100%)'
-            }}
+          <div
+            className="h-64 w-full rounded-xl border border-slate-700/50 flex items-center justify-center overflow-hidden bg-slate-800"
           >
             {loadingHistory ? (
               <div className="flex items-center gap-2 text-slate-500">
@@ -138,27 +135,32 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={historyData} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" vertical={true} strokeOpacity={0.15} />
-                  <XAxis 
-                    dataKey="time" 
-                    stroke="#ffffff" 
-                    fontSize={10} 
-                    tickLine={true} 
+                  <XAxis
+                    dataKey="time"
+                    stroke="#ffffff"
+                    fontSize={10}
+                    tickLine={true}
                     axisLine={true}
                     label={{ value: 'Eje del Tiempo', position: 'bottom', offset: 0, fill: '#ffffff', fontSize: 10, opacity: 0.8 }}
                   />
-                  <YAxis 
-                    stroke="#ffffff" 
-                    fontSize={10} 
-                    tickLine={true} 
-                    axisLine={true} 
-                    domain={[14, 30]}
+                  <YAxis
+                    stroke="#ffffff"
+                    fontSize={10}
+                    tickLine={true}
+                    axisLine={true}
+                    domain={[15, 30]}
                     label={{ value: 'Temperatura °C', angle: -90, position: 'insideLeft', fill: '#ffffff', fontSize: 10, opacity: 0.8 }}
                   />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
                     itemStyle={{ color: '#ffffff' }}
                   />
-                  
+
+                  <ReferenceArea y2={27} fill="#9a4545" fillOpacity={0.8} ifOverflow="extendDomain" />
+                  <ReferenceArea y1={18} y2={27} fill="#4a7c59" fillOpacity={0.8} ifOverflow="extendDomain" />
+                  <ReferenceArea y1={18} fill="#526d82" fillOpacity={0.8} ifOverflow="extendDomain" />
+
+
                   <Area
                     type="monotone"
                     dataKey="value"
@@ -185,7 +187,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
             const lq = calculateLinkQuality(sensor.rssi, sensor.snr);
             return (
               <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-700/50">
-               <span className="text-slate-300 font-sans tracking-wide uppercase font-bold text-[10px] flex items-center gap-1.5"><Signal size={12} className={lq.textColor}/> Calidad del Enlace</span>
+                <span className="text-slate-300 font-sans tracking-wide uppercase font-bold text-[10px] flex items-center gap-1.5"><Signal size={12} className={lq.textColor} /> Calidad del Enlace</span>
                 <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold tracking-wider bg-slate-800 ${lq.textColor}`}>
                   {lq.score}% - {lq.label}
                 </span>
@@ -209,14 +211,14 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
             <span className="text-sky-400">{sensor.gatewayId || 'Desconocido'}</span>
           </div>
           <div className="flex justify-between mb-2">
-             <span>Latitud</span>
-             <span className="text-slate-200">{sensor.latitude || '-'}</span>
+            <span>Latitud</span>
+            <span className="text-slate-200">{sensor.latitude || '-'}</span>
           </div>
           <div className="flex justify-between mb-2">
-             <span>Longitud</span>
-             <span className="text-slate-200">{sensor.longitude || '-'}</span>
+            <span>Longitud</span>
+            <span className="text-slate-200">{sensor.longitude || '-'}</span>
           </div>
-          
+
           {sensor.latitude && sensor.longitude && (
             <div className="mt-3 pt-3 border-t border-slate-700/50">
               <a
