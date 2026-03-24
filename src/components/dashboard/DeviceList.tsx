@@ -63,7 +63,7 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect }) => {
                                 {(() => {
                                     const lq = calculateLinkQuality(sensor.rssi, sensor.snr);
                                     return (
-                                        <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-700/50">
+                                        <div className="flex justify-between items-center mb-2">
                                             <span className="text-slate-300 font-sans tracking-wide uppercase font-bold text-[10px] flex items-center gap-1.5"><Signal size={12} className={lq.textColor}/> Calidad Enlace</span>
                                             <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider bg-slate-800 border overflow-hidden whitespace-nowrap overflow-ellipsis ${lq.textColor} border-[currentColor] border-opacity-30`}>
                                                 {lq.score}% - {lq.label}
@@ -71,12 +71,6 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect }) => {
                                         </div>
                                     );
                                 })()}
-                                <div className="flex justify-between mb-2">
-                                    <span className="flex items-center gap-1"><Battery size={12} className="text-slate-500" /> Batería</span>
-                                    <span className={sensor.battery > 20 ? "text-emerald-400" : "text-rose-400"}>
-                                        {sensor.battery}%
-                                    </span>
-                                </div>
                                 <div className="flex justify-between mb-2">
                                     <span>RSSI (Señal)</span>
                                     <span className={sensor.rssi > -80 ? "text-emerald-400" : "text-yellow-400"}>
@@ -89,9 +83,16 @@ const DeviceList: React.FC<DeviceListProps> = ({ sensors, onSensorSelect }) => {
                                         {sensor.snr || 0} dB
                                     </span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between mb-2">
                                     <span>Gateway</span>
                                     <span className="text-sky-400 truncate max-w-[100px]" title={sensor.gatewayId || 'Desconocido'}>{sensor.gatewayId || 'Desconocido'}</span>
+                                </div>
+                                <div className="border-t border-slate-700/50 my-2" />
+                                <div className="flex justify-between">
+                                    <span className="flex items-center gap-1"><Battery size={12} className="text-slate-500" /> Batería</span>
+                                    <span className={sensor.battery > 20 ? "text-emerald-400" : "text-rose-400"}>
+                                        {sensor.battery}%
+                                    </span>
                                 </div>
                             </div>
 

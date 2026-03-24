@@ -1,7 +1,7 @@
 import React from 'react';
 import { SensorData, HistoryDataPoint } from '../../types';
 import { STATUS_TEXT_COLORS, STATUS_BG_COLORS, STATUS_LABELS } from '../../constants';
-import { Thermometer, Droplets, UserCheck, Signal, Wind, X, MapPin, Clock, Loader2, ExternalLink, Save, Trash2, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { Thermometer, Droplets, UserCheck, Signal, Battery, Wind, X, MapPin, Clock, Loader2, ExternalLink, Save, Trash2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { fetchSensorHistory } from '../../services/ttnService';
 import { useAuth } from '../auth/AuthContext';
@@ -186,7 +186,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
           {(() => {
             const lq = calculateLinkQuality(sensor.rssi, sensor.snr);
             return (
-              <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-700/50">
+              <div className="flex justify-between items-center mb-2">
                 <span className="text-slate-300 font-sans tracking-wide uppercase font-bold text-[10px] flex items-center gap-1.5"><Signal size={12} className={lq.textColor} /> Calidad del Enlace</span>
                 <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold tracking-wider bg-slate-800 ${lq.textColor}`}>
                   {lq.score}% - {lq.label}
@@ -210,6 +210,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
             <span>Gateway</span>
             <span className="text-sky-400">{sensor.gatewayId || 'Desconocido'}</span>
           </div>
+          <div className="border-t border-slate-700/50 my-2" />
           <div className="flex justify-between mb-2">
             <span>Latitud</span>
             <span className="text-slate-200">{sensor.latitude || '-'}</span>
@@ -220,7 +221,7 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
           </div>
 
           {sensor.latitude && sensor.longitude && (
-            <div className="mt-3 pt-3 border-t border-slate-700/50">
+            <div className="mt-2">
               <a
                 href={`https://www.google.com/maps?q=${sensor.latitude},${sensor.longitude}`}
                 target="_blank"
@@ -232,6 +233,13 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
               </a>
             </div>
           )}
+          <div className="border-t border-slate-700/50 my-2" />
+          <div className="flex justify-between">
+            <span className="flex items-center gap-1"><Battery size={12} className="text-slate-500" /> Batería</span>
+            <span className={sensor.battery > 20 ? "text-emerald-400" : "text-rose-400"}>
+              {sensor.battery}%
+            </span>
+          </div>
         </div>
       </div>
     </div>
