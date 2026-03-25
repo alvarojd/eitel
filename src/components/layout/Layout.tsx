@@ -147,7 +147,7 @@ const Layout: React.FC<LayoutProps> = ({
         {/* Top Header */}
         <header className="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4 lg:px-6 absolute top-0 left-0 right-0 z-10 print:hidden">
           <div className="flex items-center gap-3">
-            <h1 className="text-sm lg:text-xl font-semibold text-white truncate">IE TEL - Dashbord IoT</h1>
+            <h1 className="text-sm lg:text-xl font-semibold text-white truncate">HexaSense - Dashboard IoT</h1>
             {isAdmin && (
                <span className="hidden sm:inline-block px-2 py-0.5 bg-sky-500/10 border border-sky-500/20 rounded text-[10px] text-sky-400 font-bold uppercase tracking-widest">Admin</span>
             )}

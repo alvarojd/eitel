@@ -106,7 +106,7 @@ const Login: React.FC = () => {
         </div>
 
         <p className="text-center mt-8 text-slate-500 text-sm">
-          Sistema de gestión de sensores ietel &copy; 2026
+          Sistema de gestión de sensores HexaSense &copy; 2026
         </p>
       </div>
     </div>

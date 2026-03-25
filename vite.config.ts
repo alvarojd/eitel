@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       proxy: {
         '/api': {
-          target: 'https://ietel.vercel.app',
+          target: 'https://eitel-getafe.vercel.app',
           changeOrigin: true,
           secure: true,
         },

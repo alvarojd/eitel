@@ -27,9 +27,9 @@ const payload = {
 };
 
 async function testWebhook() {
-    console.log('Sending test payload to https://ietel.vercel.app/api/webhook...');
+    console.log('Sending test payload to https://eitel-getafe.vercel.app/api/webhook...');
     try {
-        const response = await fetch('https://ietel.vercel.app/api/webhook', {
+        const response = await fetch('https://eitel-getafe.vercel.app/api/webhook', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
