@@ -102,15 +102,13 @@ const Layout: React.FC<LayoutProps> = ({
             onClick={() => onTabChange(Tab.DISPOSITIVOS)}
             isCollapsed={isSidebarCollapsed}
           />
-          {isAdmin && (
-            <NavItem
-              icon={<Settings size={20} />}
-              label="Configuración"
-              active={activeTab === Tab.CONFIGURACION}
-              onClick={() => onTabChange(Tab.CONFIGURACION)}
-              isCollapsed={isSidebarCollapsed}
-            />
-          )}
+          <NavItem
+            icon={<Settings size={20} />}
+            label="Configuración"
+            active={activeTab === Tab.CONFIGURACION}
+            onClick={() => onTabChange(Tab.CONFIGURACION)}
+            isCollapsed={isSidebarCollapsed}
+          />
         </div>
 
         <div className={`p-4 border-t border-slate-800 transition-all duration-300 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>

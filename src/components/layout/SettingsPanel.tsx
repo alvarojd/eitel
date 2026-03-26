@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, PlayCircle, ShieldCheck, Users, UserPlus, Trash2, Loader2, Shield, Key, FileText, Clock, RefreshCw } from 'lucide-react';
+import { Database, PlayCircle, ShieldCheck, Users, UserPlus, Trash2, Loader2, Shield, Key, FileText, Clock, RefreshCw, Lock } from 'lucide-react';
 import { isLocalEnvironment } from '../../utils/environment';
 import { useAuth } from '../auth/AuthContext';
 
@@ -27,7 +27,7 @@ const SettingsPanel: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingLogs, setIsLoadingLogs] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
-    const [activeSection, setActiveSection] = useState<'users' | 'logs'>('users');
+    const [activeSection, setActiveSection] = useState<'users' | 'logs'>(isAdmin ? 'users' : 'logs');
     
     // New user form
     const [newUsername, setNewUsername] = useState('');
@@ -149,6 +149,7 @@ const SettingsPanel: React.FC = () => {
 
     const handleDeleteUser = async (id: string, username: string) => {
         if (!window.confirm(`¿Seguro que deseas eliminar al usuario "${username}"?`)) return;
+        setError('');
         try {
             const res = await fetch(`/api/users?id=${id}`, {
                 method: 'DELETE',
@@ -157,10 +158,20 @@ const SettingsPanel: React.FC = () => {
             if (res.ok) {
                 fetchUsers();
                 fetchAuditLogs();
+            } else {
+                const data = await res.json();
+                setError(data.error || 'Error al eliminar usuario');
+                setTimeout(() => setError(''), 5000);
             }
         } catch (e) {
-            console.error(e);
+            setError('Error de conexión al eliminar');
+            setTimeout(() => setError(''), 5000);
         }
+    };
+
+    // Returns true if user is protected and cannot be deleted
+    const isProtectedUser = (u: User) => {
+        return u.id === currentUser?.id || u.username === 'admin';
     };
 
     return (
@@ -228,7 +239,7 @@ const SettingsPanel: React.FC = () => {
                                 />
                                 <button 
                                     onClick={() => handleUpdatePassword(currentUser?.id || '')}
-                                    disabled={isSubmitting || !updatePassword}
+                                    disabled={isSubmitting || updatePassword.length < 8}
                                     className="w-full bg-sky-600 py-2 rounded text-xs font-bold text-white hover:bg-sky-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Key size={14} />}
@@ -292,7 +303,7 @@ const SettingsPanel: React.FC = () => {
                                 </div>
                                 {error && <p className="text-[10px] text-rose-500">{error}</p>}
                                 <button 
-                                    disabled={isSubmitting}
+                                    disabled={isSubmitting || newPassword.length < 8}
                                     className="w-full bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold py-2 rounded text-xs transition-all flex items-center justify-center gap-1 shadow-lg"
                                 >
                                     {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
@@ -322,23 +333,34 @@ const SettingsPanel: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <button 
-                                                    onClick={() => {
-                                                        setUpdatingPasswordUserId(updatingPasswordUserId === user.id ? null : user.id);
-                                                        setUpdatePassword('');
-                                                    }}
-                                                    className={`p-1.5 rounded transition-all ${updatingPasswordUserId === user.id ? 'text-sky-400 bg-sky-400/10' : 'text-slate-600 hover:text-sky-400 hover:bg-sky-400/10'}`}
-                                                    title="Cambiar contraseña"
-                                                >
-                                                    <Key size={14} />
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDeleteUser(user.id, user.username)}
-                                                    className="p-1.5 text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
-                                                    title="Eliminar usuario"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
+                                                {user.id !== currentUser?.id && (
+                                                    <button 
+                                                        onClick={() => {
+                                                            setUpdatingPasswordUserId(updatingPasswordUserId === user.id ? null : user.id);
+                                                            setUpdatePassword('');
+                                                        }}
+                                                        className={`p-1.5 rounded transition-all ${updatingPasswordUserId === user.id ? 'text-sky-400 bg-sky-400/10' : 'text-slate-600 hover:text-sky-400 hover:bg-sky-400/10'}`}
+                                                        title="Cambiar contraseña"
+                                                    >
+                                                        <Key size={14} />
+                                                    </button>
+                                                )}
+                                                {isProtectedUser(user) ? (
+                                                    <div
+                                                        className="p-1.5 text-slate-700 rounded cursor-not-allowed opacity-60"
+                                                        title={user.username === 'admin' ? 'El usuario admin está protegido' : 'No puedes eliminar tu propio usuario'}
+                                                    >
+                                                        <Lock size={14} />
+                                                    </div>
+                                                ) : (
+                                                    <button 
+                                                        onClick={() => handleDeleteUser(user.id, user.username)}
+                                                        className="p-1.5 text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
+                                                        title="Eliminar usuario"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                         {updatingPasswordUserId === user.id && (
@@ -353,7 +375,7 @@ const SettingsPanel: React.FC = () => {
                                                     />
                                                     <button 
                                                         onClick={() => handleUpdatePassword(user.id)}
-                                                        disabled={isSubmitting || !updatePassword}
+                                                        disabled={isSubmitting || updatePassword.length < 8}
                                                         className="bg-sky-600 px-3 py-1 rounded text-[10px] font-bold text-white hover:bg-sky-500 disabled:opacity-50"
                                                     >
                                                         {isSubmitting ? <Loader2 size={10} className="animate-spin" /> : 'OK'}

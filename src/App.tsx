@@ -125,7 +125,27 @@ const App: React.FC = () => {
       );
     }
 
-    if (activeTab === Tab.CONFIGURACION || activeTab === 'configuracion' as Tab) {
+    if (activeTab === Tab.CONFIGURACION) {
+      if (!isAdmin) {
+        return (
+          <div className="flex-1 flex items-center justify-center p-8 text-center animate-in fade-in duration-500">
+            <div className="max-w-md">
+              <div className="w-20 h-20 bg-sky-500/10 rounded-3xl flex items-center justify-center border border-sky-500/20 shadow-inner mx-auto mb-6">
+                <ShieldCheck size={40} className="text-sky-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-4">Gestión de Perfil</h2>
+              <p className="text-slate-400 leading-relaxed">
+                Has accedido al panel de configuración de tu cuenta. Utiliza el panel lateral derecho para actualizar tus credenciales de acceso y gestionar tu seguridad.
+              </p>
+              <div className="mt-8 p-4 bg-slate-800/50 rounded-xl border border-slate-700 inline-flex items-center gap-2 text-xs text-slate-500">
+                <div className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
+                Sincronizado con la base de datos central
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="max-w-2xl w-full text-center">
