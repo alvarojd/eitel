@@ -7,7 +7,7 @@ import SensorDetail from './components/dashboard/SensorDetail';
 import LegendPanel from './components/dashboard/LegendPanel';
 import DeviceList from './components/dashboard/DeviceList';
 import DeviceManagementPanel from './components/dashboard/DeviceManagementPanel';
-import SettingsPanel from './components/layout/SettingsPanel';
+import SettingsView from './components/settings/SettingsView';
 import StatsPanel from './components/common/StatsPanel';
 import ReportsPanel from './components/reports/ReportsPanel';
 import { fetchSensorData } from './services/ttnService';
@@ -95,9 +95,7 @@ const App: React.FC = () => {
 
   const renderSidebar = () => {
     if (activeTab === Tab.CONFIGURACION) {
-      return (
-        <SettingsPanel />
-      );
+      return null;
     }
 
     if (activeTab === Tab.DISPOSITIVOS && isAdmin) {
@@ -126,61 +124,7 @@ const App: React.FC = () => {
     }
 
     if (activeTab === Tab.CONFIGURACION) {
-      if (!isAdmin) {
-        return (
-          <div className="flex-1 flex items-center justify-center p-8 text-center animate-in fade-in duration-500">
-            <div className="max-w-md">
-              <div className="w-20 h-20 bg-sky-500/10 rounded-3xl flex items-center justify-center border border-sky-500/20 shadow-inner mx-auto mb-6">
-                <ShieldCheck size={40} className="text-sky-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-4">Gestión de Perfil</h2>
-              <p className="text-slate-400 leading-relaxed">
-                Has accedido al panel de configuración de tu cuenta. Utiliza el panel lateral derecho para actualizar tus credenciales de acceso y gestionar tu seguridad.
-              </p>
-              <div className="mt-8 p-4 bg-slate-800/50 rounded-xl border border-slate-700 inline-flex items-center gap-2 text-xs text-slate-500">
-                <div className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
-                Sincronizado con la base de datos central
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      return (
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="max-w-2xl w-full text-center">
-            <div className="mb-8 flex justify-center">
-              <div className="w-20 h-20 bg-sky-500/10 rounded-3xl flex items-center justify-center border border-sky-500/20 shadow-inner">
-                <Database size={40} className="text-sky-400" />
-              </div>
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-4">Panel de Herramientas y Datos</h2>
-            <p className="text-slate-400 mb-8 leading-relaxed">
-              Utiliza el panel derecho para alternar entre el flujo de datos real de TTN o la generación de datos simulados para pruebas de despliegue.
-            </p>
-
-            <div className="bg-slate-800/80 p-6 rounded-2xl border border-sky-500/30 text-left shadow-xl">
-              <div className="flex items-center gap-3 mb-4">
-                <ShieldCheck className="text-sky-400" size={24} />
-                <h3 className="text-white font-bold text-lg">Conexión a Datos Reales</h3>
-              </div>
-              <p className="text-sm text-slate-300 leading-relaxed mb-4">
-                La aplicación está conectada directamente a la infraestructura de producción:
-              </p>
-              <ul className="space-y-3 text-sm">
-                <li className="flex items-center gap-2 text-slate-400">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span><strong>Entorno de Datos:</strong> TTN + Postgres (Supabase).</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-400">
-                  <div className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                  <span><strong>Endpoints:</strong> /api/sensors, /api/history, /api/reports.</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      );
+      return <SettingsView />;
     }
 
     if (sensors.length === 0) {

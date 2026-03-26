@@ -31,11 +31,15 @@ const Layout: React.FC<LayoutProps> = ({
   onSearchChange
 }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+  const [isDesktop, setIsDesktop] = React.useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
+  const [sidebarWidth, setSidebarWidth] = React.useState(416);
+  const [isResizing, setIsResizing] = React.useState(false);
   const { user, isAdmin, logout } = useAuth();
 
-  // Auto-collapse on small screens on initial load
+  // Auto-collapse on small screens on initial load & handle resize
   React.useEffect(() => {
     const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
       if (window.innerWidth < 1024) {
         setIsSidebarCollapsed(true);
       } else {
@@ -43,8 +47,36 @@ const Layout: React.FC<LayoutProps> = ({
       }
     };
 
+    window.addEventListener('resize', handleResize);
     handleResize();
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Handle resizing of right panel
+  React.useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = window.innerWidth - e.clientX;
+      if (newWidth >= 300 && newWidth <= 800) {
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.body.style.userSelect = 'none';
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing]);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -169,12 +201,33 @@ const Layout: React.FC<LayoutProps> = ({
           {/* Center Canvas */}
           <div className="flex-1 p-4 lg:p-6 overflow-hidden flex flex-col relative min-h-[400px] lg:min-h-0 print:p-0 print:block print:h-auto print:min-h-0">
             {children}
+            {isResizing && <div className="absolute inset-0 z-50 cursor-col-resize mix-blend-overlay" />}
           </div>
 
+          {/* Resizer Handle */}
+          {sidebar && isDesktop && (
+            <div 
+              onMouseDown={() => setIsResizing(true)}
+              className={`w-1 lg:w-1.5 cursor-col-resize flex-shrink-0 z-30 group flex flex-col items-center justify-center border-l border-slate-700 hover:bg-sky-500/50 transition-colors ${isResizing ? 'bg-sky-500' : 'bg-slate-800'}`}
+              title="Arrastra para redimensionar el panel"
+            >
+              <div className="h-8 w-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="w-full h-1 bg-sky-300 rounded"></div>
+                <div className="w-full h-1 bg-sky-300 rounded"></div>
+                <div className="w-full h-1 bg-sky-300 rounded"></div>
+              </div>
+            </div>
+          )}
+
           {/* Right Panel - Context Aware */}
-          <div className="w-full lg:w-[416px] bg-slate-800 border-t lg:border-t-0 lg:border-l border-slate-700 flex-shrink-0 z-20 shadow-xl relative min-h-[500px] lg:min-h-0 print:hidden">
-            {sidebar}
-          </div>
+          {sidebar && (
+            <div 
+              style={isDesktop ? { width: `${sidebarWidth}px`, flexBasis: `${sidebarWidth}px` } : undefined}
+              className={`w-full bg-slate-800 border-t lg:border-t-0 flex-shrink-0 z-20 shadow-xl relative min-h-[500px] lg:min-h-0 print:hidden ${!isDesktop ? 'border-l-0' : 'border-l-0' /* Handled by resizer */}`}
+            >
+              {sidebar}
+            </div>
+          )}
         </div>
       </main>
     </div>
