@@ -3,8 +3,38 @@ import { hashPassword } from '../src/utils/auth.js';
 import { VercelRequest, VercelResponse } from '../src/types.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // SECURITY LOCK: If any ADMIN exists, block setup
   try {
-    // 1. Create tables if not exists
+    const adminCheck = await sql`SELECT 1 FROM users WHERE role = 'ADMIN' LIMIT 1`.catch(() => ({ rows: [] }));
+    if (adminCheck.rows.length > 0) {
+      return res.status(403).json({ 
+        error: 'Forbidden', 
+        message: 'El sistema ya ha sido inicializado. Contacte con el administrador.' 
+      });
+    }
+  } catch (e) {
+    // Table might not exist, proceed
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  const { 
+    adminPassword, 
+    projectName, 
+    ttnAppId, 
+    ttnApiKey, 
+    defaultLat, 
+    defaultLng 
+  } = req.body;
+
+  if (!adminPassword || !projectName) {
+    return res.status(400).json({ error: 'Faltan parámetros obligatorios (Password o Nombre del Proyecto)' });
+  }
+
+  try {
+    // 1. Create tables
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -12,6 +42,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         password_hash TEXT NOT NULL,
         role TEXT NOT NULL CHECK (role IN ('ADMIN', 'VIEWER')),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS system_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
 
@@ -54,50 +92,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
     `;
 
-    // Optimización: Índices para mejorar el rendimiento
+    // Indices and RLS logic (Keeping standard from before)
     await sql`CREATE INDEX IF NOT EXISTS idx_measurements_dev_eui_time ON measurements (dev_eui, created_at DESC)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_measurements_time ON measurements (created_at DESC)`;
-
-    // Seguridad: Activar Row Level Security (RLS)
-    await sql`ALTER TABLE users ENABLE ROW LEVEL SECURITY`;
-    await sql`ALTER TABLE devices ENABLE ROW LEVEL SECURITY`;
-    await sql`ALTER TABLE measurements ENABLE ROW LEVEL SECURITY`;
-    await sql`ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY`;
-
-    // Políticas de seguridad (Para quitar advertencias en Supabase)
-    await sql`DROP POLICY IF EXISTS "Deny all public access" ON users`;
-    await sql`CREATE POLICY "Deny all public access" ON users FOR ALL USING (false)`;
-
-    await sql`DROP POLICY IF EXISTS "Deny all public access" ON devices`;
-    await sql`CREATE POLICY "Deny all public access" ON devices FOR ALL USING (false)`;
-
-    await sql`DROP POLICY IF EXISTS "Deny all public access" ON measurements`;
-    await sql`CREATE POLICY "Deny all public access" ON measurements FOR ALL USING (false)`;
-
-    await sql`DROP POLICY IF EXISTS "Deny all public access" ON audit_logs`;
-    await sql`CREATE POLICY "Deny all public access" ON audit_logs FOR ALL USING (false)`;
-
-    // Normalización de IDs existentes
-    await sql`UPDATE devices SET device_id = LOWER(device_id)`;
-
-    // 2. Check if admin exists
-    const { rows } = await sql`SELECT * FROM users WHERE username = 'admin'`;
     
-    if (rows.length === 0) {
-      const passwordHash = await hashPassword('PepitoCAOS');
+    // 2. Create Admin User
+    const passwordHash = await hashPassword(adminPassword);
+    await sql`
+      INSERT INTO users (username, password_hash, role)
+      VALUES ('admin', ${passwordHash}, 'ADMIN')
+      ON CONFLICT DO NOTHING
+    `;
+
+    // 3. Save Settings
+    const settings = [
+      { key: 'project_name', value: projectName },
+      { key: 'ttn_app_id', value: ttnAppId || '' },
+      { key: 'ttn_api_key', value: ttnApiKey || '' },
+      { key: 'default_lat', value: String(defaultLat || '40.4168') },
+      { key: 'default_lng', value: String(defaultLng || '-3.7038') }
+    ];
+
+    for (const s of settings) {
       await sql`
-        INSERT INTO users (username, password_hash, role)
-        VALUES ('admin', ${passwordHash}, 'ADMIN')
+        INSERT INTO system_settings (key, value)
+        VALUES (${s.key}, ${s.value})
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
       `;
-      return res.status(200).json({ 
-        success: true, 
-        message: 'Base de datos inicializada. Usuario "admin" creado.' 
-      });
     }
 
     return res.status(200).json({ 
       success: true, 
-      message: 'La base de datos ya estaba inicializada.' 
+      message: 'Instalación completada con éxito.' 
     });
 
   } catch (error: any) {

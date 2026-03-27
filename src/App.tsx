@@ -16,18 +16,37 @@ import { Loader2, Database, ShieldCheck, PlayCircle } from 'lucide-react';
 import { useAuth } from './components/auth/AuthContext';
 import Login from './components/auth/Login';
 import useSWR from 'swr';
+import SetupWizard from './components/setup/SetupWizard';
 
 const App: React.FC = () => {
   const { isAuthenticated, isAdmin } = useAuth();
+  const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
+  const [checkingSetup, setCheckingSetup] = useState(true);
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>(Tab.RESUMEN);
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: sensors = [], isLoading: loading, mutate: loadData } = useSWR<SensorData[]>(
-    isAuthenticated ? 'sensors' : null, 
+    isAuthenticated && !needsSetup ? 'sensors' : null, 
     fetchSensorData, 
     { refreshInterval: 300000 } // 5 minutes polling
   );
+
+  useEffect(() => {
+    const fetchCheckSetup = async () => {
+      try {
+        const res = await fetch('/api/check-setup');
+        const data = await res.json();
+        setNeedsSetup(data.needsSetup);
+      } catch (err) {
+        console.error('Setup check failed:', err);
+        setNeedsSetup(true); // Default to setup if API fails
+      } finally {
+        setCheckingSetup(false);
+      }
+    };
+    fetchCheckSetup();
+  }, []);
 
   const stats = useMemo((): Stats => {
     if (sensors.length === 0) {
@@ -178,6 +197,21 @@ const App: React.FC = () => {
         );
     }
   };
+
+  if (checkingSetup) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 size={48} className="animate-spin text-sky-500 mx-auto mb-4" />
+          <p className="text-slate-400 font-medium">Iniciando sistema...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (needsSetup) {
+    return <SetupWizard onComplete={() => setNeedsSetup(false)} />;
+  }
 
   if (!isAuthenticated) {
     return <Login />;

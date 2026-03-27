@@ -34,6 +34,7 @@ const Layout: React.FC<LayoutProps> = ({
   const [isDesktop, setIsDesktop] = React.useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
   const [sidebarWidth, setSidebarWidth] = React.useState(416);
   const [isResizing, setIsResizing] = React.useState(false);
+  const [settings, setSettings] = React.useState<any>(null);
   const { user, isAdmin, logout } = useAuth();
 
   // Auto-collapse on small screens on initial load & handle resize
@@ -49,8 +50,18 @@ const Layout: React.FC<LayoutProps> = ({
 
     window.addEventListener('resize', handleResize);
     handleResize();
+
+    // Fetch system settings
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(err => console.error('Error fetching settings:', err));
+
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const projectName = settings?.project_name || 'HexaSense';
+  const projectInitial = projectName.charAt(0).toUpperCase();
 
   // Handle resizing of right panel
   React.useEffect(() => {
@@ -92,8 +103,10 @@ const Layout: React.FC<LayoutProps> = ({
           title={isSidebarCollapsed ? "Expandir menú" : "Contraer menú"}
         >
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-gradient-to-br from-sky-400 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">H</div>
-            {!isSidebarCollapsed && <span className="ml-3 text-white font-bold text-lg tracking-tight">HexaSense</span>}
+            <div className="w-8 h-8 bg-gradient-to-br from-sky-400 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+              {projectInitial}
+            </div>
+            {!isSidebarCollapsed && <span className="ml-3 text-white font-bold text-lg tracking-tight truncate max-w-[140px]">{projectName}</span>}
           </div>
           {!isSidebarCollapsed && <div className="text-slate-500 hover:text-white lg:hidden">✕</div>}
         </div>
@@ -177,7 +190,7 @@ const Layout: React.FC<LayoutProps> = ({
         {/* Top Header */}
         <header className="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4 lg:px-6 absolute top-0 left-0 right-0 z-10 print:hidden">
           <div className="flex items-center gap-3">
-            <h1 className="text-sm lg:text-xl font-semibold text-white truncate">HexaSense - Dashboard IoT</h1>
+            <h1 className="text-sm lg:text-xl font-semibold text-white truncate">{projectName}</h1>
             {isAdmin && (
                <span className="hidden sm:inline-block px-2 py-0.5 bg-sky-500/10 border border-sky-500/20 rounded text-[10px] text-sky-400 font-bold uppercase tracking-widest">Admin</span>
             )}

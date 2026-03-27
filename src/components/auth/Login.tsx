@@ -7,7 +7,17 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [projectName, setProjectName] = useState('HexaSense');
   const { login } = useAuth();
+
+  React.useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.project_name) setProjectName(data.project_name);
+      })
+      .catch(err => console.error('Error fetching settings:', err));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +52,7 @@ const Login: React.FC = () => {
           <div className="inline-flex items-center justify-center p-4 bg-sky-500/10 rounded-3xl border border-sky-500/20 shadow-inner mb-6">
             <ShieldCheck size={48} className="text-sky-400" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Acceso HexaSense</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Acceso {projectName}</h1>
           <p className="text-slate-400 mt-2">Dashboard de Monitoreo IoT</p>
         </div>
 
@@ -106,7 +116,7 @@ const Login: React.FC = () => {
         </div>
 
         <p className="text-center mt-8 text-slate-500 text-sm">
-          Sistema de gestión de sensores HexaSense &copy; 2026
+          Sistema de gestión de sensores {projectName} &copy; 2026
         </p>
       </div>
     </div>
