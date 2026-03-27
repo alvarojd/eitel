@@ -104,9 +104,9 @@ const Layout: React.FC<LayoutProps> = ({
         >
           <div className="flex items-center">
             <div className="w-8 h-8 bg-gradient-to-br from-sky-400 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-              {projectInitial}
+              H
             </div>
-            {!isSidebarCollapsed && <span className="ml-3 text-white font-bold text-lg tracking-tight truncate max-w-[140px]">{projectName}</span>}
+            {!isSidebarCollapsed && <span className="ml-3 text-white font-bold text-lg tracking-tight truncate max-w-[140px]">HexaSense</span>}
           </div>
           {!isSidebarCollapsed && <div className="text-slate-500 hover:text-white lg:hidden">✕</div>}
         </div>
