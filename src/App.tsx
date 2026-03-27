@@ -35,7 +35,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchCheckSetup = async () => {
       try {
-        const res = await fetch('/api/check-setup');
+        const res = await fetch('/api/system?action=check');
         const data = await res.json();
         setNeedsSetup(data.needsSetup);
       } catch (err) {

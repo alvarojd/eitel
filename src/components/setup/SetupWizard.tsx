@@ -58,7 +58,7 @@ const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/setup', {
+      const response = await fetch('/api/system?action=setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

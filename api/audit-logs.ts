@@ -1,4 +1,4 @@
-import { sql } from './db.js';
+import { sql } from './_db.js';
 import { authorize } from '../src/utils/auth.js';
 import { VercelRequest, VercelResponse } from '../src/types.js';
 

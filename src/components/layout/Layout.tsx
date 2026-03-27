@@ -52,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({
     handleResize();
 
     // Fetch system settings
-    fetch('/api/settings')
+    fetch('/api/system?action=getSettings')
       .then(res => res.json())
       .then(data => setSettings(data))
       .catch(err => console.error('Error fetching settings:', err));

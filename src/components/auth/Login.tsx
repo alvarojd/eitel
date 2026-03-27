@@ -11,7 +11,7 @@ const Login: React.FC = () => {
   const { login } = useAuth();
 
   React.useEffect(() => {
-    fetch('/api/settings')
+    fetch('/api/system?action=getSettings')
       .then(res => res.json())
       .then(data => {
         if (data.project_name) setProjectName(data.project_name);
