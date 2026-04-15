@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Map to a more friendly format for the chart
         const history = rows.map(row => ({
-            time: new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            time: new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
             value: parseFloat(row.temperature),
             humidity: parseFloat(row.humidity),
             co2: row.co2,

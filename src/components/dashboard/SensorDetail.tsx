@@ -22,7 +22,11 @@ const SensorDetail: React.FC<SensorDetailProps> = ({ sensor, onClose }) => {
         setLoadingHistory(true);
         try {
           const history = await fetchSensorHistory(sensor.id);
-          setHistoryData(Array.isArray(history) ? history : []);
+          const formattedHistory = Array.isArray(history) ? history.map((item: any) => ({
+            ...item,
+            time: item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : item.time
+          })) : [];
+          setHistoryData(formattedHistory);
         } catch (error) {
           console.error("Error loading history:", error);
           setHistoryData([]);

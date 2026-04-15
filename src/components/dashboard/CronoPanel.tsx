@@ -145,7 +145,7 @@ const CronoPanel: React.FC<CronoPanelProps> = ({ sensors, onSensorSelect }) => {
                        key={index} 
                        className={`flex-1 relative rounded-sm ${bgColorClass} transition-all hover:brightness-125 cursor-pointer ${isSelected ? 'ring-2 ring-sky-400 ring-inset z-10 scale-110 shadow-lg' : ''}`}
                        onClick={(e) => handlePointClick(e, point, row.name)}
-                       title={`Hora: ${new Date(point.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
+                       title={`Hora: ${new Date(point.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}`}
                      >
                        {noPresence && (
                            // Superposición "sin presencia" (icono o marca). Por ejemplo un punto gris oscuro.
@@ -207,7 +207,7 @@ const CronoPanel: React.FC<CronoPanelProps> = ({ sensors, onSensorSelect }) => {
             <div className="flex justify-between items-center text-xs">
               <span className="text-slate-400">Hora:</span>
               <span className="text-white font-bold">
-                {new Date(selectedPoint.point.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                {new Date(selectedPoint.point.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}
               </span>
             </div>
             <div className="flex justify-between items-center text-xs">

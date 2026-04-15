@@ -136,7 +136,7 @@ export const fetchReportData = async (days: number, devEui?: string): Promise<an
     const data = await response.json();
     return data.map((d: any) => ({
       ...d,
-      time: new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
       value: d.temperature // for charts compatibility
     }));
   } catch (error) {
