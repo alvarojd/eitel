@@ -17,14 +17,20 @@ const DeviceReport: React.FC<DeviceReportProps> = ({ sensor, data, presenceFilte
   const { percentages, totalHours } = useMemo(() => calculateStatePercentages(data, presenceFilter), [data, presenceFilter]);
 
   const metrics = useMemo(() => {
-    if (data.length === 0) return { avgTemp: 0, maxTemp: 0, minTemp: 0, avgHum: 0, maxHum: 0, minHum: 0, avgCo2: 0, maxCo2: 0, minCo2: 0 };
+    const filteredForMetrics = data.filter(d => {
+      if (presenceFilter === 'with-presence') return d.presence === true;
+      if (presenceFilter === 'without-presence') return d.presence === false;
+      return true;
+    });
+
+    if (filteredForMetrics.length === 0) return { avgTemp: 0, maxTemp: 0, minTemp: 0, avgHum: 0, maxHum: 0, minHum: 0, avgCo2: 0, maxCo2: 0, minCo2: 0 };
     
     let sumT = 0, sumH = 0, sumC = 0;
     let maxT = -999, minT = 999;
     let maxH = -999, minH = 999;
     let maxC = -999, minC = 99999;
 
-    data.forEach(d => {
+    filteredForMetrics.forEach(d => {
       sumT += d.temperature;
       sumH += d.humidity;
       sumC += d.co2;
@@ -37,13 +43,24 @@ const DeviceReport: React.FC<DeviceReportProps> = ({ sensor, data, presenceFilte
       if (d.co2 < minC) minC = d.co2;
     });
 
-    const count = data.length;
+    const count = filteredForMetrics.length;
+    const avgT = sumT / count;
+    const avgH = sumH / count;
+    const avgC = sumC / count;
+
+    let sumSqDiffT = 0, sumSqDiffH = 0, sumSqDiffC = 0;
+    filteredForMetrics.forEach(d => {
+      sumSqDiffT += Math.pow(d.temperature - avgT, 2);
+      sumSqDiffH += Math.pow(d.humidity - avgH, 2);
+      sumSqDiffC += Math.pow(d.co2 - avgC, 2);
+    });
+
     return {
-      avgTemp: sumT / count, maxTemp: maxT, minTemp: minT,
-      avgHum: sumH / count, maxHum: maxH, minHum: minH,
-      avgCo2: sumC / count, maxCo2: maxC, minCo2: minC
+      avgTemp: avgT, maxTemp: maxT, minTemp: minT, stdDevTemp: Math.sqrt(sumSqDiffT / count),
+      avgHum: avgH, maxHum: maxH, minHum: minH, stdDevHum: Math.sqrt(sumSqDiffH / count),
+      avgCo2: avgC, maxCo2: maxC, minCo2: minC, stdDevCo2: Math.sqrt(sumSqDiffC / count)
     };
-  }, [data]);
+  }, [data, presenceFilter]);
 
   // Group percentages for Pie Chart
   const pieData = useMemo(() => {
@@ -105,41 +122,82 @@ const DeviceReport: React.FC<DeviceReportProps> = ({ sensor, data, presenceFilte
             </div>
         </div>
 
-        {/* Metrics Cards (Spans 3 cols) */}
         <div className="col-span-1 lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm print:border-black print:bg-white">
-               <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
+            <div className="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm print:border-black print:bg-white text-center">
+               <div className="flex items-center justify-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
                  <Thermometer size={18} />
                  <span className="font-semibold text-sm">Temperatura</span>
                </div>
-               <p className="text-2xl font-bold text-slate-800 dark:text-white">{metrics.avgTemp.toFixed(1)}°C <span className="text-sm font-normal text-slate-500">promedio</span></p>
-               <div className="flex justify-between mt-2 text-xs">
-                  <span className="text-sky-500">Min: {metrics.minTemp.toFixed(1)}°</span>
-                  <span className="text-rose-500">Max: {metrics.maxTemp.toFixed(1)}°</span>
+               <p className="text-3xl font-bold text-slate-800 dark:text-white mb-2">{metrics.avgTemp.toFixed(1)}°C</p>
+               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] border-t border-slate-200 dark:border-slate-700 pt-2 text-left">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Media:</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{metrics.avgTemp.toFixed(1)}°</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">DE (σ):</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{metrics.stdDevTemp.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sky-500">Min:</span>
+                    <span className="font-semibold text-sky-500">{metrics.minTemp.toFixed(1)}°</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-rose-500">Max:</span>
+                    <span className="font-semibold text-rose-500">{metrics.maxTemp.toFixed(1)}°</span>
+                  </div>
                </div>
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm print:border-black print:bg-white">
-               <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
+            <div className="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm print:border-black print:bg-white text-center">
+               <div className="flex items-center justify-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
                  <Droplets size={18} />
                  <span className="font-semibold text-sm">Humedad</span>
                </div>
-               <p className="text-2xl font-bold text-slate-800 dark:text-white">{metrics.avgHum.toFixed(1)}% <span className="text-sm font-normal text-slate-500">promedio</span></p>
-               <div className="flex justify-between mt-2 text-xs">
-                  <span className="text-sky-500">Min: {metrics.minHum.toFixed(1)}%</span>
-                  <span className="text-sky-500">Max: {metrics.maxHum.toFixed(1)}%</span>
+               <p className="text-3xl font-bold text-slate-800 dark:text-white mb-2">{metrics.avgHum.toFixed(1)}%</p>
+               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] border-t border-slate-200 dark:border-slate-700 pt-2 text-left">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Media:</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{metrics.avgHum.toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">DE (σ):</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{metrics.stdDevHum.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sky-500">Min:</span>
+                    <span className="font-semibold text-sky-500">{metrics.minHum.toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sky-500">Max:</span>
+                    <span className="font-semibold text-sky-500">{metrics.maxHum.toFixed(1)}%</span>
+                  </div>
                </div>
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm print:border-black print:bg-white">
-               <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
+            <div className="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm print:border-black print:bg-white text-center">
+               <div className="flex items-center justify-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
                  <Wind size={18} />
                  <span className="font-semibold text-sm">CO2</span>
                </div>
-               <p className="text-2xl font-bold text-slate-800 dark:text-white">{metrics.avgCo2.toFixed(0)} ppm <span className="text-sm font-normal text-slate-500">promedio</span></p>
-               <div className="flex justify-between mt-2 text-xs">
-                  <span className="text-emerald-500">Min: {metrics.minCo2.toFixed(0)}</span>
-                  <span className="text-rose-500">Max: {metrics.maxCo2.toFixed(0)}</span>
+               <p className="text-3xl font-bold text-slate-800 dark:text-white mb-2">{metrics.avgCo2.toFixed(0)} ppm</p>
+               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] border-t border-slate-200 dark:border-slate-700 pt-2 text-left">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Media:</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{metrics.avgCo2.toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">DE (σ):</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{metrics.stdDevCo2.toFixed(1)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-500">Min:</span>
+                    <span className="font-semibold text-emerald-500">{metrics.minCo2.toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-rose-500">Max:</span>
+                    <span className="font-semibold text-rose-500">{metrics.maxCo2.toFixed(0)}</span>
+                  </div>
                </div>
             </div>
         </div>
