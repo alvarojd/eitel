@@ -1,0 +1,75 @@
+'use client';
+
+import React, { useEffect } from 'react';
+import { Sidebar } from './Sidebar';
+import { SensorDrawer } from '../dashboard/SensorDrawer';
+import { StatusInfoDrawer } from './StatusInfoDrawer';
+import { useAuth } from '@/presentation/context/AuthContext';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+
+interface DashboardShellProps {
+  children: React.ReactNode;
+  projectName?: string;
+}
+
+export function DashboardShell({ children, projectName }: DashboardShellProps) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
+        <Loader2 className="animate-spin text-sky-500" size={48} />
+        <p className="text-slate-400 font-bold tracking-widest text-xs uppercase animate-pulse">Cargando Sistema...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // El hook useAuth ya maneja la redirección en el useEffect del AuthProvider si fuera necesario, o podemos hacerlo aquí
+  }
+
+  return (
+    <div className="flex h-screen bg-slate-950 text-slate-200 overflow-hidden print:block print:h-auto print:bg-white print:text-slate-900">
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} projectName={projectName} />
+      
+      <main className={cn(
+        "flex-1 min-w-0 transition-all duration-300 flex flex-col h-full print:m-0 print:block",
+        "ml-16 lg:ml-64",
+        isSidebarOpen && "ml-0" // En móviles si está abierta cubrirá o empujará? Mejor dejar ml-16
+      )}>
+        {/* Mobile Header Toggle */}
+        <div className="lg:hidden flex items-center justify-between p-4 bg-slate-900 border-b border-slate-800 shrink-0">
+           <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 -ml-2 text-slate-400 hover:text-white"
+           >
+              <div className="w-6 h-0.5 bg-current mb-1.5" />
+              <div className="w-6 h-0.5 bg-current mb-1.5" />
+              <div className="w-6 h-0.5 bg-current" />
+           </button>
+           <span className="font-bold text-sm text-sky-500">{projectName || 'Hexasense'}</span>
+           <div className="w-8" /> {/* Spacer */}
+        </div>
+
+        <div className="flex-1 overflow-hidden p-4 lg:p-6 print:p-0 print:overflow-visible">
+          {children}
+        </div>
+      </main>
+      
+      {/* Side Panels */}
+      <SensorDrawer />
+      <StatusInfoDrawer />
+    </div>
+  );
+}

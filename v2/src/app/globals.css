@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-slate-900 text-slate-200;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569; 
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b; 
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}
+
+/* Leaflet Popup Styles */
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  background: #0f172a !important;
+  color: white !important;
+  border: 1px solid #334155;
+  padding: 0 !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: auto !important;
+  max-width: 150px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+}
+.leaflet-container {
+  font-family: inherit;
+}
+
+@media print {
+  /* Aggressive reset for printing */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html, body {
+    background: white !important;
+    color: black !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Target all parent containers that might have h-screen/h-full or overflow-hidden */
+  #root, 
+  .h-screen, 
+  .h-full, 
+  .w-screen, 
+  .overflow-hidden, 
+  .overflow-y-auto,
+  main {
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide navigation, sidebar, and non-printable elements */
+  nav, header, aside, section.sidebar, .print\:hidden, .absolute.bottom-6.right-6 {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Reset layout containers */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .report-container {
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Grid and Flex layout adjustments for print */
+  .grid {
+    display: block !important;
+  }
+  
+  .flex {
+    display: block !important;
+  }
+
+  /* Specific component styles for print */
+  .bg-slate-50, .dark\:bg-slate-800\/80, .bg-slate-800\/50 {
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    margin-bottom: 24px;
+    padding: 20px !important;
+    page-break-inside: avoid;
+  }
+
+  /* Force chart visibility */
+  .recharts-responsive-container {
+    height: 350px !important;
+    width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  .recharts-wrapper {
+    margin: 0 auto !important;
+  }
+
+  /* Text color fixes for print */
+  .text-white, .text-slate-200, .text-slate-400, .text-slate-500 {
+    color: black !important;
+  }
+
+  .hidden.print\:block {
+    display: block !important;
+    margin-bottom: 30px !important;
+    border-bottom: 2px solid black !important;
+    padding-bottom: 15px !important;
+  }
+}
