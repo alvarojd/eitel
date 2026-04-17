@@ -7,51 +7,55 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import 'leaflet/dist/leaflet.css';
 
-// Lazy load Map component to avoid SSR issues
-const MapContainer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.MapContainer),
-  { ssr: false }
-);
-const TileLayer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-const Marker = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
-  { ssr: false }
-);
-const useMapEvents = dynamic(
-  () => import('react-leaflet').then((mod) => mod.useMapEvents),
-  { ssr: false }
-);
-const useMap = dynamic(
-  () => import('react-leaflet').then((mod) => mod.useMap),
-  { ssr: false }
-);
+// Dynamic import of the entire Map components to ensure they only load on client
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
+
+// Helper components that use Leaflet hooks must be handled carefully
+// We'll import the hooks dynamically inside the components themselves or use a wrapper
+const MapEvents = ({ onClick }: { onClick: (e: any) => void }) => {
+  const [Component, setComponent] = useState<any>(null);
+
+  useEffect(() => {
+    import('react-leaflet').then(mod => {
+      const { useMapEvents } = mod;
+      const InnerComponent = () => {
+        useMapEvents({ click: onClick });
+        return null;
+      };
+      setComponent(() => InnerComponent);
+    });
+  }, [onClick]);
+
+  return Component ? <Component /> : null;
+};
+
+const ChangeView = ({ center }: { center: [number, number] }) => {
+  const [Component, setComponent] = useState<any>(null);
+
+  useEffect(() => {
+    import('react-leaflet').then(mod => {
+      const { useMap } = mod;
+      const InnerComponent = () => {
+        const map = useMap();
+        useEffect(() => {
+          map.setView(center, map.getZoom());
+        }, [center, map]);
+        return null;
+      };
+      setComponent(() => InnerComponent);
+    });
+  }, [center]);
+
+  return Component ? <Component /> : null;
+};
 
 interface MapPickerProps {
   initialLat?: number;
   initialLng?: number;
   onSelect: (lat: number, lng: number) => void;
   onClose: () => void;
-}
-
-// Client-only component for map events
-function MapEvents({ onClick }: { onClick: (e: any) => void }) {
-  // @ts-ignore
-  useMapEvents({
-    click: onClick,
-  });
-  return null;
-}
-
-function ChangeView({ center }: { center: [number, number] }) {
-  // @ts-ignore
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, map.getZoom());
-  }, [center, map]);
-  return null;
 }
 
 export function MapPicker({ initialLat, initialLng, onSelect, onClose }: MapPickerProps) {
@@ -63,9 +67,11 @@ export function MapPicker({ initialLat, initialLng, onSelect, onClose }: MapPick
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // Fix Leaflet icons only on client side
+    setIsMounted(true);
+    // Fix Leaflet icons
     const fixIcons = async () => {
       const L = (await import('leaflet')).default;
       // @ts-ignore
@@ -99,6 +105,8 @@ export function MapPicker({ initialLat, initialLng, onSelect, onClose }: MapPick
       setIsSearching(false);
     }
   };
+
+  if (!isMounted) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
@@ -156,21 +164,18 @@ export function MapPicker({ initialLat, initialLng, onSelect, onClose }: MapPick
         {/* Map Container */}
         <div className="flex-1 relative bg-slate-950">
           <MapContainer 
-             // @ts-ignore
             center={mapCenter} 
             zoom={13} 
             style={{ height: '100%', width: '100%' }}
             zoomControl={true}
           >
             <TileLayer
-               // @ts-ignore
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
             />
             <ChangeView center={mapCenter} />
             <MapEvents onClick={(e: any) => setPosition([e.latlng.lat, e.latlng.lng])} />
             {position && (
-               // @ts-ignore
                <Marker position={position} />
             )}
           </MapContainer>
