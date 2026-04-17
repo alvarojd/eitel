@@ -1,4 +1,4 @@
-import pg, { QueryResult } from 'pg';
+import pg, { QueryResult, QueryResultRow } from 'pg';
 
 const { Pool } = pg;
 
@@ -13,22 +13,22 @@ const connectionString =
 
 const pool = new Pool({
   connectionString,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  max: 20 // En Next.js App Router el pool se puede aprovechar más
+  ssl: connectionString?.includes('localhost') || connectionString?.includes('127.0.0.1') 
+    ? false 
+    : { rejectUnauthorized: false },
+  max: 20
 });
 
 // Helper para emular la sintaxis sql`SELECT * ...` limpia y prevenida contra inyecciones SQL
-async function sqlTag<T = any>(strings: TemplateStringsArray, ...values: any[]): Promise<QueryResult<T>> {
+async function sqlTag<T extends QueryResultRow = any>(strings: TemplateStringsArray, ...values: any[]): Promise<QueryResult<T>> {
   const text = strings.reduce((acc, str, i) => acc + str + (i < values.length ? `$${i + 1}` : ""), "");
   return pool.query(text, values);
 }
 
 // Exportamos interfaz tipada pero compatible
 export const sql = sqlTag as {
-  <T = any>(strings: TemplateStringsArray, ...values: any[]): Promise<QueryResult<T>>;
-  query: <T = any>(text: string, values?: any[]) => Promise<QueryResult<T>>;
+  <T extends QueryResultRow = any>(strings: TemplateStringsArray, ...values: any[]): Promise<QueryResult<T>>;
+  query: <T extends QueryResultRow = any>(text: string, values?: any[]) => Promise<QueryResult<T>>;
 };
 
 sql.query = (text: string, values?: any[]) => pool.query(text, values);
