@@ -77,7 +77,7 @@ export async function getReports(days: number, devEui?: string) {
 export async function exportSensorDataCSV(deviceIds: string[], startDate?: string, endDate?: string, allData: boolean = false) {
   try {
     let query;
-    let values = [deviceIds];
+    let values: any[] = [deviceIds];
     
     let baseQuery = `
       SELECT 
