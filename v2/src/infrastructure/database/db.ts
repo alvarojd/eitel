@@ -2,8 +2,10 @@ import pg, { QueryResult, QueryResultRow } from 'pg';
 
 const { Pool } = pg;
 
-// Omitimos rechazo de certificados TLS para permitir uso desde Vercel con supabase/neon
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // ELIMINADO POR SEGURIDAD
+// Permitimos certificados auto-firmados para la conexión con la base de datos
+if (process.env.NODE_ENV === 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
 
 const connectionString = 
   process.env.POSTGRES_URL || 
