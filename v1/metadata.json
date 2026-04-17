@@ -1,5 +1,0 @@
-{
-  "name": "HexaSense IoT Dashboard",
-  "description": "Un panel de visualización IoT de alto rendimiento para sensores de The Things Network utilizando un sistema de rejilla hexagonal interactivo.",
-  "requestFramePermissions": []
-}
