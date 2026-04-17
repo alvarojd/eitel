@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useSensor } from '../../context/SensorContext';
 import { useAuth } from '../../context/AuthContext';
+import { useRouter } from 'next/navigation';
 import { updateSensor, deleteSensorMeasurements, deleteSensor } from '@/infrastructure/actions/sensorActions';
 import dynamic from 'next/dynamic';
 import { ConfirmationModal } from '../common/ConfirmationModal';
@@ -33,8 +34,9 @@ const MapPicker = dynamic(() => import('../common/MapPicker').then(mod => mod.Ma
 });
 
 export function SensorAdminTab() {
-  const { selectedSensor, setIsDrawerOpen, fetchSensors } = useSensor();
+  const { selectedSensor, setIsDrawerOpen } = useSensor();
   const { user } = useAuth();
+  const router = useRouter();
   
   if (!selectedSensor) return null;
 
@@ -64,8 +66,7 @@ export function SensorAdminTab() {
         lng ? parseFloat(lng) : null
       );
       setSuccessMsg('Configuración actualizada con éxito');
-      //@ts-ignore
-      await fetchSensors();
+      router.refresh();
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error) {
       console.error(error);
@@ -79,8 +80,7 @@ export function SensorAdminTab() {
     setIsDeleting(true);
     try {
       await deleteSensorMeasurements(user?.id || '', user?.username || '', selectedSensor.devEui || selectedSensor.id);
-      //@ts-ignore
-      await fetchSensors();
+      router.refresh();
       setSuccessMsg('Historial eliminado correctamente');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error) {
@@ -95,8 +95,7 @@ export function SensorAdminTab() {
     setIsDeleting(true);
     try {
       await deleteSensor(user?.id || '', user?.username || '', selectedSensor.devEui || selectedSensor.id, deleteHistoryOnly);
-      //@ts-ignore
-      await fetchSensors();
+      router.refresh();
       setIsDrawerOpen(false);
     } catch (error) {
       console.error(error);
