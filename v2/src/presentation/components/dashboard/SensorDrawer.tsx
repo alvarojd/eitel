@@ -34,11 +34,19 @@ import {
   ReferenceArea
 } from 'recharts';
 
+interface HistoryItem {
+  time: string;
+  value: number;
+  humidity: number;
+  co2: number;
+  timestamp: string;
+}
+
 export function SensorDrawer() {
   const { selectedSensor, isDrawerOpen, setIsDrawerOpen } = useSensor();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'details' | 'admin'>('details');
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   const isAdmin = user?.role === 'ADMIN';
@@ -157,7 +165,12 @@ export function SensorDrawer() {
   );
 }
 
-function SensorDetailsContent({ selectedSensor, history, loading, lq }: any) {
+function SensorDetailsContent({ selectedSensor, history, loading, lq }: { 
+  selectedSensor: any, 
+  history: HistoryItem[], 
+  loading: boolean, 
+  lq: any 
+}) {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Status Badge */}
@@ -223,7 +236,7 @@ function SensorDetailsContent({ selectedSensor, history, loading, lq }: any) {
           {loading ? (
             <Loader2 size={24} className="animate-spin text-slate-700" />
           ) : history.length > 0 ? (() => {
-            const dataValues = history.map(h => h.value).filter(v => v !== null && v !== undefined);
+            const dataValues = history.map((h: HistoryItem) => h.value).filter(v => v !== null && v !== undefined);
             const currentMax = Math.max(...dataValues, 30) + 2;
             const currentMin = Math.min(...dataValues, 15) - 2;
 
