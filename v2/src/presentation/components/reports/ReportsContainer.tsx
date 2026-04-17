@@ -47,7 +47,7 @@ export function ReportsContainer({ initialSensors }: ReportsContainerProps) {
         }));
         setReportData(formattedData);
       } catch (error) {
-        console.error("Error loading report data:", ror);
+        console.error("Error loading report data:", error);
         setReportData([]);
       } finally {
         setIsLoading(false);
