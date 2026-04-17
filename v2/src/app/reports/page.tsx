@@ -7,6 +7,7 @@ import { PageHeader } from '@/presentation/components/layout/PageHeader';
 import { CronoTimeline } from '@/presentation/components/features/CronoTimeline';
 import { ReportsToolbar } from '@/presentation/components/features/ReportsToolbar';
 import { StatusFilterBar } from '@/presentation/components/common/StatusFilterBar';
+import { cn } from '@/lib/utils';
 
 export const revalidate = 300; // Cache de 5 minutos para informes
 
