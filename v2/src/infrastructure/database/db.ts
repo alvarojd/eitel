@@ -33,4 +33,4 @@ export const sql = sqlTag as {
 
 sql.query = (text: string, values?: any[]) => pool.query(text, values);
 
-export { QueryResult };
+export type { QueryResult };
