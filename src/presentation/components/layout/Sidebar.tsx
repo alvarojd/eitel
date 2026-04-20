@@ -12,19 +12,22 @@ import {
  LogOut,
  Cpu,
  Clock,
- Database
+ Database,
+ LineChart,
+ Loader2 
 } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Necesitaremos crear este helper
 import { useAuth } from '@/presentation/context/AuthContext';
 
 const navItems = [
- { name: 'Resumen', href: '/', icon: LayoutDashboard },
- { name: 'Mapa', href: '/map', icon: MapIcon },
- { name: 'Crono', href: '/reports', icon: Clock },
- { name: 'Reporte', href: '/analysis', icon: BarChart3 },
- { name: 'Dispositivos', href: '/devices', icon: Cpu },
- { name: 'Históricos', href: '/history', icon: Database },
- { name: 'Ajustes', href: '/settings', icon: Settings },
+  { name: 'Resumen', href: '/', icon: LayoutDashboard },
+  { name: 'Mapa', href: '/map', icon: MapIcon },
+  { name: 'Crono', href: '/reports', icon: Clock },
+  { name: 'Dispositivos', href: '/devices', icon: Cpu },
+  { name: 'Reporte', href: '/analysis', icon: BarChart3 },
+  { name: 'Analítica', href: '/analytics', icon: LineChart },
+  { name: 'Históricos', href: '/history', icon: Database },
+  { name: 'Ajustes', href: '/settings', icon: Settings },
 ];
 
 interface SidebarProps {

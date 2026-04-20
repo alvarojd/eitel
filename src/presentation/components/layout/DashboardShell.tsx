@@ -12,6 +12,7 @@ import {
   Clock, 
   Cpu, 
   Database,
+  LineChart,
   Loader2 
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -74,12 +75,13 @@ export function DashboardShell({ children, projectName }: DashboardShellProps) {
  
  {/* Mobile Icon Nav */}
  <div className="flex gap-1 px-4 pb-3 overflow-x-auto no-scrollbar scroll-smooth">
- <MobileNavItem href="/" icon={<LayoutDashboard size={20} />} />
- <MobileNavItem href="/map" icon={<MapIcon size={20} />} />
- <MobileNavItem href="/reports" icon={<Clock size={20} />} />
- <MobileNavItem href="/analysis" icon={<BarChart3 size={20} />} />
- <MobileNavItem href="/devices" icon={<Cpu size={20} />} />
- <MobileNavItem href="/history" icon={<Database size={20} />} />
+            <MobileNavItem href="/" icon={<LayoutDashboard size={20} />} />
+            <MobileNavItem href="/map" icon={<MapIcon size={20} />} />
+            <MobileNavItem href="/reports" icon={<Clock size={20} />} />
+            <MobileNavItem href="/devices" icon={<Cpu size={20} />} />
+            <MobileNavItem href="/analysis" icon={<BarChart3 size={20} />} />
+            <MobileNavItem href="/analytics" icon={<LineChart size={20} />} />
+            <MobileNavItem href="/history" icon={<Database size={20} />} />
  </div>
  </div>
 
