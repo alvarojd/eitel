@@ -26,9 +26,9 @@ export default async function ReportsPage() {
  <div className="bg-slate-900/40 p-1.5 rounded-2xl border border-slate-800 shrink-0">
  <StatusFilterBar />
  </div>
- <div className="flex-1 min-h-0 bg-slate-900/20 rounded-3xl p-1 border border-slate-800/50 overflow-hidden relative">
- <CronoTimeline heatmapData={heatmapData} />
- </div>
+          <div className="flex-1 min-h-0 bg-slate-900/20 rounded-3xl p-0 border border-slate-800/50 overflow-hidden relative">
+            <CronoTimeline heatmapData={heatmapData} />
+          </div>
  </div>
  </DashboardShell>
  </SensorProvider>

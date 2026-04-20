@@ -66,7 +66,7 @@ export default function GeoMap({ sensors, onSensorSelect }: GeoMapProps) {
   const defaultCenter: [number, number] = [40.4168, -3.7038];
 
   return (
-    <div className="w-full h-full min-h-[500px] lg:min-h-[700px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative z-0">
+       <div className="w-full h-full relative z-0">
       <MapContainer
         center={defaultCenter}
         zoom={13}

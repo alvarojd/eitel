@@ -49,7 +49,7 @@ export function HexGrid() {
   }, [sensorsWithCoords]);
 
   return (
-    <div className="w-full h-full bg-slate-900/30 border border-slate-800 rounded-2xl relative overflow-hidden backdrop-blur-sm group">
+       <div className="w-full h-full relative overflow-hidden group">
       {/* Background Texture */}
       <div className="absolute inset-0 opacity-20 pointer-events-none"
         style={{ backgroundImage: 'radial-gradient(#334155 1px, transparent 1px)', backgroundSize: '30px 30px' }}>

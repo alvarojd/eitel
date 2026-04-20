@@ -39,7 +39,7 @@ export function CronoTimeline({ heatmapData }: { heatmapData: CronoRow[] }) {
   }
 
   return (
-    <div className="w-full bg-slate-900/30 border border-slate-800 rounded-3xl p-6 lg:p-8 overflow-hidden relative group">
+       <div className="w-full p-6 lg:p-8 overflow-hidden relative group">
       <div className="flex justify-between items-center mb-10">
          <div>
             <h2 className="text-xl font-bold text-white ">Análisis Temporal</h2>

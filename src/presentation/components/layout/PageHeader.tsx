@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, SlidersHorizontal, Bell } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 import { useSensor } from '../../context/SensorContext';
 import { useFilter } from '../../context/FilterContext';
 
@@ -30,9 +30,7 @@ export function PageHeader({ projectName }: PageHeaderProps) {
               className="bg-slate-900 border border-slate-800 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 w-64 transition-all"
             />
          </div>
-         <button className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors">
-            <SlidersHorizontal size={20} />
-         </button>
+
          <button 
            onClick={() => setIsStatusInfoOpen(true)}
            className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors relative"

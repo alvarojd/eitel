@@ -7,7 +7,7 @@ import { DashboardStats } from '@/presentation/components/common/DashboardStats'
 import { DeviceList } from '@/presentation/components/dashboard/DeviceList';
 
 import { PageHeader } from '@/presentation/components/layout/PageHeader';
-import { SearchInput } from '@/presentation/components/common/SearchInput';
+
 
 import { getProjectName } from '@/infrastructure/actions/systemActions';
 
@@ -25,11 +25,8 @@ export default async function DevicesPage() {
         <div className="flex flex-col h-full gap-5 animate-in fade-in duration-1000">
           <PageHeader projectName={projectName} />
           
-          <div className="bg-slate-900/40 p-1.5 rounded-2xl border border-slate-800 shrink-0 flex flex-col md:flex-row gap-2">
-             <div className="flex-1 min-w-0">
-               <StatusFilterBar />
-             </div>
-             <SearchInput />
+          <div className="bg-slate-900/40 p-1.5 rounded-2xl border border-slate-800 shrink-0">
+            <StatusFilterBar />
           </div>
 
           <DashboardStats sensors={sensors} />

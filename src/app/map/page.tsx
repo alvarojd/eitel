@@ -31,7 +31,7 @@ export default async function MapPage() {
 
           <DashboardStats sensors={sensors} />
 
-          <div className="flex-1 min-h-0 bg-slate-900/20 rounded-3xl p-1 border border-slate-800/50 overflow-hidden relative">
+          <div className="flex-1 min-h-0 bg-slate-900/20 rounded-3xl p-0 border border-slate-800/50 overflow-hidden relative">
              <GeoMapWrapper />
           </div>
         </div>

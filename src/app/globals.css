@@ -38,6 +38,15 @@
   border-radius: 10px;
 }
 
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Leaflet Popup Styles */
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
   background: #0f172a !important;
