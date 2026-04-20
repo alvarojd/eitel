@@ -288,15 +288,26 @@ function SensorDetailsContent({ selectedSensor, history, loading, lq }: {
  {/* Technical Details */}
  <div className="space-y-3">
  <div className="bg-slate-950/40 border border-slate-800/60 rounded-xl p-4 space-y-4">
- <div className="flex justify-between items-center">
- <div className="flex items-center gap-2 text-white font-bold text-[10px]">
- <Signal size={14} className="text-amber-500" />
- Calidad del Enlace
- </div>
- <div className="bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md text-[10px] font-mono text-amber-500 font-bold">
- {lq.score}% — {lq.level}
- </div>
- </div>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2 text-white font-bold text-[10px]">
+                  <Signal size={14} className={cn(
+                    lq.level === 'EXCELENTE' ? 'text-emerald-500' :
+                    lq.level === 'BUENA' ? 'text-sky-500' :
+                    lq.level === 'REGULAR' ? 'text-amber-500' :
+                    'text-rose-500'
+                  )} />
+                  Calidad del Enlace
+                </div>
+                <div className={cn(
+                  "px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border",
+                  lq.level === 'EXCELENTE' ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/10' :
+                  lq.level === 'BUENA' ? 'text-sky-500 border-sky-500/20 bg-sky-500/10' :
+                  lq.level === 'REGULAR' ? 'text-amber-500 border-amber-500/20 bg-amber-500/10' :
+                  'text-rose-500 border-rose-500/20 bg-rose-500/10'
+                )}>
+                  {lq.score}% — {lq.level.charAt(0).toUpperCase() + lq.level.slice(1).toLowerCase()}
+                </div>
+              </div>
  <div className="flex justify-between items-center text-[11px]">
  <span className="text-white/60 font-medium tracking-wide">Identificador (DevEUI)</span>
  <span className="text-sky-400 font-mono font-bold">{selectedSensor.devEui ||"N/A"}</span>

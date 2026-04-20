@@ -87,26 +87,37 @@ export function DeviceList() {
           <div className="space-y-2">
             <div className="flex justify-between items-center text-[10px] font-black tracking-widest">
               <span className="text-slate-500 flex items-center gap-2">
-                <Signal size={12} className={lq.level === 'EXCELENTE' ? 'text-emerald-500' : 'text-amber-500'} />
+                <Signal size={12} className={cn(
+                  lq.level === 'EXCELENTE' ? 'text-emerald-500' :
+                  lq.level === 'BUENA' ? 'text-sky-500' :
+                  lq.level === 'REGULAR' ? 'text-amber-500' :
+                  'text-rose-500'
+                )} />
                 Calidad del enlace
               </span>
               <span className={cn(
                 "font-mono",
-                lq.level === 'EXCELENTE' ? 'text-emerald-500' : 'text-amber-500'
+                lq.level === 'EXCELENTE' ? 'text-emerald-500' :
+                lq.level === 'BUENA' ? 'text-sky-500' :
+                lq.level === 'REGULAR' ? 'text-amber-500' :
+                'text-rose-500'
               )}>
                 {lq.score}% — {lq.level.charAt(0).toUpperCase() + lq.level.slice(1).toLowerCase()}
               </span>
             </div>
- <div className="h-1 w-full bg-slate-900 rounded-full overflow-hidden">
- <motion.div 
- initial={{ width: 0 }}
- animate={{ width: `${lq.score}%` }}
- className={cn(
-"h-full rounded-full transition-all duration-1000",
- lq.score > 80 ?"bg-emerald-500" : lq.score > 50 ?"bg-sky-500" :"bg-amber-500"
- )}
- />
- </div>
+            <div className="h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${lq.score}%` }}
+                className={cn(
+                  "h-full rounded-full transition-all duration-1000",
+                  lq.level === 'EXCELENTE' ? 'bg-emerald-500' :
+                  lq.level === 'BUENA' ? 'bg-sky-500' :
+                  lq.level === 'REGULAR' ? 'bg-amber-500' :
+                  'bg-rose-500'
+                )}
+              />
+            </div>
  </div>
 
  {/* Radio Detailed Grid */}
@@ -141,7 +152,7 @@ export function DeviceList() {
  )} />
  <div className="flex flex-col">
  <span className="text-xs font-black text-white leading-none">{(sensor.latestMeasurement?.battery || 0)}%</span>
- <span className="text-[8px] font-bold text-slate-600 mt-0.5">Energía</span>
+ <span className="text-[8px] font-bold text-slate-600 mt-0.5">Batería</span>
  </div>
  </div>
  
@@ -150,8 +161,8 @@ export function DeviceList() {
  <div className="flex items-center gap-2">
  <Activity size={16} className="text-sky-500" />
  <div className="flex flex-col">
- <span className="text-xs font-black text-white leading-none capitalize">{sensor.lastSeen ?"Online" :"Offline"}</span>
- <span className="text-[8px] font-bold text-slate-600 mt-0.5">Status</span>
+ <span className="text-xs font-black text-white leading-none">{sensor.lastSeen ? "Conectado" : "Desconectado"}</span>
+ <span className="text-[8px] font-bold text-slate-600 mt-0.5">Estado</span>
  </div>
  </div>
  </div>

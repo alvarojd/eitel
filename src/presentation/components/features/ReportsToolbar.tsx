@@ -8,48 +8,71 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export function ReportsToolbar() {
- const { filteredSensors } = useSensor();
+  const { sensors } = useSensor();
  const [startDate, setStartDate] = useState('');
  const [endDate, setEndDate] = useState('');
- const [allData, setAllData] = useState(false);
+  const [selectedDeviceId, setSelectedDeviceId] = useState('all');
+  const [allData, setAllData] = useState(false);
  const [isExporting, setIsExporting] = useState(false);
  const [showSuccess, setShowSuccess] = useState(false);
 
- const handleExport = async () => {
- if (filteredSensors.length === 0) return;
- 
- setIsExporting(true);
- try {
- const deviceIds = filteredSensors.map(s => s.id);
- const csvData = await exportSensorDataCSV(deviceIds, startDate, endDate, allData);
- 
- // Client-side download trigger
- const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
- const url = URL.createObjectURL(blob);
- const link = document.createElement('a');
- link.setAttribute('href', url);
- link.setAttribute('download', `reporte_sensores_${new Date().toISOString().split('T')[0]}.csv`);
- link.style.visibility = 'hidden';
- document.body.appendChild(link);
- link.click();
- document.body.removeChild(link);
- 
- setShowSuccess(true);
- setTimeout(() => setShowSuccess(false), 3000);
- } catch (error) {
- console.error('Export failed:', error);
- alert('Error al generar el reporte. Por favor, inténtalo de nuevo.');
- } finally {
- setIsExporting(false);
- }
- };
+  const handleExport = async () => {
+    if (sensors.length === 0) return;
+    
+    setIsExporting(true);
+    try {
+      const deviceIds = selectedDeviceId === 'all' 
+        ? sensors.map(s => s.id) 
+        : [selectedDeviceId];
+
+      const csvData = await exportSensorDataCSV(deviceIds, startDate, endDate, allData);
+      
+      // Client-side download trigger
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      const filename = selectedDeviceId === 'all' ? 'reporte_todos' : `reporte_${selectedDeviceId}`;
+      link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Error al generar el reporte. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
  return (
  <div className="bg-slate-900/40 border border-slate-800 p-4 rounded-3xl flex flex-col lg:flex-row gap-6 items-end lg:items-center">
  
  {/* Date Range Section */}
- <div className="flex flex-col md:flex-row gap-4 flex-1 w-full lg:w-auto">
- <div className="space-y-1.5 flex-1">
+  <div className="flex flex-col md:flex-row gap-4 flex-1 w-full lg:w-auto">
+    <div className="space-y-1.5 min-w-[200px]">
+      <label className="text-[10px] font-black text-slate-500 tracking-widest ml-1 flex items-center gap-1.5">
+        <Filter size={10} /> Dispositivos
+      </label>
+      <select
+        value={selectedDeviceId}
+        onChange={(e) => setSelectedDeviceId(e.target.value)}
+        className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-sky-500/50 transition-all appearance-none cursor-pointer"
+      >
+        <option value="all">Todos los dispositivos</option>
+        {sensors.map(sensor => (
+          <option key={sensor.id} value={sensor.id}>
+            {sensor.name} ({sensor.id})
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div className="space-y-1.5 flex-1">
  <label className="text-[10px] font-black text-slate-500 tracking-widest ml-1 flex items-center gap-1.5">
  <Calendar size={10} /> Inicio del Rango
  </label>
@@ -95,7 +118,7 @@ export function ReportsToolbar() {
 
  <button 
  onClick={handleExport}
- disabled={isExporting || (filteredSensors.length === 0)}
+  disabled={isExporting || (sensors.length === 0)}
  className={cn(
 "h-full px-6 rounded-xl font-black text-[10px] tracking-widest transition-all flex items-center gap-2 shadow-lg",
  isExporting ?"bg-slate-800 text-slate-500 cursor-not-allowed" :"bg-sky-600 hover:bg-sky-500 text-white shadow-sky-900/20 active:scale-95"
