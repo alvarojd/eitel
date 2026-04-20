@@ -52,78 +52,80 @@ export function ReportsToolbar() {
  return (
  <div className="bg-slate-900/40 border border-slate-800 p-4 rounded-3xl flex flex-col lg:flex-row gap-6 items-end lg:items-center">
  
- {/* Date Range Section */}
-  <div className="flex flex-col md:flex-row gap-4 flex-1 w-full lg:w-auto">
-    <div className="space-y-1.5 min-w-[200px]">
-      <label className="text-[10px] font-black text-slate-500 tracking-widest ml-1 flex items-center gap-1.5">
-        <Filter size={10} /> Dispositivos
-      </label>
-      <select
-        value={selectedDeviceId}
-        onChange={(e) => setSelectedDeviceId(e.target.value)}
-        className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-sky-500/50 transition-all appearance-none cursor-pointer"
-      >
-        <option value="all">Todos los dispositivos</option>
-        {sensors.map(sensor => (
-          <option key={sensor.id} value={sensor.id}>
-            {sensor.name} ({sensor.id})
-          </option>
-        ))}
-      </select>
-    </div>
+      {/* Device & Date Range Section */}
+      <div className="flex flex-col md:flex-row gap-4 flex-1 w-full lg:w-auto">
+        <div className="flex flex-col gap-2 flex-1 min-w-[200px]">
+          <label className="text-[10px] font-bold text-white/50 flex items-center gap-1.5">
+            <Filter size={10} /> Dispositivos
+          </label>
+          <select
+            value={selectedDeviceId}
+            onChange={(e) => setSelectedDeviceId(e.target.value)}
+            className="bg-slate-950 text-white border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/50 w-full transition-all appearance-none cursor-pointer"
+          >
+            <option value="all">Todos los dispositivos (Resumen)</option>
+            {sensors.map(sensor => (
+              <option key={sensor.id} value={sensor.id}>
+                {sensor.name} ({sensor.id})
+              </option>
+            ))}
+          </select>
+        </div>
 
-    <div className="space-y-1.5 flex-1">
- <label className="text-[10px] font-black text-slate-500 tracking-widest ml-1 flex items-center gap-1.5">
- <Calendar size={10} /> Inicio del Rango
- </label>
- <input 
- type="date" 
- disabled={allData}
- value={startDate}
- onChange={(e) => setStartDate(e.target.value)}
- className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-sky-500/50 transition-all disabled:opacity-30"
- />
- </div>
- <div className="space-y-1.5 flex-1">
- <label className="text-[10px] font-black text-slate-500 tracking-widest ml-1 flex items-center gap-1.5">
- <Calendar size={10} /> Fin del Rango
- </label>
- <input 
- type="date" 
- disabled={allData}
- value={endDate}
- onChange={(e) => setEndDate(e.target.value)}
- className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-sky-500/50 transition-all disabled:opacity-30"
- />
- </div>
- </div>
+        <div className="flex flex-col gap-2 flex-1 min-w-[150px]">
+          <label className="text-[10px] font-bold text-white/50 flex items-center gap-1.5">
+            <Calendar size={10} /> Inicio del Rango
+          </label>
+          <input 
+            type="date" 
+            disabled={allData}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            onClick={(e) => (e.target as any).showPicker?.()}
+            className="bg-slate-950 text-white border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/50 w-full transition-all disabled:opacity-30 cursor-pointer"
+          />
+        </div>
+        <div className="flex flex-col gap-2 flex-1 min-w-[150px]">
+          <label className="text-[10px] font-bold text-white/50 flex items-center gap-1.5">
+            <Calendar size={10} /> Fin del Rango
+          </label>
+          <input 
+            type="date" 
+            disabled={allData}
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            onClick={(e) => (e.target as any).showPicker?.()}
+            className="bg-slate-950 text-white border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/50 w-full transition-all disabled:opacity-30 cursor-pointer"
+          />
+        </div>
+      </div>
 
  {/* Options Section */}
  <div className="flex items-center gap-6 shrink-0 h-10">
- <label className="flex items-center gap-3 cursor-pointer group">
- <div className="relative flex items-center">
- <input 
- type="checkbox" 
- checked={allData}
- onChange={(e) => setAllData(e.target.checked)}
- className="peer sr-only"
- />
- <div className="w-10 h-5 bg-slate-800 rounded-full peer peer-checked:bg-sky-600 transition-colors" />
- <div className="absolute left-1 w-3 h-3 bg-white rounded-full transition-all peer-checked:left-6" />
- </div>
- <span className="text-[10px] font-black text-slate-400 tracking-widest group-hover:text-white transition-colors">Todo el histórico</span>
- </label>
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className="relative flex items-center">
+            <input 
+              type="checkbox" 
+              checked={allData}
+              onChange={(e) => setAllData(e.target.checked)}
+              className="peer sr-only"
+            />
+            <div className="w-10 h-5 bg-slate-800 rounded-full peer peer-checked:bg-sky-600 transition-colors" />
+            <div className="absolute left-1 w-3 h-3 bg-white rounded-full transition-all peer-checked:left-6" />
+          </div>
+          <span className="text-[10px] font-bold text-white/50 group-hover:text-white transition-colors">Todo el histórico</span>
+        </label>
 
- <div className="w-px h-6 bg-slate-800" />
+        <div className="w-px h-6 bg-slate-800" />
 
- <button 
- onClick={handleExport}
-  disabled={isExporting || (sensors.length === 0)}
- className={cn(
-"h-full px-6 rounded-xl font-black text-[10px] tracking-widest transition-all flex items-center gap-2 shadow-lg",
- isExporting ?"bg-slate-800 text-slate-500 cursor-not-allowed" :"bg-sky-600 hover:bg-sky-500 text-white shadow-sky-900/20 active:scale-95"
- )}
- >
+        <button 
+          onClick={handleExport}
+          disabled={isExporting || (sensors.length === 0)}
+          className={cn(
+            "h-full px-6 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-lg",
+            isExporting ?"bg-slate-800 text-slate-500 cursor-not-allowed" :"bg-sky-600 hover:bg-sky-500 text-white shadow-sky-900/30 active:scale-95"
+          )}
+        >
  {isExporting ? (
  <Loader2 size={14} className="animate-spin" />
  ) : (
