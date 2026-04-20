@@ -5,9 +5,18 @@ import { Sidebar } from './Sidebar';
 import { SensorDrawer } from '../dashboard/SensorDrawer';
 import { StatusInfoDrawer } from './StatusInfoDrawer';
 import { useAuth } from '@/presentation/context/AuthContext';
-import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { 
+  LayoutDashboard, 
+  Map as MapIcon, 
+  BarChart3, 
+  Clock, 
+  Cpu, 
+  Database,
+  Loader2 
+} from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 interface DashboardShellProps {
  children: React.ReactNode;
@@ -45,11 +54,12 @@ export function DashboardShell({ children, projectName }: DashboardShellProps) {
  
  <main className={cn(
 "flex-1 min-w-0 transition-all duration-300 flex flex-col h-full print:m-0 print:block",
-"ml-16 lg:ml-64",
- isSidebarOpen &&"ml-0" // En móviles si está abierta cubrirá o empujará? Mejor dejar ml-16
+    "lg:ml-64", 
+    isSidebarOpen && "lg:ml-64"
  )}>
- {/* Mobile Header Toggle */}
- <div className="lg:hidden flex items-center justify-between p-4 bg-slate-900 border-b border-slate-800 shrink-0 print:hidden">
+ {/* Mobile Header & Nav */}
+ <div className="lg:hidden flex flex-col bg-slate-900 border-b border-slate-800 shrink-0 print:hidden sticky top-0 z-40">
+ <div className="flex items-center justify-between p-4 pb-2">
  <button 
  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
  className="p-2 -ml-2 text-slate-400 hover:text-white"
@@ -59,10 +69,21 @@ export function DashboardShell({ children, projectName }: DashboardShellProps) {
  <div className="w-6 h-0.5 bg-current" />
  </button>
  <span className="font-bold text-sm text-sky-500">{projectName || 'Hexasense'}</span>
- <div className="w-8" /> {/* Spacer */}
+ <div className="w-8" />
+ </div>
+ 
+ {/* Mobile Icon Nav */}
+ <div className="flex gap-1 px-4 pb-3 overflow-x-auto no-scrollbar scroll-smooth">
+ <MobileNavItem href="/" icon={<LayoutDashboard size={20} />} />
+ <MobileNavItem href="/map" icon={<MapIcon size={20} />} />
+ <MobileNavItem href="/reports" icon={<Clock size={20} />} />
+ <MobileNavItem href="/analysis" icon={<BarChart3 size={20} />} />
+ <MobileNavItem href="/devices" icon={<Cpu size={20} />} />
+ <MobileNavItem href="/history" icon={<Database size={20} />} />
+ </div>
  </div>
 
- <div className="flex-1 overflow-hidden p-4 lg:p-6 print:p-0 print:overflow-visible">
+ <div className="flex-1 overflow-y-auto lg:overflow-hidden p-4 lg:p-6 print:p-0 print:overflow-visible custom-scrollbar">
  {children}
  </div>
  </main>
@@ -71,5 +92,22 @@ export function DashboardShell({ children, projectName }: DashboardShellProps) {
  <SensorDrawer />
  <StatusInfoDrawer />
  </div>
- );
+  );
+}
+
+function MobileNavItem({ href, icon }: { href: string, icon: React.ReactNode }) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <Link 
+      href={href}
+      className={cn(
+        "flex items-center justify-center p-2.5 rounded-xl transition-all shrink-0",
+        isActive ? "bg-sky-500/10 text-sky-400 font-bold border border-sky-500/20 shadow-[0_0_15px_rgba(14,165,233,0.1)]" : "text-white/40 border border-transparent"
+      )}
+    >
+      <span className={cn("transition-transform", isActive && "scale-110")}>{icon}</span>
+    </Link>
+  );
 }

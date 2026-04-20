@@ -15,19 +15,19 @@ export function PageHeader({ projectName }: PageHeaderProps) {
 
   return (
     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 shrink-0 mb-4 print:hidden">
-      <div>
+      <div className="hidden lg:block">
         <h1 className="text-3xl font-bold text-white tracking-tight">{projectName}</h1>
       </div>
 
       <div className="flex items-center gap-3">
-         <div className="relative">
+         <div className="relative flex-1 lg:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
             <input 
               type="text" 
               placeholder="Buscar sensor..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-900 border border-slate-800 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 w-64 transition-all"
+              className="bg-slate-900 border border-slate-800 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 w-full lg:w-64 transition-all"
             />
          </div>
 
