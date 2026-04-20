@@ -3,9 +3,7 @@ import pg, { QueryResult, QueryResultRow } from 'pg';
 const { Pool } = pg;
 
 // Permitimos certificados auto-firmados para la conexión con la base de datos
-if (process.env.NODE_ENV === 'production') {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const connectionString = 
   process.env.POSTGRES_URL || 

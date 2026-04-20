@@ -143,7 +143,7 @@ export function ReportsContainer({ initialSensors }: ReportsContainerProps) {
            <div className="flex items-center justify-end border-b-2 border-slate-200 pb-4 mb-6">
              <div className="text-right">
                 <p className="text-sm font-mono text-white/60 print:text-slate-600 print:text-slate-600">{new Date().toLocaleDateString()}</p>
-                <p className="text-xs text-white/60 print:text-slate-600 print:text-slate-600 mt-1 font-bold">Hexasense IoT Dashboard V2</p>
+
              </div>
            </div>
            

@@ -45,17 +45,10 @@ export function CronoTimeline({ heatmapData }: { heatmapData: CronoRow[] }) {
             <h2 className="text-xl font-bold text-white ">Análisis Temporal</h2>
             <p className="text-white/70 text-xs mt-1 font-bold">Últimas 24 horas de actividad</p>
          </div>
-         <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-white/60">
-               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Ideal
-            </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-white/60">
-               <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Alerta
-            </div>
-         </div>
+
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar pb-4">
+      <div className="overflow-x-auto overflow-y-scroll max-h-[400px] custom-scrollbar pr-4 pb-4">
         <div className="min-w-[900px]">
           {/* Time scale headers */}
           <div className="flex mb-4 items-end">
