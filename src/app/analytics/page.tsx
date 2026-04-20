@@ -30,6 +30,12 @@ export default function AnalyticsPage() {
   );
 }
 
+const VARIABLE_CONFIG = {
+  temperature: { label: 'Temperatura', unit: '°C', color: '#0ea5e9' },
+  humidity: { label: 'Humedad', unit: '%', color: '#10b981' },
+  co2: { label: 'CO2', unit: 'ppm', color: '#f59e0b' },
+};
+
 function AnalyticsContent({ projectName }: { projectName: string }) {
   const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
@@ -53,11 +59,7 @@ function AnalyticsContent({ projectName }: { projectName: string }) {
     }
   }, [filters]);
 
-  const variableInfo = {
-    temperature: { label: 'Temperatura', unit: '°C', color: '#0ea5e9' },
-    humidity: { label: 'Humedad', unit: '%', color: '#10b981' },
-    co2: { label: 'CO2', unit: 'ppm', color: '#f59e0b' },
-  }[filters.variable as keyof typeof variableInfo] || { label: '', unit: '', color: '#fff' };
+  const variableInfo = VARIABLE_CONFIG[filters.variable as keyof typeof VARIABLE_CONFIG] || { label: '', unit: '', color: '#fff' };
 
   return (
     <DashboardShell projectName={projectName}>
