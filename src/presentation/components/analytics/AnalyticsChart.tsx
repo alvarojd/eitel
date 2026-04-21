@@ -39,9 +39,9 @@ export function AnalyticsChart({ data, variableLabel, unit, color }: AnalyticsCh
   };
 
   return (
-    <div className="w-full h-full min-h-[400px]">
+    <div className="w-full h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
+        <AreaChart data={data} margin={{ top: 10, right: 30, left: 10, bottom: 40 }}>
           <defs>
             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
@@ -54,18 +54,18 @@ export function AnalyticsChart({ data, variableLabel, unit, color }: AnalyticsCh
             tickFormatter={formatXAxis}
             stroke="#ffffff80"
             fontSize={10}
-            tickMargin={15}
+            tickMargin={10}
             minTickGap={60}
-            height={60}
-            axisLine={{ stroke: '#ffffffa0', strokeWidth: 1 }}
-            tick={{ fill: '#ffffffe0' }}
+            height={40}
+            axisLine={{ stroke: '#ffffff80', strokeWidth: 1 }}
+            tick={{ fill: '#ffffffcc' }}
           />
           <YAxis 
             stroke="#ffffff80"
             fontSize={10}
             tickFormatter={(value) => `${value}${unit}`}
-            axisLine={{ stroke: '#ffffffa0', strokeWidth: 1 }}
-            tick={{ fill: '#ffffffe0' }}
+            axisLine={{ stroke: '#ffffff80', strokeWidth: 1 }}
+            tick={{ fill: '#ffffffcc' }}
             domain={[0, 'auto']}
           />
           <Tooltip 
