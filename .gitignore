@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# manual and scripts
+src/scripts/generate_manual.js
+Manual_Usuario_Hexasense_V2.docx
