@@ -52,20 +52,20 @@ export function AnalyticsChart({ data, variableLabel, unit, color }: AnalyticsCh
           <XAxis 
             dataKey="timestamp" 
             tickFormatter={formatXAxis}
-            stroke="#ffffff40"
+            stroke="#ffffff80"
             fontSize={10}
             tickMargin={15}
             minTickGap={60}
             height={60}
-            axisLine={{ stroke: '#ffffff60', strokeWidth: 1 }}
-            tick={{ fill: '#ffffff80' }}
+            axisLine={{ stroke: '#ffffffa0', strokeWidth: 1 }}
+            tick={{ fill: '#ffffffe0' }}
           />
           <YAxis 
-            stroke="#ffffff40"
+            stroke="#ffffff80"
             fontSize={10}
             tickFormatter={(value) => `${value}${unit}`}
-            axisLine={{ stroke: '#ffffff60', strokeWidth: 1 }}
-            tick={{ fill: '#ffffff80' }}
+            axisLine={{ stroke: '#ffffffa0', strokeWidth: 1 }}
+            tick={{ fill: '#ffffffe0' }}
             domain={[0, 'auto']}
           />
           <Tooltip 
