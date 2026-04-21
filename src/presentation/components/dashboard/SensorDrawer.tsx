@@ -22,7 +22,7 @@ import { SensorAdminTab } from './SensorAdminTab';
 import { STATUS_TEXT_COLORS, STATUS_BG_COLORS, STATUS_LABELS } from '@/core/constants';
 import { calculateLinkQuality, LinkQualityLevel } from '@/core/use-cases/linkQuality';
 import { getSensorHistory } from '@/infrastructure/actions/historyActions';
-import { cn } from '@/lib/utils';
+import { cn, formatTimeAgo } from '@/lib/utils';
 import { 
  AreaChart, 
  Area, 
@@ -102,7 +102,7 @@ export function SensorDrawer() {
  <span className="text-xs font-mono text-white/90">{selectedSensor.devEui || selectedSensor.id}</span>
  <div className="w-1 h-1 rounded-full bg-slate-400" />
  <span className="text-[10px] text-slate-200 flex items-center gap-1">
- <Clock size={10} /> {selectedSensor.lastSeen ?"Hace poco" :"Nunca"}
+ <Clock size={10} /> {formatTimeAgo(selectedSensor.lastSeen)}
  </span>
  </div>
  </div>

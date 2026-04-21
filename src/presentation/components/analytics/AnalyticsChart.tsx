@@ -41,26 +41,32 @@ export function AnalyticsChart({ data, variableLabel, unit, color }: AnalyticsCh
   return (
     <div className="w-full h-full min-h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
           <defs>
             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
               <stop offset="95%" stopColor={color} stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
+          <CartesianGrid strokeDasharray="3 3" vertical={true} stroke="#ffffff10" />
           <XAxis 
             dataKey="timestamp" 
             tickFormatter={formatXAxis}
-            stroke="#ffffff20"
+            stroke="#ffffff40"
             fontSize={10}
-            tickMargin={10}
-            minTickGap={50}
+            tickMargin={15}
+            minTickGap={60}
+            height={60}
+            axisLine={{ stroke: '#ffffff60', strokeWidth: 1 }}
+            tick={{ fill: '#ffffff80' }}
           />
           <YAxis 
-            stroke="#ffffff20"
+            stroke="#ffffff40"
             fontSize={10}
             tickFormatter={(value) => `${value}${unit}`}
+            axisLine={{ stroke: '#ffffff60', strokeWidth: 1 }}
+            tick={{ fill: '#ffffff80' }}
+            domain={[0, 'auto']}
           />
           <Tooltip 
             contentStyle={{ 

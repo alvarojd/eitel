@@ -38,9 +38,9 @@ export const createEmptyPercentages = (): ReportPercentages => ({
 });
 
 export interface AggregatedMetrics {
-  avgTemp: number; maxTemp: number; minTemp: number; stdDevTemp: number;
-  avgHum: number; maxHum: number; minHum: number; stdDevHum: number;
-  avgCo2: number; maxCo2: number; minCo2: number; stdDevCo2: number;
+  avgTemp: number; maxTemp: number; minTemp: number; stdDevTemp: number; medTemp: number;
+  avgHum: number; maxHum: number; minHum: number; stdDevHum: number; medHum: number;
+  avgCo2: number; maxCo2: number; minCo2: number; stdDevCo2: number; medCo2: number;
 }
 
 export const calculateReportMetrics = (
@@ -54,9 +54,9 @@ export const calculateReportMetrics = (
   });
 
   const emptyMetrics: AggregatedMetrics = {
-    avgTemp: 0, maxTemp: 0, minTemp: 0, stdDevTemp: 0,
-    avgHum: 0, maxHum: 0, minHum: 0, stdDevHum: 0,
-    avgCo2: 0, maxCo2: 0, minCo2: 0, stdDevCo2: 0
+    avgTemp: 0, maxTemp: 0, minTemp: 0, stdDevTemp: 0, medTemp: 0,
+    avgHum: 0, maxHum: 0, minHum: 0, stdDevHum: 0, medHum: 0,
+    avgCo2: 0, maxCo2: 0, minCo2: 0, stdDevCo2: 0, medCo2: 0
   };
 
   if (filteredData.length === 0) {
@@ -65,6 +65,10 @@ export const calculateReportMetrics = (
 
   // Calculate percentages based on statuses provided directly or calculated
   const hourlyStatuses: EstadoId[] = [];
+  
+  const temps: number[] = [];
+  const hums: number[] = [];
+  const co2s: number[] = [];
   
   let sumT = 0, sumH = 0, sumC = 0;
   let maxT = -999, minT = 999;
@@ -75,6 +79,10 @@ export const calculateReportMetrics = (
     // Collect status based on means
     const status = determineStatus({ temperature: d.temperature, humidity: d.humidity, co2: d.co2 });
     hourlyStatuses.push(status);
+
+    temps.push(d.temperature);
+    hums.push(d.humidity);
+    co2s.push(d.co2);
 
     // Sums for averages
     sumT += d.temperature;
@@ -95,6 +103,13 @@ export const calculateReportMetrics = (
   const avgH = sumH / count;
   const avgC = sumC / count;
 
+  // Median Helper
+  const getMedian = (arr: number[]) => {
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  };
+
   // Standard Deviation
   let sumSqDiffT = 0, sumSqDiffH = 0, sumSqDiffC = 0;
   filteredData.forEach(d => {
@@ -104,9 +119,9 @@ export const calculateReportMetrics = (
   });
 
   const metrics: AggregatedMetrics = {
-    avgTemp: avgT, maxTemp: maxT, minTemp: minT, stdDevTemp: Math.sqrt(sumSqDiffT / count),
-    avgHum: avgH, maxHum: maxH, minHum: minH, stdDevHum: Math.sqrt(sumSqDiffH / count),
-    avgCo2: avgC, maxCo2: maxC, minCo2: minC, stdDevCo2: Math.sqrt(sumSqDiffC / count)
+    avgTemp: avgT, maxTemp: maxT, minTemp: minT, stdDevTemp: Math.sqrt(sumSqDiffT / count), medTemp: getMedian(temps),
+    avgHum: avgH, maxHum: maxH, minHum: minH, stdDevHum: Math.sqrt(sumSqDiffH / count), medHum: getMedian(hums),
+    avgCo2: avgC, maxCo2: maxC, minCo2: minC, stdDevCo2: Math.sqrt(sumSqDiffC / count), medCo2: getMedian(co2s)
   };
 
   // Percentages Loop

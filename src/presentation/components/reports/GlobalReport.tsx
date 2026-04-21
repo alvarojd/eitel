@@ -70,9 +70,9 @@ export function GlobalReport({ sensors, data, presenceFilter }: GlobalReportProp
         {/* Temperature Card */}
         <MetricCard 
           icon={<Thermometer size={18} />} 
-          title="Temperatura" 
+          title="Temperatura (Media)" 
           avg={`${metrics.avgTemp.toFixed(1)}°C`}
-          media={`${metrics.avgTemp.toFixed(1)}°`}
+          median={`${metrics.medTemp.toFixed(1)}°`}
           stdDev={metrics.stdDevTemp.toFixed(2)}
           min={`${metrics.minTemp.toFixed(1)}°`}
           max={`${metrics.maxTemp.toFixed(1)}°`}
@@ -81,9 +81,9 @@ export function GlobalReport({ sensors, data, presenceFilter }: GlobalReportProp
         {/* Humidity Card */}
         <MetricCard 
           icon={<Droplets size={18} />} 
-          title="Humedad" 
+          title="Humedad (Media)" 
           avg={`${metrics.avgHum.toFixed(1)}%`}
-          media={`${metrics.avgHum.toFixed(1)}%`}
+          median={`${metrics.medHum.toFixed(1)}%`}
           stdDev={metrics.stdDevHum.toFixed(2)}
           min={`${metrics.minHum.toFixed(1)}%`}
           max={`${metrics.maxHum.toFixed(1)}%`}
@@ -92,9 +92,9 @@ export function GlobalReport({ sensors, data, presenceFilter }: GlobalReportProp
         {/* CO2 Card */}
         <MetricCard 
           icon={<Wind size={18} />} 
-          title="CO2" 
+          title="CO2 (Media)" 
           avg={`${metrics.avgCo2.toFixed(0)} ppm`}
-          media={metrics.avgCo2.toFixed(0)}
+          median={metrics.medCo2.toFixed(0)}
           stdDev={metrics.stdDevCo2.toFixed(1)}
           min={metrics.minCo2.toFixed(0)}
           max={metrics.maxCo2.toFixed(0)}
@@ -171,7 +171,7 @@ export function GlobalReport({ sensors, data, presenceFilter }: GlobalReportProp
   );
 }
 
-function MetricCard({ icon, title, avg, media, stdDev, min, max }: { icon: React.ReactNode, title: string, avg: string, media: string, stdDev: string, min: string, max: string }) {
+function MetricCard({ icon, title, avg, median, stdDev, min, max }: { icon: React.ReactNode, title: string, avg: string, median: string, stdDev: string, min: string, max: string }) {
   return (
     <div className="bg-slate-900/40 border border-slate-800/60 p-5 rounded-2xl shadow-xl flex flex-col text-center print:bg-white print:border-slate-300">
        <div className="flex items-center justify-center gap-2 mb-3 text-white/40 print:text-slate-500 print:text-slate-500">
@@ -181,8 +181,8 @@ function MetricCard({ icon, title, avg, media, stdDev, min, max }: { icon: React
        <p className="text-3xl font-mono font-bold text-white mb-4 print:text-black">{avg}</p>
        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px]  font-bold  border-t border-slate-800/60 pt-3 text-left">
           <div className="flex justify-between">
-            <span className="text-white/60 print:text-slate-600">Media:</span>
-            <span className="text-white/90 print:text-slate-700 print:text-black">{media}</span>
+            <span className="text-white/60 print:text-slate-600">Mediana:</span>
+            <span className="text-white/90 print:text-slate-700 print:text-black">{median}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-white/60 print:text-slate-600">DE (σ):</span>
