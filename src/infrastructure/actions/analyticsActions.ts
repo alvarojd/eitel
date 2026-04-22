@@ -27,7 +27,8 @@ export async function getAnalyticsData(
         ${variable} as value
       FROM measurements
       WHERE dev_eui = $1
-      AND created_at BETWEEN $2 AND $3
+      AND created_at >= ($2::date AT TIME ZONE 'Europe/Madrid')
+      AND created_at < ($3::date + interval '1 day' AT TIME ZONE 'Europe/Madrid')
       ORDER BY created_at ASC;
     `;
 
