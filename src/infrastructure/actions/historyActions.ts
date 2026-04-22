@@ -96,7 +96,7 @@ export async function exportSensorDataCSV(deviceIds: string[], startDate?: strin
     if (!allData) {
       if (startDate && endDate) {
         baseQuery += ` AND m.created_at >= ($2::date AT TIME ZONE 'Europe/Madrid') 
-                       AND m.created_at < ($3::date + interval '1 day' AT TIME ZONE 'Europe/Madrid')`;
+                       AND m.created_at < (($3::date + interval '1 day') AT TIME ZONE 'Europe/Madrid')`;
         values.push(startDate, endDate);
       } else {
         baseQuery += ` AND m.created_at > NOW() - INTERVAL '24 hours'`;
