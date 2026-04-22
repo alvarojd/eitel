@@ -1,6 +1,8 @@
 'use server';
 
-import { sql } from '../database/db';
+import { PgAuditRepository } from '../database/repositories/PgAuditRepository';
+
+const auditRepository = new PgAuditRepository();
 
 export async function logAction(
   userId: string | null,
@@ -9,10 +11,7 @@ export async function logAction(
   details?: string
 ) {
   try {
-    await sql`
-      INSERT INTO audit_logs (user_id, username, action, details)
-      VALUES (${userId}, ${username}, ${action}, ${details || null})
-    `;
+    await auditRepository.logAction(userId, username, action, details);
   } catch (error) {
     console.error('Failed to log action:', error);
   }
@@ -20,13 +19,7 @@ export async function logAction(
 
 export async function getAuditLogs(limit: number = 100) {
   try {
-    const { rows } = await sql`
-      SELECT id, username, action, details, created_at 
-      FROM audit_logs 
-      ORDER BY created_at DESC 
-      LIMIT ${limit}
-    `;
-    return rows;
+    return await auditRepository.getAuditLogs(limit);
   } catch (error) {
     console.error('Audit Logs Action Error:', error);
     return [];

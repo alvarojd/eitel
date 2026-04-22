@@ -2,14 +2,18 @@ import pg, { QueryResult, QueryResultRow } from 'pg';
 
 const { Pool } = pg;
 
-// Permitimos certificados auto-firmados para la conexión con la base de datos
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+// La conexión a la base de datos maneja certificados autofirmados a nivel de Pool en su lugar.
 
-const connectionString = 
+let connectionString = 
   process.env.POSTGRES_URL || 
   process.env.DATABASE_URL || 
   process.env.SUPABASE_POSTGRES_URL ||
   process.env.POSTGRES_URL_NON_POOLING;
+
+// Evitar el warning "SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'."
+if (connectionString && connectionString.includes('sslmode=require') && !connectionString.includes('uselibpqcompat')) {
+  connectionString = connectionString.replace('sslmode=require', 'sslmode=require&uselibpqcompat=true');
+}
 
 const pool = new Pool({
   connectionString,

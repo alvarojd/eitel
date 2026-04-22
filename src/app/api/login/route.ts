@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     // Set cookie for middleware protection
     response.cookies.set('auth_token', token, {
-      httpOnly: false, // Set to false to allow client-side access for AuthContext if needed, or true for more security
+      httpOnly: true, // Set to true for more security
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 // 24 hours

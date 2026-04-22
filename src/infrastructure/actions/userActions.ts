@@ -1,18 +1,16 @@
 'use server';
 
-import { sql } from '../database/db';
 import { hashPassword } from '@/lib/auth';
 import { logAction } from './auditActions';
 import { UserRole } from '@/core/entities/User';
+import { PgUserRepository } from '../database/repositories/PgUserRepository';
+
+const userRepository = new PgUserRepository();
 
 export async function getUsers() {
   try {
-    const { rows } = await sql`
-      SELECT id, username, role, created_at 
-      FROM users 
-      ORDER BY username ASC
-    `;
-    return rows;
+    const users = await userRepository.getUsers();
+    return users.map(u => ({ ...u, created_at: u.created_at.toISOString() }));
   } catch (error) {
     console.error('getUsers Action Error:', error);
     return [];
@@ -31,17 +29,13 @@ export async function createUser(
   }
 
   try {
-    // Check for duplicate username
-    const { rows: existingUser } = await sql`SELECT id FROM users WHERE username = ${username}`;
-    if (existingUser.length > 0) {
+    const existingUser = await userRepository.getUserByUsername(username);
+    if (existingUser) {
       throw new Error('El nombre de usuario ya existe');
     }
 
     const passwordHash = await hashPassword(password);
-    await sql`
-      INSERT INTO users (username, password_hash, role)
-      VALUES (${username}, ${passwordHash}, ${role})
-    `;
+    await userRepository.createUser(username, passwordHash, role);
     
     await logAction(adminId, adminUsername, 'CREATE_USER', `Creado usuario: ${username} (${role})`);
     
@@ -63,15 +57,13 @@ export async function updateUserPassword(
   }
 
   try {
-    const { rows } = await sql`SELECT username FROM users WHERE id = ${targetUserId}`;
-    if (rows.length === 0) throw new Error('Usuario no encontrado');
+    const user = await userRepository.getUserById(targetUserId);
+    if (!user) throw new Error('Usuario no encontrado');
     
-    const targetUsername = rows[0].username;
     const passwordHash = await hashPassword(newPassword);
-
-    await sql`UPDATE users SET password_hash = ${passwordHash} WHERE id = ${targetUserId}`;
+    await userRepository.updateUserPassword(targetUserId, passwordHash);
     
-    await logAction(operatorId, operatorUsername, 'UPDATE_USER_PASSWORD', `Actualizada contraseña de: ${targetUsername}`);
+    await logAction(operatorId, operatorUsername, 'UPDATE_USER_PASSWORD', `Actualizada contraseña de: ${user.username}`);
     
     return { success: true };
   } catch (error: any) {
@@ -90,10 +82,8 @@ export async function deleteUser(
   }
 
   try {
-    const { rows } = await sql`SELECT username, role FROM users WHERE id = ${targetUserId}`;
-    if (rows.length === 0) throw new Error('Usuario no encontrado');
-
-    const targetUser = rows[0];
+    const targetUser = await userRepository.getUserById(targetUserId);
+    if (!targetUser) throw new Error('Usuario no encontrado');
 
     // Protected user rules
     if (targetUser.username === 'admin') {
@@ -101,13 +91,13 @@ export async function deleteUser(
     }
 
     if (targetUser.role === 'ADMIN') {
-      const { rows: adminRows } = await sql`SELECT COUNT(*) as count FROM users WHERE role = 'ADMIN'`;
-      if (parseInt(adminRows[0].count) <= 1) {
+      const adminCount = await userRepository.countAdmins();
+      if (adminCount <= 1) {
         throw new Error('No puedes eliminar el único administrador del sistema');
       }
     }
 
-    await sql`DELETE FROM users WHERE id = ${targetUserId}`;
+    await userRepository.deleteUser(targetUserId);
     
     await logAction(adminId, adminUsername, 'DELETE_USER', `Eliminado usuario: ${targetUser.username}`);
 

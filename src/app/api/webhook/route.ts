@@ -109,8 +109,14 @@ export async function POST(req: NextRequest) {
 
     // Database Updates
     await sql`
-      INSERT INTO devices (dev_eui, device_id, name, battery, rssi, snr, latitude, longitude, gateway_id, created_at)
-      VALUES (${dev_eui}, ${device_id}, ${name}, ${battery}, ${rssi}, ${snr}, ${latitude || null}, ${longitude || null}, ${gateway_id}, ${received_at})
+      INSERT INTO devices (
+        dev_eui, device_id, name, battery, rssi, snr, latitude, longitude, gateway_id, created_at,
+        temperature, humidity, co2, estado_id, presence, last_measured_at
+      )
+      VALUES (
+        ${dev_eui}, ${device_id}, ${name}, ${battery}, ${rssi}, ${snr}, ${latitude || null}, ${longitude || null}, ${gateway_id}, ${received_at},
+        ${temperature}, ${humidity}, ${co2}, ${estado_id}, ${presence}, ${received_at}
+      )
       ON CONFLICT (dev_eui) DO UPDATE 
       SET 
         name = COALESCE(devices.name, EXCLUDED.name),
@@ -119,7 +125,13 @@ export async function POST(req: NextRequest) {
         snr = EXCLUDED.snr,
         latitude = COALESCE(devices.latitude, EXCLUDED.latitude),
         longitude = COALESCE(devices.longitude, EXCLUDED.longitude),
-        gateway_id = EXCLUDED.gateway_id;
+        gateway_id = EXCLUDED.gateway_id,
+        temperature = EXCLUDED.temperature,
+        humidity = EXCLUDED.humidity,
+        co2 = EXCLUDED.co2,
+        estado_id = EXCLUDED.estado_id,
+        presence = EXCLUDED.presence,
+        last_measured_at = EXCLUDED.last_measured_at;
     `;
 
     await sql`
