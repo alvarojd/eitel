@@ -35,7 +35,7 @@ export function AnalyticsChart({ data, variableLabel, unit, color }: AnalyticsCh
 
   const formatXAxis = (tickItem: string) => {
     const date = new Date(tickItem);
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
   };
 
   return (
@@ -78,7 +78,7 @@ export function AnalyticsChart({ data, variableLabel, unit, color }: AnalyticsCh
             }}
             itemStyle={{ color: '#fff', fontWeight: 'bold' }}
             labelStyle={{ color: '#64748b', marginBottom: '4px' }}
-            labelFormatter={(label) => new Date(label).toLocaleString('es-ES')}
+            labelFormatter={(label) => new Date(label).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}
             formatter={(value) => [`${value} ${unit}`, variableLabel]}
           />
           <Area 

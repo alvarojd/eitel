@@ -116,7 +116,7 @@ export function CronoTimeline({ heatmapData }: { heatmapData: CronoRow[] }) {
                 <div>
                   <div className="text-sm font-bold text-white">{hoveredPoint.row.name}</div>
                   <div className="text-[10px] font-bold text-white/80   mt-0.5">
-                    {new Date(hoveredPoint.point.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} — {STATUS_LABELS[hoveredPoint.point.estadoId] || 'Desconocido'}
+                    {new Date(hoveredPoint.point.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Madrid' })} — {STATUS_LABELS[hoveredPoint.point.estadoId] || 'Desconocido'}
                   </div>
                 </div>
              </div>

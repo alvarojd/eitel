@@ -285,7 +285,7 @@ export function UsersTab() {
  </td>
  <td className="px-8 py-4 hidden lg:table-cell">
  <span className="text-xs font-medium text-slate-500">
- {new Date(u.created_at).toLocaleDateString()}
+ {new Date(u.created_at).toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' })}
  </span>
  </td>
  <td className="px-8 py-4 text-right">

@@ -142,7 +142,7 @@ export function ReportsContainer({ initialSensors }: ReportsContainerProps) {
         <div className="hidden print:block mb-8 text-black">
            <div className="flex items-center justify-end border-b-2 border-slate-200 pb-4 mb-6">
              <div className="text-right">
-                <p className="text-sm font-mono text-white/60 print:text-slate-600 print:text-slate-600">{new Date().toLocaleDateString()}</p>
+                <p className="text-sm font-mono text-white/60 print:text-slate-600 print:text-slate-600">{new Date().toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' })}</p>
 
              </div>
            </div>

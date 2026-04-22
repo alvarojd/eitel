@@ -14,7 +14,7 @@ export async function getSensorHistory(deviceId: string) {
     `;
 
     return rows.map(row => ({
-      time: new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+      time: new Date(row.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Madrid' }),
       value: parseFloat(row.temperature),
       humidity: parseFloat(row.humidity),
       co2: row.co2,
@@ -111,7 +111,7 @@ export async function exportSensorDataCSV(deviceIds: string[], startDate?: strin
     const csvContent = [
       headers.join(';'),
       ...rows.map(r => [
-        new Date(r.created_at).toLocaleString('es-ES'),
+        new Date(r.created_at).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }),
         r.dev_eui,
         r.device_name || '',
         r.temperature,

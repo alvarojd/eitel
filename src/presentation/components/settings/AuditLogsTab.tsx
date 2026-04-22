@@ -118,8 +118,8 @@ export function AuditLogsTab() {
  <tr key={log.id} className="group hover:bg-white/[0.02] transition-colors border-b border-slate-900/40 last:border-0">
  <td className="px-8 py-5">
  <div className="flex flex-col">
- <span className="text-xs font-mono text-slate-200">{new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
- <span className="text-[10px] font-bold text-slate-500 mt-0.5 tracking-tighter">{new Date(log.created_at).toLocaleDateString()}</span>
+ <span className="text-xs font-mono text-slate-200">{new Date(log.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Madrid' })}</span>
+ <span className="text-[10px] font-bold text-slate-500 mt-0.5 tracking-tighter">{new Date(log.created_at).toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' })}</span>
  </div>
  </td>
  <td className="px-8 py-5">
