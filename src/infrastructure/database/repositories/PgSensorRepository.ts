@@ -38,12 +38,12 @@ export class PgSensorRepository implements SensorRepository {
         latitude: row.latitude ? parseFloat(row.latitude) : undefined,
         longitude: row.longitude ? parseFloat(row.longitude) : undefined,
         gatewayId: row.gateway_id,
-        registeredAt: row.registered_at,
-        lastSeen: row.measured_at ? new Date(row.measured_at) : undefined,
+        registeredAt: row.registered_at ? new Date(row.registered_at).toISOString() : undefined,
+        lastSeen: row.measured_at ? new Date(row.measured_at).toISOString() : undefined,
         estadoId: final_estado_id,
         latestMeasurement: row.measured_at ? {
            sensorId: row.dev_eui || row.device_id,
-           timestamp: new Date(row.measured_at),
+           timestamp: new Date(row.measured_at).toISOString(),
            temperature: parseFloat(row.temperature),
            humidity: parseFloat(row.humidity),
            co2: row.co2,
@@ -56,7 +56,7 @@ export class PgSensorRepository implements SensorRepository {
           lowBattery: (row.battery || 0) < 20,
           longTermNoOccupancy: !row.has_recent_presence
         }
-      };
+      } as any;
     });
   }
 

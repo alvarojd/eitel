@@ -48,8 +48,23 @@ export function SensorDrawer() {
  const [activeTab, setActiveTab] = useState<'details' | 'admin'>('details');
  const [history, setHistory] = useState<HistoryItem[]>([]);
  const [loading, setLoading] = useState(false);
+ const [timeAgo, setTimeAgo] = useState('');
 
  const isAdmin = user?.role === 'ADMIN';
+
+ // Update time ago string
+ useEffect(() => {
+   if (!selectedSensor?.lastSeen) {
+     setTimeAgo('Nunca');
+     return;
+   }
+
+   const update = () => setTimeAgo(formatTimeAgo(selectedSensor.lastSeen));
+   update();
+
+   const interval = setInterval(update, 60000);
+   return () => clearInterval(interval);
+ }, [selectedSensor?.lastSeen]);
 
  // Reset tab to details when opening a new sensor
  useEffect(() => {
@@ -102,7 +117,7 @@ export function SensorDrawer() {
  <span className="text-xs font-mono text-white/90">{selectedSensor.devEui || selectedSensor.id}</span>
  <div className="w-1 h-1 rounded-full bg-slate-400" />
  <span className="text-[10px] text-slate-200 flex items-center gap-1">
- <Clock size={10} /> {formatTimeAgo(selectedSensor.lastSeen)}
+ <Clock size={10} /> {timeAgo}
  </span>
  </div>
  </div>
