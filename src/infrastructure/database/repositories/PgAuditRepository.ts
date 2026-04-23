@@ -1,21 +1,33 @@
 import { AuditRepository, AuditLog } from '../../../core/repositories/AuditRepository';
-import { sql } from '../db';
+import { db } from '../db';
+import { auditLogs } from '../schema';
+import { desc } from 'drizzle-orm';
 
 export class PgAuditRepository implements AuditRepository {
   async logAction(userId: string | null, username: string, action: string, details?: string): Promise<void> {
-    await sql`
-      INSERT INTO audit_logs (user_id, username, action, details)
-      VALUES (${userId}, ${username}, ${action}, ${details || null})
-    `;
+    await db.insert(auditLogs).values({
+      userId,
+      username,
+      action,
+      details: details || null,
+    });
   }
 
   async getAuditLogs(limit: number = 100): Promise<AuditLog[]> {
-    const { rows } = await sql`
-      SELECT id, username, action, details, created_at 
-      FROM audit_logs 
-      ORDER BY created_at DESC 
-      LIMIT ${limit}
-    `;
-    return rows as AuditLog[];
+    const rows = await db.select({
+      id: auditLogs.id,
+      username: auditLogs.username,
+      action: auditLogs.action,
+      details: auditLogs.details,
+      created_at: auditLogs.createdAt,
+    })
+    .from(auditLogs)
+    .orderBy(desc(auditLogs.createdAt))
+    .limit(limit);
+    
+    return rows.map(r => ({
+      ...r,
+      created_at: r.created_at as unknown as Date,
+    })) as unknown as AuditLog[];
   }
 }

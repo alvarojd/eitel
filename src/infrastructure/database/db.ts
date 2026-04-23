@@ -38,3 +38,10 @@ export const sql = sqlTag as {
 sql.query = (text: string, values?: any[]) => pool.query(text, values);
 
 export type { QueryResult };
+
+import { drizzle } from 'drizzle-orm/node-postgres';
+import * as schema from './schema';
+import * as relations from './relations';
+
+export const db = drizzle(pool, { schema: { ...schema, ...relations } });
+

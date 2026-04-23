@@ -1,20 +1,26 @@
 import { SystemRepository } from '../../../core/repositories/SystemRepository';
-import { sql } from '../db';
+import { db } from '../db';
+import { systemSettings } from '../schema';
 
 export class PgSystemRepository implements SystemRepository {
   async getSystemSettings(): Promise<Record<string, string>> {
-    const { rows } = await sql<{ key: string, value: string }>`SELECT key, value FROM system_settings`.catch(() => ({ rows: [] }));
-    return rows.reduce((acc, row) => {
-      acc[row.key] = row.value;
-      return acc;
-    }, {} as Record<string, string>);
+    try {
+      const rows = await db.select({ key: systemSettings.key, value: systemSettings.value }).from(systemSettings);
+      return rows.reduce((acc, row) => {
+        acc[row.key] = row.value || '';
+        return acc;
+      }, {} as Record<string, string>);
+    } catch {
+      return {};
+    }
   }
 
   async updateProjectName(newName: string): Promise<void> {
-    await sql`
-      INSERT INTO system_settings (key, value) 
-      VALUES ('project_name', ${newName})
-      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
-    `;
+    await db.insert(systemSettings)
+      .values({ key: 'project_name', value: newName })
+      .onConflictDoUpdate({
+        target: systemSettings.key,
+        set: { value: newName },
+      });
   }
 }

@@ -1,23 +1,38 @@
 import { SensorRepository } from '../../../core/repositories/SensorRepository';
 import { SensorState, SensorStatus } from '../../../core/entities/Sensor';
-import { sql } from '../db';
+import { db } from '../db';
+import { devices, measurements } from '../schema';
+import { eq, asc, sql } from 'drizzle-orm';
 
 export class PgSensorRepository implements SensorRepository {
   
   async getSensors(): Promise<SensorState[]> {
-    const { rows } = await sql`
-      SELECT 
-        d.dev_eui, d.device_id, d.name, d.battery, d.rssi, d.snr, d.latitude, d.longitude, d.gateway_id, d.created_at as registered_at,
-        d.temperature, d.humidity, d.co2, d.presence, d.estado_id, d.last_measured_at as measured_at,
-        EXISTS(
-          SELECT 1 FROM measurements m3 
-          WHERE m3.dev_eui = d.dev_eui 
-          AND m3.presence = true 
-          AND m3.created_at > NOW() - INTERVAL '48 hour'
-        ) as has_recent_presence
-      FROM devices d
-      ORDER BY d.dev_eui;
-    `;
+    const rows = await db.select({
+      dev_eui: devices.devEui,
+      device_id: devices.deviceId,
+      name: devices.name,
+      battery: devices.battery,
+      rssi: devices.rssi,
+      snr: devices.snr,
+      latitude: devices.latitude,
+      longitude: devices.longitude,
+      gateway_id: devices.gatewayId,
+      registered_at: devices.createdAt,
+      temperature: devices.temperature,
+      humidity: devices.humidity,
+      co2: devices.co2,
+      presence: devices.presence,
+      estado_id: devices.estadoId,
+      measured_at: devices.lastMeasuredAt,
+      has_recent_presence: sql<boolean>`EXISTS(
+        SELECT 1 FROM measurements m3 
+        WHERE m3.dev_eui = ${devices.devEui} 
+        AND m3.presence = true 
+        AND m3.created_at > NOW() - INTERVAL '48 hour'
+      )`.as('has_recent_presence'),
+    })
+    .from(devices)
+    .orderBy(asc(devices.devEui));
 
     const now = new Date();
     
@@ -44,8 +59,8 @@ export class PgSensorRepository implements SensorRepository {
         latestMeasurement: row.measured_at ? {
            sensorId: row.dev_eui || row.device_id,
            timestamp: new Date(row.measured_at).toISOString(),
-           temperature: parseFloat(row.temperature),
-           humidity: parseFloat(row.humidity),
+           temperature: row.temperature ? parseFloat(row.temperature) : 0,
+           humidity: row.humidity ? parseFloat(row.humidity) : 0,
            co2: row.co2,
            battery: row.battery,
            presence: row.presence,
@@ -61,25 +76,20 @@ export class PgSensorRepository implements SensorRepository {
   }
 
   async updateSensor(devEui: string, name: string, latitude: number | null, longitude: number | null): Promise<void> {
-    await sql`
-      UPDATE devices 
-      SET 
-        name = ${name}, 
-        latitude = ${latitude}, 
-        longitude = ${longitude}
-      WHERE dev_eui = ${devEui.toUpperCase()}
-    `;
+    await db.update(devices)
+      .set({ name, latitude: latitude ? String(latitude) : null, longitude: longitude ? String(longitude) : null })
+      .where(eq(devices.devEui, devEui.toUpperCase()));
   }
 
   async deleteSensorMeasurements(devEui: string): Promise<void> {
-    await sql`DELETE FROM measurements WHERE dev_eui = ${devEui.toUpperCase()}`;
+    await db.delete(measurements).where(eq(measurements.devEui, devEui.toUpperCase()));
   }
 
   async deleteSensor(devEui: string, includeHistory: boolean): Promise<void> {
     const devEuiStr = devEui.toUpperCase();
     if (includeHistory) {
-      await sql`DELETE FROM measurements WHERE dev_eui = ${devEuiStr}`;
+      await db.delete(measurements).where(eq(measurements.devEui, devEuiStr));
     }
-    await sql`DELETE FROM devices WHERE dev_eui = ${devEuiStr}`;
+    await db.delete(devices).where(eq(devices.devEui, devEuiStr));
   }
 }

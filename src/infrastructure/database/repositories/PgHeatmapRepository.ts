@@ -1,9 +1,10 @@
 import { HeatmapRepository, HeatmapDataPoint } from '../../../core/repositories/HeatmapRepository';
-import { sql } from '../db';
+import { db } from '../db';
+import { sql } from 'drizzle-orm';
 
 export class PgHeatmapRepository implements HeatmapRepository {
   async getHeatmapData(): Promise<HeatmapDataPoint[]> {
-    const { rows } = await sql`
+    const { rows } = await db.execute(sql`
         WITH date_series AS (
             SELECT generate_series(
                 date_trunc('hour', NOW() - INTERVAL '23 hours'),
@@ -44,7 +45,8 @@ export class PgHeatmapRepository implements HeatmapRepository {
         LEFT JOIN aggregated_measurements am 
             ON dh.dev_eui = am.dev_eui AND dh.hour = am.hour
         ORDER BY dh.name ASC, dh.hour ASC;
-    `;
-    return rows as HeatmapDataPoint[];
+    `);
+    return rows as any as HeatmapDataPoint[];
   }
 }
+
