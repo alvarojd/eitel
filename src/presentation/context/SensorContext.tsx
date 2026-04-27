@@ -34,6 +34,13 @@ export function SensorProvider({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isStatusInfoOpen, setIsStatusInfoOpen] = useState(false);
 
+  // Sincronizar el estado interno si el prop initialSensors cambia (útil para páginas del lado del cliente)
+  useEffect(() => {
+    if (initialSensors && initialSensors.length > 0) {
+      setSensors(initialSensors);
+    }
+  }, [initialSensors]);
+
   // Polling para mantener los datos frescos
   useEffect(() => {
     const poll = async () => {

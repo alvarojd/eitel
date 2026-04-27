@@ -15,13 +15,25 @@ import { LineChart, Layout, Maximize2 } from 'lucide-react';
 export default function AnalyticsPage() {
   const [sensors, setSensors] = useState<any[]>([]);
   const [projectName, setProjectName] = useState('');
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   
   useEffect(() => {
     Promise.all([getSensors(), getProjectName()]).then(([s, p]) => {
       setSensors(s);
       setProjectName(p);
+      setIsInitialLoading(false);
     });
   }, []);
+
+  if (isInitialLoading) {
+    return (
+      <DashboardShell projectName={projectName}>
+        <div className="flex h-[calc(100vh-200px)] items-center justify-center">
+          <Loader2 className="animate-spin text-sky-500" size={40} />
+        </div>
+      </DashboardShell>
+    );
+  }
 
   return (
     <SensorProvider initialSensors={sensors}>
