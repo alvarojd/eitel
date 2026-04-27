@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import { SensorState } from '@/core/entities/Sensor';
+import { getSensors } from '@/infrastructure/actions/sensorActions';
 import { filterSensors } from '@/core/utils/filters';
 import { useFilter } from './FilterContext';
 
@@ -28,17 +29,35 @@ export function SensorProvider({
   initialSensors?: SensorState[];
 }) {
   const { activeFilter, searchTerm } = useFilter();
+  const [sensors, setSensors] = useState<SensorState[]>(initialSensors);
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isStatusInfoOpen, setIsStatusInfoOpen] = useState(false);
 
+  // Polling para mantener los datos frescos
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const freshSensors = await getSensors();
+        if (freshSensors && freshSensors.length > 0) {
+          setSensors(freshSensors);
+        }
+      } catch (error) {
+        console.error('Error polling sensors:', error);
+      }
+    };
+
+    const interval = setInterval(poll, 30000); // Cada 30 segundos
+    return () => clearInterval(interval);
+  }, []);
+
   const filteredSensors = useMemo(() => {
-    return filterSensors(initialSensors, activeFilter, searchTerm);
-  }, [initialSensors, activeFilter, searchTerm]);
+    return filterSensors(sensors, activeFilter, searchTerm);
+  }, [sensors, activeFilter, searchTerm]);
 
   const selectedSensor = useMemo(() => {
-    return initialSensors.find(s => s.id === selectedSensorId) || null;
-  }, [selectedSensorId, initialSensors]);
+    return sensors.find(s => s.id === selectedSensorId) || null;
+  }, [selectedSensorId, sensors]);
 
   // Si seleccionamos un sensor, abrimos el Drawer automáticamente
   const handleSetSelectedSensorId = (id: string | null) => {
@@ -52,7 +71,7 @@ export function SensorProvider({
   };
 
   const value = {
-    sensors: initialSensors,
+    sensors,
     selectedSensorId,
     setSelectedSensorId: handleSetSelectedSensorId,
     selectedSensor,

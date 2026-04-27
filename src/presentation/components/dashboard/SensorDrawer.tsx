@@ -48,7 +48,7 @@ export function SensorDrawer() {
  const [activeTab, setActiveTab] = useState<'details' | 'admin'>('details');
  const [history, setHistory] = useState<HistoryItem[]>([]);
  const [loading, setLoading] = useState(false);
- const [timeAgo, setTimeAgo] = useState('');
+ const [timeAgo, setTimeAgo] = useState(selectedSensor?.lastSeen ? formatTimeAgo(selectedSensor.lastSeen) : '');
 
  const isAdmin = user?.role === 'ADMIN';
 
@@ -59,10 +59,12 @@ export function SensorDrawer() {
      return;
    }
 
-   const update = () => setTimeAgo(formatTimeAgo(selectedSensor.lastSeen));
-   update();
+   const update = () => {
+     setTimeAgo(formatTimeAgo(selectedSensor.lastSeen));
+   };
 
-   const interval = setInterval(update, 60000);
+   update();
+   const interval = setInterval(update, 10000); // Actualizar cada 10s para que sea más reactivo
    return () => clearInterval(interval);
  }, [selectedSensor?.lastSeen]);
 
