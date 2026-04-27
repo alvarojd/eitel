@@ -10,7 +10,7 @@ import { AnalyticsStats } from '@/presentation/components/analytics/AnalyticsSta
 import { getAnalyticsData, AnalyticsDataPoint } from '@/infrastructure/actions/analyticsActions';
 import { getSensors } from '@/infrastructure/actions/sensorActions';
 import { getProjectName } from '@/infrastructure/actions/systemActions';
-import { LineChart, Layout, Maximize2 } from 'lucide-react';
+import { LineChart, Layout, Maximize2, Loader2 } from 'lucide-react';
 
 export default function AnalyticsPage() {
   const [sensors, setSensors] = useState<any[]>([]);
