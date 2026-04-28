@@ -155,16 +155,6 @@ export function DeviceList() {
  <span className="text-[8px] font-bold text-slate-600 mt-0.5">Batería</span>
  </div>
  </div>
- 
- <div className="w-px h-6 bg-slate-800" />
-
- <div className="flex items-center gap-2">
- <Activity size={16} className="text-sky-500" />
- <div className="flex flex-col">
- <span className="text-xs font-black text-white leading-none">{sensor.lastSeen ? "Conectado" : "Desconectado"}</span>
- <span className="text-[8px] font-bold text-slate-600 mt-0.5">Estado</span>
- </div>
- </div>
  </div>
 
  <div className="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-600 group-hover:bg-sky-500 group-hover:text-white transition-all transform group-hover:translate-x-1 shadow-lg">
