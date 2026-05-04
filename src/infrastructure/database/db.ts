@@ -23,7 +23,21 @@ const pool = new Pool({
         rejectUnauthorized: process.env.NODE_ENV === 'production',
         ca: process.env.DB_CA_CERT || undefined
       },
-  max: 20
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  // Important: In a production environment, you might want to restart the process 
+  // or notify an observability service like Sentry/CloudWatch.
+});
+
+pool.on('connect', () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Database Pool: New client connected');
+  }
 });
 
 // Helper para emular la sintaxis sql`SELECT * ...` limpia y prevenida contra inyecciones SQL
