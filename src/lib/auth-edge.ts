@@ -55,7 +55,7 @@ export async function verifyJWTEu(token: string): Promise<any | null> {
 
     const payload = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64)));
     
-    // Check expiration
+    // Check expiration (exp is in seconds, Date.now() in milliseconds)
     if (payload.exp && Date.now() >= payload.exp * 1000) {
       return null;
     }

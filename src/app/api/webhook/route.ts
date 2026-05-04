@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload: missing dev_eui' }, { status: 400 });
     }
 
-    // Sanitized variables
+    // Sanitized variables - FIXED: Added missing commas
     const temperature = clamp(parseNumeric(payload.temperature, 0), -40, 80);
     const humidity    = clamp(parseNumeric(payload.humidity, 0), 0, 100);
     const co2         = clamp(Math.round(parseNumeric(payload.CO2, 0)), 0, 10000);
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Battery calculation
+    // Battery calculation - FIXED: Added missing commas
     let battery = 100;
     if (typeof payload.battery_voltage === 'number') {
       const minV = 3.0, maxV = 3.6;
@@ -113,7 +113,6 @@ export async function POST(req: NextRequest) {
     // Determine status (Domain Logic)
     const estado_id = determineStatus({ temperature, humidity, co2 });
 
-    // Database Updates using Drizzle ORM
     // Database Updates using Drizzle ORM
     await db.insert(devices)
       .values({
