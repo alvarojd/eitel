@@ -33,8 +33,8 @@ const TTNPayloadSchema = z.object({
       rssi: z.number().optional(),
       snr: z.number().optional(),
       location: z.object({
-        latitude: z.number(),
-        longitude: z.number(),
+        latitude: z.number().optional(),
+        longitude: z.number().optional(),
       }).optional(),
     })).optional(),
   }),
