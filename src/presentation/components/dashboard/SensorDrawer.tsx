@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
  X, 
@@ -20,6 +20,7 @@ import { useSensor } from '../../context/SensorContext';
 import { useAuth } from '../../context/AuthContext';
 import { SensorAdminTab } from './SensorAdminTab';
 import { STATUS_TEXT_COLORS, STATUS_BG_COLORS, STATUS_LABELS } from '@/core/constants';
+import { SensorState } from '@/core/entities/Sensor';
 import { calculateLinkQuality, LinkQualityLevel } from '@/core/use-cases/linkQuality';
 import { getSensorHistory } from '@/infrastructure/actions/historyActions';
 import { cn, formatTimeAgo } from '@/lib/utils';
@@ -74,13 +75,25 @@ export function SensorDrawer() {
  }, [selectedSensor?.id, isDrawerOpen]);
 
  useEffect(() => {
- if (selectedSensor && isDrawerOpen) {
- setLoading(true);
- getSensorHistory(selectedSensor.id).then(data => {
- setHistory(data);
- setLoading(false);
- });
- }
+   let isMounted = true;
+   
+   if (selectedSensor && isDrawerOpen) {
+     setLoading(true);
+     getSensorHistory(selectedSensor.id).then(data => {
+       if (isMounted) {
+         setHistory(data);
+         setLoading(false);
+       }
+     }).catch(err => {
+       if (isMounted) {
+         setLoading(false);
+       }
+     });
+   }
+   
+   return () => {
+     isMounted = false;
+   };
  }, [selectedSensor, isDrawerOpen]);
 
  if (!selectedSensor) return null;
@@ -183,10 +196,10 @@ export function SensorDrawer() {
 }
 
 function SensorDetailsContent({ selectedSensor, history, loading, lq }: { 
- selectedSensor: any, 
+ selectedSensor: SensorState, 
  history: HistoryItem[], 
  loading: boolean, 
- lq: any 
+ lq: { level: LinkQualityLevel, score: number } 
 }) {
  return (
  <div className="space-y-8 animate-in fade-in duration-500">
@@ -253,9 +266,14 @@ function SensorDetailsContent({ selectedSensor, history, loading, lq }: {
  {loading ? (
  <Loader2 size={24} className="animate-spin text-slate-700" />
  ) : history.length > 0 ? (() => {
- const dataValues = history.map((h: HistoryItem) => h.value).filter(v => v !== null && v !== undefined);
- const currentMax = Math.max(...dataValues, 30) + 2;
- const currentMin = Math.min(...dataValues, 15) - 2;
+  const { currentMin, currentMax } = useMemo(() => {
+    if (history.length === 0) return { currentMax: 32, currentMin: 13 };
+    const dataValues = history.map(h => h.value).filter(v => v != null);
+    return {
+      currentMax: Math.max(...dataValues, 30) + 2,
+      currentMin: Math.min(...dataValues, 15) - 2,
+    };
+  }, [history]);
 
  return (
  <ResponsiveContainer width="100%" height="100%">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 import { SensorState } from '@/core/entities/Sensor';
 import { getSensors } from '@/infrastructure/actions/sensorActions';
 import { filterSensors } from '@/core/utils/filters';
@@ -67,17 +67,17 @@ export function SensorProvider({
   }, [selectedSensorId, sensors]);
 
   // Si seleccionamos un sensor, abrimos el Drawer automáticamente
-  const handleSetSelectedSensorId = (id: string | null) => {
+  const handleSetSelectedSensorId = useCallback((id: string | null) => {
     setSelectedSensorId(id);
     if (id) setIsDrawerOpen(true);
-  };
+  }, []);
 
-  const handleSetIsDrawerOpen = (open: boolean) => {
+  const handleSetIsDrawerOpen = useCallback((open: boolean) => {
     setIsDrawerOpen(open);
     if (!open) setSelectedSensorId(null);
-  };
+  }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     sensors,
     selectedSensorId,
     setSelectedSensorId: handleSetSelectedSensorId,
@@ -88,7 +88,17 @@ export function SensorProvider({
     setIsStatusInfoOpen,
     activeFilter,
     filteredSensors
-  };
+  }), [
+    sensors,
+    selectedSensorId,
+    selectedSensor,
+    isDrawerOpen,
+    isStatusInfoOpen,
+    activeFilter,
+    filteredSensors,
+    handleSetSelectedSensorId,
+    handleSetIsDrawerOpen
+  ]);
 
   return (
     <SensorContext.Provider value={value}>

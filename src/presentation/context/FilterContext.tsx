@@ -15,8 +15,15 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
+  const value = React.useMemo(() => ({
+    activeFilter,
+    setActiveFilter,
+    searchTerm,
+    setSearchTerm
+  }), [activeFilter, searchTerm]);
+
   return (
-    <FilterContext.Provider value={{ activeFilter, setActiveFilter, searchTerm, setSearchTerm }}>
+    <FilterContext.Provider value={value}>
       {children}
     </FilterContext.Provider>
   );

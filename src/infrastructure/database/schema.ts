@@ -43,6 +43,7 @@ export const measurements = pgTable("measurements", {
 }, (table) => [
 	index("idx_measurements_dev_eui_time").using("btree", table.devEui.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("text_ops")),
 	index("idx_measurements_time").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_measurements_presence").using("btree", table.devEui.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("text_ops")).where(sql`presence = true`),
 	foreignKey({
 			columns: [table.devEui],
 			foreignColumns: [devices.devEui],
