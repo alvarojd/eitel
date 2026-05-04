@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   
   if (!WEBHOOK_SECRET) {
     console.error('FATAL: TTN_WEBHOOK_SECRET environment variable is required for webhook security');
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Server Misconfiguration: Missing TTN_WEBHOOK_SECRET' }, { status: 500 });
   }
 
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
