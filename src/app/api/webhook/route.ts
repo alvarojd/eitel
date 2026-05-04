@@ -4,20 +4,6 @@ import { devices, measurements } from '../../../infrastructure/database/schema';
 import { sql } from 'drizzle-orm';
 import { determineStatus } from '../../../core/use-cases/statusEngine';
 
-import { z } from 'zod';
-
-const TTNPayloadSchema = z.object({
-  end_device_ids: z.object({
-    dev_eui: z.string().optional(),
-    device_id: z.string().optional(),
-  }).optional(),
-  uplink_message: z.object({
-    received_at: z.string().optional(),
-    decoded_payload: z.record(z.any()).optional(),
-    rx_metadata: z.array(z.any()).optional(),
-  }).optional(),
-}).passthrough();
-
 export async function POST(req: NextRequest) {
   const WEBHOOK_SECRET = process.env.TTN_WEBHOOK_SECRET;
   
@@ -36,22 +22,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Parse & Validate TTN Payload
+    // 2. Parse TTN Payload
     const bodyText = await req.text();
-    let rawData: any;
+    let bodyData: any;
     try {
-      rawData = JSON.parse(bodyText);
+      bodyData = JSON.parse(bodyText);
     } catch (e) {
       return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
     }
 
-    const validation = TTNPayloadSchema.safeParse(rawData);
-    if (!validation.success) {
-      console.warn('Webhook received invalid payload structure:', validation.error.format());
-      return NextResponse.json({ error: 'Invalid payload structure', details: validation.error.format() }, { status: 400 });
-    }
-
-    const { end_device_ids, uplink_message } = validation.data;
+    const { end_device_ids, uplink_message } = bodyData;
     const payload = uplink_message?.decoded_payload;
     const rx_metadata = uplink_message?.rx_metadata;
     const received_at = uplink_message?.received_at || new Date().toISOString();
@@ -78,6 +58,15 @@ export async function POST(req: NextRequest) {
     // Handle Coordinates
     let latitude = payload.latitude || payload.lat || payload.gps_lat;
     let longitude = payload.longitude || payload.lon || payload.lng || payload.gps_lng;
+
+    const locations = uplink_message?.locations;
+    if (!latitude && locations) {
+      const locSource = locations.user || locations['frm-payload'] || Object.values(locations)[0];
+      if (locSource) {
+        latitude = (locSource as any).latitude;
+        longitude = (locSource as any).longitude;
+      }
+    }
 
     // Gateway and Quality
     let gateway_id = null;
