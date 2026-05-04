@@ -15,7 +15,7 @@ export const config = {
   ],
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = request.cookies.get('auth_token')?.value;
   const decoded = token ? await verifyJWTEu(token) : null;
   const { pathname } = request.nextUrl;
