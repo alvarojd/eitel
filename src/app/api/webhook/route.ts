@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql } from '../../../infrastructure/database/db';
+import { db } from '../../../infrastructure/database/db';
+import { devices, measurements } from '../../../infrastructure/database/schema';
+import { sql } from 'drizzle-orm';
 import { determineStatus } from '../../../core/use-cases/statusEngine';
 
 // --- Sanitization Helpers ---
@@ -112,36 +114,55 @@ export async function POST(req: NextRequest) {
     const estado_id = determineStatus({ temperature, humidity, co2 });
 
     // Database Updates using Drizzle ORM
-    await sql`
-      INSERT INTO devices (
-        dev_eui, device_id, name, battery, rssi, snr, latitude, longitude, gateway_id, created_at,
-        temperature, humidity, co2, estado_id, presence, last_measured_at
-      )
-      VALUES (
-        ${dev_eui}, ${device_id}, ${name}, ${battery}, ${rssi}, ${snr}, ${latitude || null}, ${longitude || null}, ${gateway_id}, ${received_at},
-        ${temperature}, ${humidity}, ${co2}, ${estado_id}, ${presence}, ${received_at}
-      )
-      ON CONFLICT (dev_eui) DO UPDATE 
-      SET 
-        name = COALESCE(devices.name, EXCLUDED.name),
-        battery = EXCLUDED.battery,
-        rssi = EXCLUDED.rssi,
-        snr = EXCLUDED.snr,
-        latitude = COALESCE(devices.latitude, EXCLUDED.latitude),
-        longitude = COALESCE(devices.longitude, EXCLUDED.longitude),
-        gateway_id = EXCLUDED.gateway_id,
-        temperature = EXCLUDED.temperature,
-        humidity = EXCLUDED.humidity,
-        co2 = EXCLUDED.co2,
-        estado_id = EXCLUDED.estado_id,
-        presence = EXCLUDED.presence,
-        last_measured_at = EXCLUDED.last_measured_at;
-    `;
+    // Database Updates using Drizzle ORM
+    await db.insert(devices)
+      .values({
+        devEui: dev_eui,
+        deviceId: device_id,
+        name: name,
+        battery,
+        rssi,
+        snr: snr.toString(),
+        latitude: latitude ? latitude.toString() : null,
+        longitude: longitude ? longitude.toString() : null,
+        gatewayId: gateway_id,
+        createdAt: new Date(received_at),
+        temperature: temperature.toString(),
+        humidity: humidity.toString(),
+        co2: co2.toString(),
+        estadoId: estado_id,
+        presence,
+        lastMeasuredAt: new Date(received_at)
+      })
+      .onConflictDoUpdate({
+        target: devices.devEui,
+        set: {
+          name: sql`COALESCE(devices.name, EXCLUDED.name)`,
+          battery: sql`EXCLUDED.battery`,
+          rssi: sql`EXCLUDED.rssi`,
+          snr: sql`EXCLUDED.snr`,
+          latitude: sql`COALESCE(devices.latitude, EXCLUDED.latitude)`,
+          longitude: sql`COALESCE(devices.longitude, EXCLUDED.longitude)`,
+          gatewayId: sql`EXCLUDED.gateway_id`,
+          temperature: sql`EXCLUDED.temperature`,
+          humidity: sql`EXCLUDED.humidity`,
+          co2: sql`EXCLUDED.co2`,
+          estadoId: sql`EXCLUDED.estado_id`,
+          presence: sql`EXCLUDED.presence`,
+          lastMeasuredAt: sql`EXCLUDED.last_measured_at`
+        }
+      });
 
-    await sql`
-      INSERT INTO measurements (dev_eui, temperature, humidity, co2, presence, estado_id, created_at)
-      VALUES (${dev_eui}, ${temperature}, ${humidity}, ${co2}, ${presence}, ${estado_id}, ${received_at});
-    `;
+    await db.insert(measurements)
+      .values({
+        devEui: dev_eui,
+        temperature: temperature.toString(),
+        humidity: humidity.toString(),
+        co2: co2,
+        presence,
+        estadoId: estado_id,
+        createdAt: new Date(received_at)
+      });
 
     return NextResponse.json({ success: true }, { status: 200 });
 

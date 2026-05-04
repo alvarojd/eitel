@@ -64,33 +64,42 @@ export const calculateReportMetrics = (
     return { percentages: createEmptyPercentages(), totalHours: 0, metrics: emptyMetrics };
   }
 
-  // Calculate percentages based on statuses provided directly or calculated
-  const hourlyStatuses: SensorStatus[] = [];
-  
+  // Single pass calculation for performance (O(N))
   const temps: number[] = [];
   const hums: number[] = [];
   const co2s: number[] = [];
   
   let sumT = 0, sumH = 0, sumC = 0;
-  let maxT = -999, minT = 999;
-  let maxH = -999, minH = 999;
-  let maxC = -999, minC = 99999;
+  let sumSqT = 0, sumSqH = 0, sumSqC = 0;
+  let maxT = -Infinity, minT = Infinity;
+  let maxH = -Infinity, minH = Infinity;
+  let maxC = -Infinity, minC = Infinity;
+  
+  const counts = createEmptyPercentages();
 
   filteredData.forEach(d => {
-    // Collect status based on means
+    // 1. Status Counts
     const status = determineStatus({ temperature: d.temperature, humidity: d.humidity, co2: d.co2 });
-    hourlyStatuses.push(status);
+    if (counts[status as keyof typeof counts] !== undefined) {
+      counts[status as keyof typeof counts]++;
+    } else {
+      counts[SensorStatus.UNKNOWN]++;
+    }
 
+    // 2. Arrays for Median
     temps.push(d.temperature);
     hums.push(d.humidity);
     co2s.push(d.co2);
 
-    // Sums for averages
+    // 3. Sums & Sums of Squares (for variance)
     sumT += d.temperature;
+    sumSqT += d.temperature * d.temperature;
     sumH += d.humidity;
+    sumSqH += d.humidity * d.humidity;
     sumC += d.co2;
+    sumSqC += d.co2 * d.co2;
     
-    // Min Maxs
+    // 4. Mins & Maxs
     if (d.temperature > maxT) maxT = d.temperature;
     if (d.temperature < minT) minT = d.temperature;
     if (d.humidity > maxH) maxH = d.humidity;
@@ -104,6 +113,12 @@ export const calculateReportMetrics = (
   const avgH = sumH / count;
   const avgC = sumC / count;
 
+  // Calculate Variance using sum of squares formula: (Sum(x^2) - (Sum(x)^2 / N)) / N
+  // Math.max(0, ...) prevents negative float precision issues
+  const varT = Math.max(0, (sumSqT - (sumT * sumT) / count) / count);
+  const varH = Math.max(0, (sumSqH - (sumH * sumH) / count) / count);
+  const varC = Math.max(0, (sumSqC - (sumC * sumC) / count) / count);
+
   // Median Helper (Optimized In-Place)
   const calculateMedianInPlace = (arr: number[]) => {
     if (arr.length === 0) return 0;
@@ -112,32 +127,13 @@ export const calculateReportMetrics = (
     return arr.length % 2 !== 0 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
   };
 
-  // Standard Deviation
-  let sumSqDiffT = 0, sumSqDiffH = 0, sumSqDiffC = 0;
-  filteredData.forEach(d => {
-    sumSqDiffT += Math.pow(d.temperature - avgT, 2);
-    sumSqDiffH += Math.pow(d.humidity - avgH, 2);
-    sumSqDiffC += Math.pow(d.co2 - avgC, 2);
-  });
-
   const metrics: AggregatedMetrics = {
-    avgTemp: avgT, maxTemp: maxT, minTemp: minT, stdDevTemp: Math.sqrt(sumSqDiffT / count), medTemp: calculateMedianInPlace(temps),
-    avgHum: avgH, maxHum: maxH, minHum: minH, stdDevHum: Math.sqrt(sumSqDiffH / count), medHum: calculateMedianInPlace(hums),
-    avgCo2: avgC, maxCo2: maxC, minCo2: minC, stdDevCo2: Math.sqrt(sumSqDiffC / count), medCo2: calculateMedianInPlace(co2s)
+    avgTemp: avgT, maxTemp: maxT, minTemp: minT, stdDevTemp: Math.sqrt(varT), medTemp: calculateMedianInPlace(temps),
+    avgHum: avgH, maxHum: maxH, minHum: minH, stdDevHum: Math.sqrt(varH), medHum: calculateMedianInPlace(hums),
+    avgCo2: avgC, maxCo2: maxC, minCo2: minC, stdDevCo2: Math.sqrt(varC), medCo2: calculateMedianInPlace(co2s)
   };
 
-  // Percentages Loop
-  const counts = createEmptyPercentages();
-  const totalHours = hourlyStatuses.length;
-
-  hourlyStatuses.forEach(status => {
-    if (counts[status as keyof typeof counts] !== undefined) {
-      counts[status as keyof typeof counts]++;
-    } else {
-      counts[SensorStatus.UNKNOWN]++;
-    }
-  });
-
+  const totalHours = count;
   const percentages = createEmptyPercentages();
   if (totalHours > 0) {
     (Object.keys(counts) as unknown as SensorStatus[]).forEach((key) => {

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/infrastructure/database/db';
+import { db } from '@/infrastructure/database/db';
+import { users } from '@/infrastructure/database/schema';
+import { eq } from 'drizzle-orm';
 import { comparePassword, generateToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
@@ -10,14 +12,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Faltan credenciales' }, { status: 400 });
     }
 
-    const { rows } = await sql`SELECT * FROM users WHERE username = ${username}`;
-    const user = rows[0];
+    const [user] = await db.select().from(users).where(eq(users.username, username));
 
     if (!user) {
       return NextResponse.json({ error: 'Usuario o contraseña incorrectos' }, { status: 401 });
     }
 
-    const isValid = await comparePassword(password, user.password_hash);
+    const isValid = await comparePassword(password, user.passwordHash);
     if (!isValid) {
       return NextResponse.json({ error: 'Usuario o contraseña incorrectos' }, { status: 401 });
     }
