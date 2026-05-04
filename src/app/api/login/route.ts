@@ -3,6 +3,7 @@ import { db } from '@/infrastructure/database/db';
 import { users } from '@/infrastructure/database/schema';
 import { eq } from 'drizzle-orm';
 import { comparePassword, generateToken } from '@/lib/auth';
+import { UserRole } from '@/core/entities/User';
 
 export async function POST(request: Request) {
   try {
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
     const token = generateToken({
       id: user.id,
       username: username,
-      role: user.role
+      role: user.role as UserRole
     });
 
     const response = NextResponse.json({
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
       user: {
         id: user.id,
         username: user.username,
-        role: user.role
+        role: user.role as UserRole
       }
     });
 
