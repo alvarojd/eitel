@@ -4,12 +4,26 @@ import { devices, measurements } from '../../../infrastructure/database/schema';
 import { sql } from 'drizzle-orm';
 import { determineStatus } from '../../../core/use-cases/statusEngine';
 
+// --- Sanitization Helpers ---
+function parseNumeric(value: unknown, fallback: number): number {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+}
+
+function clamp(val: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, val));
+}
+
+function sanitizeString(value: unknown, maxLength: number = 255): string {
+  return String(value ?? '').slice(0, maxLength);
+}
+
 export async function POST(req: NextRequest) {
   const WEBHOOK_SECRET = process.env.TTN_WEBHOOK_SECRET;
   
   if (!WEBHOOK_SECRET) {
     console.error('FATAL: TTN_WEBHOOK_SECRET environment variable is required for webhook security');
-    return NextResponse.json({ error: 'Server Misconfiguration: Missing TTN_WEBHOOK_SECRET' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
@@ -24,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Parse TTN Payload
     const bodyText = await req.text();
-    let bodyData: any;
+    let bodyData: any = {};
     try {
       bodyData = JSON.parse(bodyText);
     } catch (e) {
@@ -37,23 +51,23 @@ export async function POST(req: NextRequest) {
     const received_at = uplink_message?.received_at || new Date().toISOString();
 
     if (!payload) {
-      console.warn('Webhook received without decoded_payload or invalid structure.');
+      console.warn('Webhook received without decoded_payload. Check TTN Formatter.');
       return NextResponse.json({ error: 'Invalid payload: missing decoded_payload' }, { status: 400 });
     }
 
-    const dev_eui = (end_device_ids?.dev_eui || payload?.dev_eui || '').toUpperCase();
-    const device_id = (end_device_ids?.device_id || payload?.device_id || dev_eui).toLowerCase();
-    const name = end_device_ids?.device_id || device_id;
+    const dev_eui = sanitizeString(end_device_ids?.dev_eui || payload?.dev_eui).toUpperCase();
+    const device_id = sanitizeString(end_device_ids?.device_id || payload?.device_id || dev_eui).toLowerCase();
+    const name = sanitizeString(end_device_ids?.device_id || device_id);
 
     if (!dev_eui || dev_eui === 'UNDEFINED') {
       return NextResponse.json({ error: 'Invalid payload: missing dev_eui' }, { status: 400 });
     }
 
-    // Extracted and Clamped variables (Resilient to different decoder naming conventions)
-    const temperature = Math.max(-40, Math.min(80, payload.temperature ?? payload.temp ?? 0));
-    const humidity    = Math.max(0, Math.min(100, payload.humidity ?? payload.hum ?? 0));
-    const co2         = Math.max(0, Math.min(10000, Math.round(payload.CO2 ?? payload.co2 ?? 0)));
-    const presence    = payload.presence === true || payload.pir === true;
+    // Sanitized variables - FIXED: Proper commas
+    const temperature = clamp(parseNumeric(payload.temperature, 0), -40, 80);
+    const humidity    = clamp(parseNumeric(payload.humidity, 0), 0, 100);
+    const co2         = clamp(Math.round(parseNumeric(payload.CO2, 0)), 0, 10000);
+    const presence    = payload.presence === true;
 
     // Handle Coordinates
     let latitude = payload.latitude || payload.lat || payload.gps_lat;
@@ -76,9 +90,9 @@ export async function POST(req: NextRequest) {
       const bestGw = rx_metadata.reduce((prev: any, curr: any) =>
         ((prev.rssi || -200) > (curr.rssi || -200)) ? prev : curr
       );
-      gateway_id = bestGw.gateway_ids?.gateway_id || bestGw.packet_id || null;
-      rssi = bestGw.rssi ?? -100;
-      snr = bestGw.snr ?? 0;
+      gateway_id = bestGw.gateway_ids?.gateway_id || bestGw.packet_id;
+      rssi = bestGw.rssi || -100;
+      snr = bestGw.snr || 0;
 
       if (!latitude && bestGw.location) {
         latitude = bestGw.location.latitude;
@@ -86,7 +100,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Battery calculation
+    // Battery calculation - FIXED: Proper commas
     let battery = 100;
     if (typeof payload.battery_voltage === 'number') {
       const minV = 3.0, maxV = 3.6;
