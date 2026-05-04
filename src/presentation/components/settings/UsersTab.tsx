@@ -2,26 +2,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
- Users, 
- UserPlus, 
- Trash2, 
- Key, 
- Loader2, 
- Shield, 
- MoreVertical, 
- Search,
- Filter,
- X,
- Check,
- AlertTriangle,
- Lock
+  Users, 
+  UserPlus, 
+  Trash2, 
+  Key, 
+  Loader2, 
+  Shield, 
+  MoreVertical, 
+  Search,
+  Filter,
+  X,
+  Check,
+  AlertTriangle,
+  Lock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { 
- getUsers, 
- createUser, 
- updateUserPassword, 
- deleteUser 
+  getUsers, 
+  createUser, 
+  updateOwnPassword, 
+  deleteUser 
 } from '@/infrastructure/actions/userActions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -68,58 +68,58 @@ export function UsersTab() {
  refreshUsers();
  }, []);
 
- const handleCreate = async (e: React.FormEvent) => {
- e.preventDefault();
- setIsSubmitting(true);
- setError('');
- try {
- await createUser(
- currentUser?.id || '',
- currentUser?.username || '',
- newUsername,
- newPassword,
- newRole
- );
- setNewUsername('');
- setNewPassword('');
- setIsAdding(false);
- refreshUsers();
- } catch (e: any) {
- setError(e.message || 'Error al crear usuario');
- } finally {
- setIsSubmitting(false);
- }
- };
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    setIsSubmitting(true);
+    setError('');
+    try {
+      await createUser(
+        currentUser.id,
+        currentUser.username,
+        newUsername,
+        newPassword,
+        newRole
+      );
+      setNewUsername('');
+      setNewPassword('');
+      setIsAdding(false);
+      refreshUsers();
+    } catch (e: any) {
+      setError(e.message || 'Error al crear usuario');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
- const handleDelete = async (userId: string, username: string) => {
- if (!window.confirm(`¿Seguro que deseas eliminar al usuario @${username}?`)) return;
- try {
- await deleteUser(currentUser?.id || '', currentUser?.username || '', userId);
- refreshUsers();
- } catch (e: any) {
- alert(e.message);
- }
- };
+  const handleDelete = async (userId: string, username: string) => {
+    if (!currentUser) return;
+    if (!window.confirm(`¿Seguro que deseas eliminar al usuario @${username}?`)) return;
+    try {
+      await deleteUser(currentUser.id, currentUser.username, userId);
+      refreshUsers();
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
 
- const handleUpdatePassword = async (userId: string) => {
- if (updatePassword.length < 8) return;
- setIsSubmitting(true);
- try {
- await updateUserPassword(
- currentUser?.id || '',
- currentUser?.username || '',
- userId,
- updatePassword
- );
- setUpdatePassword('');
- setUpdatingUserId(null);
- alert('Contraseña actualizada con éxito');
- } catch (e: any) {
- alert(e.message);
- } finally {
- setIsSubmitting(false);
- }
- };
+  const handleUpdatePassword = async (userId: string) => {
+    if (updatePassword.length < 8) return;
+    setIsSubmitting(true);
+    try {
+      await updateOwnPassword(
+        userId,
+        updatePassword
+      );
+      setUpdatePassword('');
+      setUpdatingUserId(null);
+      alert('Contraseña actualizada con éxito');
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
  const filteredUsers = users.filter(u => 
  u.username.toLowerCase().includes(searchTerm.toLowerCase())

@@ -1,12 +1,12 @@
 'use server'
 
 import { determineStatus } from '../../core/use-cases/statusEngine';
-import { PgHeatmapRepository } from '../database/repositories/PgHeatmapRepository';
-
-const heatmapRepository = new PgHeatmapRepository();
+import { SensorStatus } from '../../core/entities/Sensor';
+import { getHeatmapRepository } from '../di/container';
 
 export async function getHeatmapData() {
   try {
+    const heatmapRepository = getHeatmapRepository();
     const rows = await heatmapRepository.getHeatmapData();
 
     const heatmapMap = new Map<string, any>();
@@ -23,7 +23,7 @@ export async function getHeatmapData() {
 
       const deviceEntry = heatmapMap.get(devId);
       
-      let estadoId = 0; 
+      let estadoId: SensorStatus = SensorStatus.UNKNOWN; 
       let hasData = false;
 
       if (row.read_count > 0) {

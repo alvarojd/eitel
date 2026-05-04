@@ -16,17 +16,21 @@ function sanitizeString(value: unknown, maxLength: number = 255): string {
   return String(value ?? '').slice(0, maxLength);
 }
 
-const WEBHOOK_SECRET = process.env.TTN_WEBHOOK_SECRET;
-
 export async function POST(req: NextRequest) {
+  const WEBHOOK_SECRET = process.env.TTN_WEBHOOK_SECRET;
+  
+  if (!WEBHOOK_SECRET) {
+    console.error('FATAL: TTN_WEBHOOK_SECRET environment variable is required for webhook security');
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
-  console.log(`Webhook received from IP: ${ip}`);
 
   try {
     // 1. Authentication
     const authHeader = req.headers.get('x-downlink-apikey') || req.headers.get('authorization');
-    if (WEBHOOK_SECRET && authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
-      console.warn('Unauthorized webhook attempt: Secret mismatch or missing.');
+    if (authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
+      console.warn(`Unauthorized webhook attempt from IP: ${ip}`);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -107,7 +111,7 @@ export async function POST(req: NextRequest) {
     // Determine status (Domain Logic)
     const estado_id = determineStatus({ temperature, humidity, co2 });
 
-    // Database Updates
+    // Database Updates using Drizzle ORM
     await sql`
       INSERT INTO devices (
         dev_eui, device_id, name, battery, rssi, snr, latitude, longitude, gateway_id, created_at,

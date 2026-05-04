@@ -43,7 +43,7 @@ export class PgSensorRepository implements SensorRepository {
 
       let final_estado_id = row.estado_id !== null ? row.estado_id : SensorStatus.OFFLINE;
       if (diffMins > 120) {
-        final_estado_id = SensorStatus.OFFLINE; // Desconectado / Inactivo
+        final_estado_id = SensorStatus.OFFLINE; // Offline / Inactive
       }
 
       return {

@@ -1,13 +1,11 @@
 'use server'
 
-import { PgAnalyticsRepository } from '../database/repositories/PgAnalyticsRepository';
+import { getAnalyticsRepository } from '../di/container';
 
 export interface AnalyticsDataPoint {
   timestamp: string;
   value: number;
 }
-
-const analyticsRepository = new PgAnalyticsRepository();
 
 export async function getAnalyticsData(
   devEui: string, 
@@ -22,6 +20,7 @@ export async function getAnalyticsData(
       throw new Error('Variable no permitida');
     }
 
+    const analyticsRepository = getAnalyticsRepository();
     return await analyticsRepository.getAnalyticsData(devEui, startDate, endDate, variable);
   } catch (error) {
     console.error('Error fetching analytics data:', error);

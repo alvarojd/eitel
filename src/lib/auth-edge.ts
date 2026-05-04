@@ -1,7 +1,13 @@
 // src/lib/auth-edge.ts
 // Native implementation of JWT verification for Edge Runtime (No Node.js dependencies)
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev-only';
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('FATAL: JWT_SECRET environment variable is required for Edge runtime.');
+  }
+  return secret;
+}
 
 function base64UrlDecode(str: string) {
   str = str.replace(/-/g, '+').replace(/_/g, '/');
@@ -32,7 +38,7 @@ export async function verifyJWTEu(token: string): Promise<any | null> {
     if (parts.length !== 3) return null;
 
     const [headerB64, payloadB64, signatureB64] = parts;
-    const key = await getCryptoKey(JWT_SECRET);
+    const key = await getCryptoKey(getJwtSecret());
     
     const enc = new TextEncoder();
     const data = enc.encode(`${headerB64}.${payloadB64}`);

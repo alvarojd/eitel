@@ -1,8 +1,6 @@
 'use server';
 
-import { PgAuditRepository } from '../database/repositories/PgAuditRepository';
-
-const auditRepository = new PgAuditRepository();
+import { getAuditRepository } from '../di/container';
 
 export async function logAction(
   userId: string | null,
@@ -11,6 +9,7 @@ export async function logAction(
   details?: string
 ) {
   try {
+    const auditRepository = getAuditRepository();
     await auditRepository.logAction(userId, username, action, details);
   } catch (error) {
     console.error('Failed to log action:', error);
@@ -19,6 +18,7 @@ export async function logAction(
 
 export async function getAuditLogs(limit: number = 100) {
   try {
+    const auditRepository = getAuditRepository();
     return await auditRepository.getAuditLogs(limit);
   } catch (error) {
     console.error('Audit Logs Action Error:', error);

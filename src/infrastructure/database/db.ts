@@ -19,7 +19,10 @@ const pool = new Pool({
   connectionString,
   ssl: connectionString?.includes('localhost') || connectionString?.includes('127.0.0.1') 
     ? false 
-    : { rejectUnauthorized: false },
+    : { 
+        rejectUnauthorized: process.env.NODE_ENV === 'production',
+        ca: process.env.DB_CA_CERT || undefined
+      },
   max: 20
 });
 

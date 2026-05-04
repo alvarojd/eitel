@@ -1,4 +1,5 @@
-import { EstadoId, determineStatus } from './statusEngine';
+import { determineStatus } from './statusEngine';
+import { SensorStatus } from '../entities/Sensor';
 
 export interface HistoryDataPoint {
   timestamp: Date;
@@ -12,29 +13,29 @@ export interface HistoryDataPoint {
 export type PresenceFilterType = 'all' | 'with-presence' | 'without-presence';
 
 export interface ReportPercentages {
-  [EstadoId.FRIO_SEVERO]: number;
-  [EstadoId.CALOR_EXTREMO]: number;
-  [EstadoId.ATMOSFERA_NOCIVA]: number;
-  [EstadoId.RIESGO_MOHO]: number;
-  [EstadoId.AIRE_VICIADO]: number;
-  [EstadoId.FRIO_MODERADO]: number;
-  [EstadoId.AIRE_SECO]: number;
-  [EstadoId.IDEAL]: number;
-  [EstadoId.DESCONECTADO]: number;
-  [EstadoId.DESCONOCIDO]: number;
+  [SensorStatus.CRITICAL_COLD]: number;
+  [SensorStatus.CRITICAL_HEAT]: number;
+  [SensorStatus.CRITICAL_GAS]: number;
+  [SensorStatus.WARNING_MOLD]: number;
+  [SensorStatus.WARNING_STALE_AIR]: number;
+  [SensorStatus.WARNING_COLD]: number;
+  [SensorStatus.WARNING_DRY]: number;
+  [SensorStatus.IDEAL]: number;
+  [SensorStatus.OFFLINE]: number;
+  [SensorStatus.UNKNOWN]: number;
 }
 
 export const createEmptyPercentages = (): ReportPercentages => ({
-  [EstadoId.FRIO_SEVERO]: 0,
-  [EstadoId.CALOR_EXTREMO]: 0,
-  [EstadoId.ATMOSFERA_NOCIVA]: 0,
-  [EstadoId.RIESGO_MOHO]: 0,
-  [EstadoId.AIRE_VICIADO]: 0,
-  [EstadoId.FRIO_MODERADO]: 0,
-  [EstadoId.AIRE_SECO]: 0,
-  [EstadoId.IDEAL]: 0,
-  [EstadoId.DESCONECTADO]: 0,
-  [EstadoId.DESCONOCIDO]: 0,
+  [SensorStatus.CRITICAL_COLD]: 0,
+  [SensorStatus.CRITICAL_HEAT]: 0,
+  [SensorStatus.CRITICAL_GAS]: 0,
+  [SensorStatus.WARNING_MOLD]: 0,
+  [SensorStatus.WARNING_STALE_AIR]: 0,
+  [SensorStatus.WARNING_COLD]: 0,
+  [SensorStatus.WARNING_DRY]: 0,
+  [SensorStatus.IDEAL]: 0,
+  [SensorStatus.OFFLINE]: 0,
+  [SensorStatus.UNKNOWN]: 0,
 });
 
 export interface AggregatedMetrics {
@@ -64,7 +65,7 @@ export const calculateReportMetrics = (
   }
 
   // Calculate percentages based on statuses provided directly or calculated
-  const hourlyStatuses: EstadoId[] = [];
+  const hourlyStatuses: SensorStatus[] = [];
   
   const temps: number[] = [];
   const hums: number[] = [];
@@ -103,11 +104,12 @@ export const calculateReportMetrics = (
   const avgH = sumH / count;
   const avgC = sumC / count;
 
-  // Median Helper
-  const getMedian = (arr: number[]) => {
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  // Median Helper (Optimized In-Place)
+  const calculateMedianInPlace = (arr: number[]) => {
+    if (arr.length === 0) return 0;
+    arr.sort((a, b) => a - b);
+    const mid = Math.floor(arr.length / 2);
+    return arr.length % 2 !== 0 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
   };
 
   // Standard Deviation
@@ -119,9 +121,9 @@ export const calculateReportMetrics = (
   });
 
   const metrics: AggregatedMetrics = {
-    avgTemp: avgT, maxTemp: maxT, minTemp: minT, stdDevTemp: Math.sqrt(sumSqDiffT / count), medTemp: getMedian(temps),
-    avgHum: avgH, maxHum: maxH, minHum: minH, stdDevHum: Math.sqrt(sumSqDiffH / count), medHum: getMedian(hums),
-    avgCo2: avgC, maxCo2: maxC, minCo2: minC, stdDevCo2: Math.sqrt(sumSqDiffC / count), medCo2: getMedian(co2s)
+    avgTemp: avgT, maxTemp: maxT, minTemp: minT, stdDevTemp: Math.sqrt(sumSqDiffT / count), medTemp: calculateMedianInPlace(temps),
+    avgHum: avgH, maxHum: maxH, minHum: minH, stdDevHum: Math.sqrt(sumSqDiffH / count), medHum: calculateMedianInPlace(hums),
+    avgCo2: avgC, maxCo2: maxC, minCo2: minC, stdDevCo2: Math.sqrt(sumSqDiffC / count), medCo2: calculateMedianInPlace(co2s)
   };
 
   // Percentages Loop
@@ -132,13 +134,13 @@ export const calculateReportMetrics = (
     if (counts[status as keyof typeof counts] !== undefined) {
       counts[status as keyof typeof counts]++;
     } else {
-      counts[EstadoId.DESCONOCIDO]++;
+      counts[SensorStatus.UNKNOWN]++;
     }
   });
 
   const percentages = createEmptyPercentages();
   if (totalHours > 0) {
-    (Object.keys(counts) as unknown as EstadoId[]).forEach((key) => {
+    (Object.keys(counts) as unknown as SensorStatus[]).forEach((key) => {
        percentages[key as keyof ReportPercentages] = (counts[key as keyof ReportPercentages] / totalHours) * 100;
     });
   }

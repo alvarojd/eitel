@@ -2,7 +2,7 @@ import { SensorState, SensorStatus, CRITICAL_STATUS_IDS, WARNING_STATUS_IDS } fr
 
 export type StatusType = 'critico' | 'riesgo' | 'ideal' | 'desconectado' | 'bateria_baja' | 'ausencia' | 'all';
 
-export function getStatusType(estadoId: number): StatusType {
+export function getStatusType(estadoId: SensorStatus): StatusType {
   if (CRITICAL_STATUS_IDS.includes(estadoId)) return 'critico';
   if (WARNING_STATUS_IDS.includes(estadoId)) return 'riesgo';
   if (estadoId === SensorStatus.IDEAL) return 'ideal';

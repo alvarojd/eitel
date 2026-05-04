@@ -1,28 +1,29 @@
 // src/core/entities/Sensor.ts
 
 export enum SensorStatus {
+  UNKNOWN = 0,
   OFFLINE = 1,
-  CRITICAL_ALARM = 2,
-  GAS_LEAK = 3,
-  SYSTEM_FAILURE = 4,
-  WARNING_LOW = 5,
-  WARNING_MED = 6,
-  WARNING_HIGH = 7,
-  MAINTENANCE = 8,
+  CRITICAL_COLD = 2,
+  CRITICAL_HEAT = 3,
+  CRITICAL_GAS = 4,
+  WARNING_MOLD = 5,
+  WARNING_STALE_AIR = 6,
+  WARNING_COLD = 7,
+  WARNING_DRY = 8,
   IDEAL = 9
 }
 
 export const CRITICAL_STATUS_IDS = [
-  SensorStatus.CRITICAL_ALARM,
-  SensorStatus.GAS_LEAK,
-  SensorStatus.SYSTEM_FAILURE
+  SensorStatus.CRITICAL_COLD,
+  SensorStatus.CRITICAL_HEAT,
+  SensorStatus.CRITICAL_GAS
 ];
 
 export const WARNING_STATUS_IDS = [
-  SensorStatus.WARNING_LOW,
-  SensorStatus.WARNING_MED,
-  SensorStatus.WARNING_HIGH,
-  SensorStatus.MAINTENANCE
+  SensorStatus.WARNING_MOLD,
+  SensorStatus.WARNING_STALE_AIR,
+  SensorStatus.WARNING_COLD,
+  SensorStatus.WARNING_DRY
 ];
 
 export interface Sensor {
@@ -51,7 +52,7 @@ export interface Measurement {
 // Este es el objeto compuesto que la UI suele necesitar
 export interface SensorState extends Sensor {
   latestMeasurement?: Measurement;
-  estadoId: number;
+  estadoId: SensorStatus;
   indicators?: {
     lowBattery: boolean;
     longTermNoOccupancy: boolean;

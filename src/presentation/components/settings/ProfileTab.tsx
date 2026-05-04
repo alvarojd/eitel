@@ -3,39 +3,37 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Key, Shield, Loader2, Lock, Fingerprint } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { updateUserPassword } from '@/infrastructure/actions/userActions';
+import { updateOwnPassword } from '@/infrastructure/actions/userActions';
 import { motion } from 'framer-motion';
 
 export function ProfileTab() {
- const { user } = useAuth();
- const [newPassword, setNewPassword] = useState('');
- const [isSubmitting, setIsSubmitting] = useState(false);
- const [error, setError] = useState('');
- const [success, setSuccess] = useState('');
-
- const handleUpdate = async (e: React.FormEvent) => {
- e.preventDefault();
- if (newPassword.length < 8) return;
+  const { user } = useAuth();
+  const [newPassword, setNewPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
  
- setIsSubmitting(true);
- setError('');
- setSuccess('');
- 
- try {
- await updateUserPassword(
- user?.id || '',
- user?.username || '',
- user?.id || '',
- newPassword
- );
- setSuccess('Tu contraseña ha sido actualizada correctamente.');
- setNewPassword('');
- } catch (e: any) {
- setError(e.message || 'Error al actualizar la contraseña');
- } finally {
- setIsSubmitting(false);
- }
- };
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) return;
+   
+    setIsSubmitting(true);
+    setError('');
+    setSuccess('');
+   
+    try {
+      await updateOwnPassword(
+        user?.id || '',
+        newPassword
+      );
+      setSuccess('Tu contraseña ha sido actualizada correctamente.');
+      setNewPassword('');
+    } catch (e: any) {
+      setError(e.message || 'Error al actualizar la contraseña');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
  return (
  <div className="max-w-xl space-y-10">

@@ -58,8 +58,6 @@ export function SensorAdminTab() {
  setSuccessMsg('');
  try {
  await updateSensor(
- user?.id || '',
- user?.username || '',
  selectedSensor.devEui || selectedSensor.id,
  name,
  lat ? parseFloat(lat) : null,
@@ -79,7 +77,7 @@ export function SensorAdminTab() {
  const handleDeleteMeasurements = async () => {
  setIsDeleting(true);
  try {
- await deleteSensorMeasurements(user?.id || '', user?.username || '', selectedSensor.devEui || selectedSensor.id);
+ await deleteSensorMeasurements(selectedSensor.devEui || selectedSensor.id);
  router.refresh();
  setSuccessMsg('Historial eliminado correctamente');
  setTimeout(() => setSuccessMsg(''), 3000);
@@ -94,7 +92,7 @@ export function SensorAdminTab() {
  const handleDeleteDevice = async () => {
  setIsDeleting(true);
  try {
- await deleteSensor(user?.id || '', user?.username || '', selectedSensor.devEui || selectedSensor.id, deleteHistoryOnly);
+ await deleteSensor(selectedSensor.devEui || selectedSensor.id, deleteHistoryOnly);
  router.refresh();
  setIsDrawerOpen(false);
  } catch (error) {

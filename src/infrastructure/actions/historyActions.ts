@@ -1,10 +1,9 @@
 'use server'
 
-import { PgHistoryRepository } from '../database/repositories/PgHistoryRepository';
-
-const historyRepository = new PgHistoryRepository();
+import { getHistoryRepository } from '../di/container';
 
 export async function getSensorHistory(deviceId: string) {
+  const historyRepository = getHistoryRepository();
   try {
     const rows = await historyRepository.getSensorHistory(deviceId);
 
@@ -22,6 +21,7 @@ export async function getSensorHistory(deviceId: string) {
 }
 
 export async function getReports(days: number, devEui?: string) {
+  const historyRepository = getHistoryRepository();
   try {
     const rows = await historyRepository.getReports(days, devEui);
 
@@ -40,6 +40,7 @@ export async function getReports(days: number, devEui?: string) {
 }
 
 export async function exportSensorDataCSV(deviceIds: string[], startDate?: string, endDate?: string, allData: boolean = false) {
+  const historyRepository = getHistoryRepository();
   try {
     const rows = await historyRepository.getExportData(deviceIds, startDate, endDate, allData);
 

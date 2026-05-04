@@ -3,7 +3,9 @@
 import { SensorState } from '../../core/entities/Sensor';
 import { logAction } from './auditActions';
 import { z } from 'zod';
-import { PgSensorRepository } from '../database/repositories/PgSensorRepository';
+import { getSensorRepository } from '../di/container';
+import { cookies } from 'next/headers';
+import { verifyToken, TokenPayload } from '@/lib/auth';
 
 const UpdateSensorSchema = z.object({
   devEui: z.string().min(1),
@@ -12,11 +14,17 @@ const UpdateSensorSchema = z.object({
   longitude: z.number().nullable()
 });
 
-const sensorRepository = new PgSensorRepository();
+async function requireAdminSession(): Promise<TokenPayload> {
+  const token = (await cookies()).get('auth_token')?.value;
+  if (!token) throw new Error('No autorizado. Sesión expirada o inválida.');
+  const session = verifyToken(token);
+  if (!session || session.role !== 'ADMIN') throw new Error('No autorizado. Requiere rol de Administrador.');
+  return session;
+}
 
 export async function getSensors(): Promise<SensorState[]> {
   try {
-    return await sensorRepository.getSensors();
+    return await getSensorRepository().getSensors();
   } catch (error) {
     console.error('Error in getSensors action:', error);
     return [];
@@ -24,19 +32,19 @@ export async function getSensors(): Promise<SensorState[]> {
 }
 
 export async function updateSensor(
-  adminId: string,
-  adminUsername: string,
   devEui: string,
   name: string,
   latitude: number | null,
   longitude: number | null
 ) {
+  const session = await requireAdminSession();
+
   try {
     const validated = UpdateSensorSchema.parse({ devEui, name, latitude, longitude });
     
-    await sensorRepository.updateSensor(validated.devEui, validated.name, validated.latitude, validated.longitude);
+    await getSensorRepository().updateSensor(validated.devEui, validated.name, validated.latitude, validated.longitude);
     
-    await logAction(adminId, adminUsername, 'UPDATE_SENSOR', `Actualizado sensor ${validated.devEui}: ${validated.name} (${validated.latitude}, ${validated.longitude})`);
+    await logAction(session.id, session.username, 'UPDATE_SENSOR', `Actualizado sensor ${validated.devEui}: ${validated.name} (${validated.latitude}, ${validated.longitude})`);
     return { success: true };
   } catch (error) {
     console.error('updateSensor Action Error:', error);
@@ -45,13 +53,13 @@ export async function updateSensor(
 }
 
 export async function deleteSensorMeasurements(
-  adminId: string,
-  adminUsername: string,
   devEui: string
 ) {
+  const session = await requireAdminSession();
+
   try {
-    await sensorRepository.deleteSensorMeasurements(devEui);
-    await logAction(adminId, adminUsername, 'DELETE_MEASUREMENTS', `Borrado historial del sensor ${devEui}`);
+    await getSensorRepository().deleteSensorMeasurements(devEui);
+    await logAction(session.id, session.username, 'DELETE_MEASUREMENTS', `Borrado historial del sensor ${devEui}`);
     return { success: true };
   } catch (error) {
     console.error('deleteSensorMeasurements Action Error:', error);
@@ -60,14 +68,14 @@ export async function deleteSensorMeasurements(
 }
 
 export async function deleteSensor(
-  adminId: string,
-  adminUsername: string,
   devEui: string, 
   includeHistory: boolean = false
 ) {
+  const session = await requireAdminSession();
+
   try {
-    await sensorRepository.deleteSensor(devEui, includeHistory);
-    await logAction(adminId, adminUsername, 'DELETE_SENSOR', `Eliminado sensor ${devEui} ${includeHistory ? '(incluyendo historial)' : ''}`);
+    await getSensorRepository().deleteSensor(devEui, includeHistory);
+    await logAction(session.id, session.username, 'DELETE_SENSOR', `Eliminado sensor ${devEui} ${includeHistory ? '(incluyendo historial)' : ''}`);
     return { success: true };
   } catch (error) {
     console.error('deleteSensor Action Error:', error);
