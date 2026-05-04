@@ -10,35 +10,13 @@ const TTNPayloadSchema = z.object({
   end_device_ids: z.object({
     dev_eui: z.string().optional(),
     device_id: z.string().optional(),
-  }),
+  }).optional(),
   uplink_message: z.object({
     received_at: z.string().optional(),
-    decoded_payload: z.object({
-      temperature: z.number().optional(),
-      humidity: z.number().optional(),
-      CO2: z.number().optional(),
-      presence: z.boolean().optional(),
-      battery_voltage: z.number().optional(),
-      battery: z.number().optional(),
-      dev_eui: z.string().optional(),
-      device_id: z.string().optional(),
-      latitude: z.number().optional(),
-      longitude: z.number().optional(),
-    }),
-    rx_metadata: z.array(z.object({
-      gateway_ids: z.object({
-        gateway_id: z.string().optional(),
-      }).optional(),
-      packet_id: z.string().optional(),
-      rssi: z.number().optional(),
-      snr: z.number().optional(),
-      location: z.object({
-        latitude: z.number().optional(),
-        longitude: z.number().optional(),
-      }).optional(),
-    })).optional(),
-  }),
-});
+    decoded_payload: z.record(z.any()).optional(),
+    rx_metadata: z.array(z.any()).optional(),
+  }).optional(),
+}).passthrough();
 
 export async function POST(req: NextRequest) {
   const WEBHOOK_SECRET = process.env.TTN_WEBHOOK_SECRET;
@@ -74,9 +52,14 @@ export async function POST(req: NextRequest) {
     }
 
     const { end_device_ids, uplink_message } = validation.data;
-    const payload = uplink_message.decoded_payload;
-    const rx_metadata = uplink_message.rx_metadata;
-    const received_at = uplink_message.received_at || new Date().toISOString();
+    const payload = uplink_message?.decoded_payload;
+    const rx_metadata = uplink_message?.rx_metadata;
+    const received_at = uplink_message?.received_at || new Date().toISOString();
+
+    if (!payload) {
+      console.warn('Webhook received without decoded_payload or invalid structure.');
+      return NextResponse.json({ error: 'Invalid payload: missing decoded_payload' }, { status: 400 });
+    }
 
     const dev_eui = (end_device_ids?.dev_eui || payload?.dev_eui || '').toUpperCase();
     const device_id = (end_device_ids?.device_id || payload?.device_id || dev_eui).toLowerCase();
@@ -86,15 +69,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload: missing dev_eui' }, { status: 400 });
     }
 
-    // Extracted and Clamped variables
-    const temperature = Math.max(-40, Math.min(80, payload.temperature ?? 0));
-    const humidity    = Math.max(0, Math.min(100, payload.humidity ?? 0));
-    const co2         = Math.max(0, Math.min(10000, Math.round(payload.CO2 ?? 0)));
-    const presence    = payload.presence === true;
+    // Extracted and Clamped variables (Resilient to different decoder naming conventions)
+    const temperature = Math.max(-40, Math.min(80, payload.temperature ?? payload.temp ?? 0));
+    const humidity    = Math.max(0, Math.min(100, payload.humidity ?? payload.hum ?? 0));
+    const co2         = Math.max(0, Math.min(10000, Math.round(payload.CO2 ?? payload.co2 ?? 0)));
+    const presence    = payload.presence === true || payload.pir === true;
 
     // Handle Coordinates
-    let latitude = payload.latitude;
-    let longitude = payload.longitude;
+    let latitude = payload.latitude || payload.lat || payload.gps_lat;
+    let longitude = payload.longitude || payload.lon || payload.lng || payload.gps_lng;
 
     // Gateway and Quality
     let gateway_id = null;
