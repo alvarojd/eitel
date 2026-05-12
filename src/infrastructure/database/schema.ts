@@ -58,6 +58,15 @@ export const systemSettings = pgTable("system_settings", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const alertEmails = pgTable("alert_emails", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+	unique("alert_emails_email_key").on(table.email),
+	pgPolicy("Deny all public access", { as: "permissive", for: "all", to: ["public"], using: sql`false` }),
+]);
+
 export const devices = pgTable("devices", {
 	devEui: text("dev_eui").primaryKey().notNull(),
 	deviceId: text("device_id").notNull(),
@@ -75,6 +84,8 @@ export const devices = pgTable("devices", {
 	estadoId: integer("estado_id"),
 	presence: boolean(),
 	lastMeasuredAt: timestamp("last_measured_at", { withTimezone: true, mode: 'date' }),
+	lastBatteryAlertSentAt: timestamp("last_battery_alert_sent_at", { withTimezone: true, mode: 'date' }),
+	lastOfflineAlertSentAt: timestamp("last_offline_alert_sent_at", { withTimezone: true, mode: 'date' }),
 }, (table) => [
 	pgPolicy("Deny all public access", { as: "permissive", for: "all", to: ["public"], using: sql`false` }),
 ]);

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../infrastructure/database/db';
 import { devices, measurements } from '../../../infrastructure/database/schema';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import { determineStatus } from '../../../core/use-cases/statusEngine';
+import { getAlertRecipients, sendEmail } from '../../../lib/email/resend';
+import { AlertEmailTemplate } from '../../../emails/AlertEmailTemplate';
+import React from 'react';
 
 // --- Sanitization Helpers ---
 function parseNumeric(value: unknown, fallback: number): number {
@@ -113,6 +116,29 @@ export async function POST(req: NextRequest) {
     // Determine status (Domain Logic)
     const estado_id = determineStatus({ temperature, humidity, co2 });
 
+    // --- Alerta Inmediata ---
+    const [existingDevice] = await db.select().from(devices).where(eq(devices.devEui, dev_eui));
+    let alertSentAt: Date | null = null;
+
+    if (battery < 20 && (!existingDevice || existingDevice.battery === null || existingDevice.battery >= 20)) {
+      const recipients = await getAlertRecipients();
+      if (recipients.length > 0) {
+        await sendEmail({
+          to: recipients,
+          subject: `⚠️ Alerta Crítica: Batería baja en ${name || dev_eui}`,
+          react: React.createElement(AlertEmailTemplate, {
+            type: 'battery',
+            devEui: dev_eui,
+            name: name,
+            battery: battery,
+            latitude: latitude ? latitude.toString() : null,
+            longitude: longitude ? longitude.toString() : null,
+          }),
+        });
+        alertSentAt = new Date();
+      }
+    }
+
     // Database Updates using Drizzle ORM
     await db.insert(devices)
       .values({
@@ -131,7 +157,8 @@ export async function POST(req: NextRequest) {
         co2: co2.toString(),
         estadoId: estado_id,
         presence,
-        lastMeasuredAt: new Date(received_at)
+        lastMeasuredAt: new Date(received_at),
+        lastBatteryAlertSentAt: alertSentAt,
       })
       .onConflictDoUpdate({
         target: devices.devEui,
@@ -148,7 +175,8 @@ export async function POST(req: NextRequest) {
           co2: sql`EXCLUDED.co2`,
           estadoId: sql`EXCLUDED.estado_id`,
           presence: sql`EXCLUDED.presence`,
-          lastMeasuredAt: sql`EXCLUDED.last_measured_at`
+          lastMeasuredAt: sql`EXCLUDED.last_measured_at`,
+          ...(alertSentAt ? { lastBatteryAlertSentAt: alertSentAt } : {})
         }
       });
 

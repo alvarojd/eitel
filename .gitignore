@@ -43,3 +43,6 @@ next-env.d.ts
 # manual and scripts
 src/scripts/generate_manual.js
 Manual_Usuario_Hexasense_V2.docx
+scratch/generate_doc.js
+Guia_Instalacion.docx
+Guia_Instalacion.md
