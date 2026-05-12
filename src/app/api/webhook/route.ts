@@ -3,7 +3,7 @@ import { db } from '../../../infrastructure/database/db';
 import { devices, measurements } from '../../../infrastructure/database/schema';
 import { sql, eq } from 'drizzle-orm';
 import { determineStatus } from '../../../core/use-cases/statusEngine';
-import { getAlertRecipients, sendEmail } from '../../../lib/email/resend';
+import { getAlertRecipients, sendEmail } from '../../../lib/email/mailer';
 import { AlertEmailTemplate } from '../../../emails/AlertEmailTemplate';
 import React from 'react';
 

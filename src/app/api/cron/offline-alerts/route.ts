@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../../infrastructure/database/db';
 import { devices } from '../../../../infrastructure/database/schema';
 import { lte, and, or, isNull, eq } from 'drizzle-orm';
-import { getAlertRecipients, sendEmail } from '../../../../lib/email/resend';
+import { getAlertRecipients, sendEmail } from '../../../../lib/email/mailer';
 import { AlertEmailTemplate } from '../../../../emails/AlertEmailTemplate';
 import React from 'react';
 
