@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Layers } from 'lucide-react';
 import { SensorState } from '@/core/entities/Sensor';
 import { STATUS_COLORS } from '@/core/constants';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,52 @@ const MapSetter = ({ sensors }: { sensors: SensorState[] }) => {
       }
     }
   }, [sensors, map]);
+
+  return null;
+};
+
+// Helper component for Heatmap
+const HeatmapLayer = ({ sensors }: { sensors: SensorState[] }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    // Dynamic import to avoid SSR issues
+    const L = require('leaflet');
+    require('leaflet.heat');
+
+    // Filter valid sensors and calculate intensity based on SNR
+    const points: [number, number, number][] = sensors
+      .filter(s => s.latitude && s.longitude && s.latestMeasurement?.snr !== undefined)
+      .map(s => {
+        const snr = s.latestMeasurement!.snr!;
+        // LoRa SNR typically ranges from -20 to +10. Normalizing to 0.0 - 1.0
+        const minSNR = -20;
+        const maxSNR = 10;
+        const clamped = Math.max(minSNR, Math.min(maxSNR, snr));
+        const intensity = (clamped - minSNR) / (maxSNR - minSNR);
+        return [s.latitude!, s.longitude!, intensity];
+      });
+
+    if (points.length === 0) return;
+
+    // @ts-ignore - heatLayer is added to L by the plugin
+    const heatLayer = L.heatLayer(points, {
+      radius: 45,
+      blur: 30,
+      maxZoom: 15,
+      max: 1.0,
+      gradient: {
+        0.2: '#ef4444', // Red for low SNR (weak signal)
+        0.5: '#eab308', // Yellow for medium
+        0.8: '#22c55e', // Green for good
+        1.0: '#3b82f6'  // Blue for excellent
+      }
+    }).addTo(map);
+
+    return () => {
+      map.removeLayer(heatLayer);
+    };
+  }, [map, sensors]);
 
   return null;
 };
@@ -59,6 +106,8 @@ interface GeoMapProps {
 }
 
 export default function GeoMap({ sensors, onSensorSelect }: GeoMapProps) {
+  const [showHeatmap, setShowHeatmap] = useState(false);
+
   const filteredSensors = useMemo(() => 
     sensors.filter(s => s.latitude && s.longitude), 
   [sensors]);
@@ -67,6 +116,20 @@ export default function GeoMap({ sensors, onSensorSelect }: GeoMapProps) {
 
   return (
        <div className="w-full h-full relative z-0">
+      {/* Toggle Button */}
+      <button 
+        onClick={() => setShowHeatmap(!showHeatmap)}
+        className={cn(
+          "absolute top-6 left-16 md:left-24 z-[1000] p-3 rounded-xl border shadow-2xl flex items-center gap-2 transition-all font-semibold text-xs md:text-sm",
+          showHeatmap 
+            ? "bg-sky-500/90 text-white border-sky-400 backdrop-blur-md" 
+            : "bg-slate-900/80 text-white/80 border-white/10 hover:bg-slate-800 backdrop-blur-md"
+        )}
+      >
+        <Layers className="w-4 h-4" />
+        {showHeatmap ? 'Ocultar Cobertura LoRa' : 'Ver Cobertura LoRa'}
+      </button>
+
       <MapContainer
         center={defaultCenter}
         zoom={13}
@@ -78,7 +141,9 @@ export default function GeoMap({ sensors, onSensorSelect }: GeoMapProps) {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
 
-        {filteredSensors.map(sensor => (
+        {showHeatmap && <HeatmapLayer sensors={filteredSensors} />}
+
+        {!showHeatmap && filteredSensors.map(sensor => (
           <Marker
             key={sensor.id}
             position={[sensor.latitude!, sensor.longitude!]}
