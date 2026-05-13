@@ -21,6 +21,36 @@ function sanitizeString(value: unknown, maxLength: number = 255): string {
   return String(value ?? '').slice(0, maxLength);
 }
 
+/**
+ * Calcula el porcentaje de batería mediante interpolación lineal entre umbrales críticos.
+ * Calibrado para picos de transmisión LoRaWAN en interiores (Saft LS14500).
+ * 
+ * @param voltaje Voltaje medido en el instante de la transmisión.
+ * @returns Porcentaje de carga estimado entre 0 y 100.
+ */
+function calcularPorcentajeLineal(voltaje: number): number {
+  // Rango superior de seguridad por si la pila nueva reporta más de 3.67V en vacío
+  if (voltaje >= 3.65) return 100;
+  if (voltaje <= 2.00) return 0;
+
+  let porcentaje = 0;
+
+  // TRAMO 1: Meseta saludable (De 3.65V a 3.15V -> Del 100% al 15%)
+  if (voltaje > 3.15) {
+    porcentaje = 15 + ((voltaje - 3.15) * (100 - 15)) / (3.65 - 3.15);
+  } 
+  // TRAMO 2: Fin de meseta / Alerta baja (De 3.15V a 2.80V -> Del 15% al 5%)
+  else if (voltaje > 2.80) {
+    porcentaje = 5 + ((voltaje - 2.80) * (15 - 5)) / (3.15 - 2.80);
+  } 
+  // TRAMO 3: Caída crítica / Agotamiento (De 2.80V a 2.00V -> Del 5% al 0%)
+  else {
+    porcentaje = 0 + ((voltaje - 2.00) * (5 - 0)) / (2.80 - 2.00);
+  }
+
+  // Redondear a un número entero y asegurar que se mantiene en el rango de seguridad
+  return Math.max(0, Math.min(100, Math.round(porcentaje)));
+}
 export async function POST(req: NextRequest) {
   const WEBHOOK_SECRET = process.env.TTN_WEBHOOK_SECRET;
   
@@ -106,9 +136,7 @@ export async function POST(req: NextRequest) {
     // Battery calculation - FIXED: Proper commas
     let battery = 100;
     if (typeof payload.battery_voltage === 'number') {
-      const minV = 3.0, maxV = 3.6;
-      const pct = ((payload.battery_voltage - minV) / (maxV - minV)) * 100;
-      battery = Math.min(100, Math.max(0, Math.round(pct)));
+      battery = calcularPorcentajeLineal(payload.battery_voltage);
     } else if (typeof payload.battery === 'number') {
       battery = Math.min(100, Math.max(0, Math.round(payload.battery)));
     }
