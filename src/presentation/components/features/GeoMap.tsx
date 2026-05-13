@@ -169,11 +169,23 @@ export default function GeoMap({ sensors, onSensorSelect }: GeoMapProps) {
 
       {/* Modern Overlay Legend */}
       <div className="absolute top-6 right-6 bg-slate-900/40 backdrop-blur-xl p-4 rounded-2xl border border-white/5 space-y-3 z-[1000] pointer-events-none hidden lg:block shadow-2xl">
-         <div className="text-[10px] font-bold text-white/60   mb-2 border-b border-white/5 pb-2">Leyenda de Estados</div>
-         <LegendItem color={STATUS_COLORS[9]} label="Situación Ideal" />
-         <LegendItem color={STATUS_COLORS[2]} label="Alerta Crítica" />
-         <LegendItem color={STATUS_COLORS[5]} label="Riesgo / Aviso" />
-         <LegendItem color={STATUS_COLORS[1]} label="Sin Conexión" />
+        {!showHeatmap ? (
+          <>
+            <div className="text-[10px] font-bold text-white/60 mb-2 border-b border-white/5 pb-2">Leyenda de Estados</div>
+            <LegendItem color={STATUS_COLORS[9]} label="Situación Ideal" />
+            <LegendItem color={STATUS_COLORS[2]} label="Alerta Crítica" />
+            <LegendItem color={STATUS_COLORS[5]} label="Riesgo / Aviso" />
+            <LegendItem color={STATUS_COLORS[1]} label="Sin Conexión" />
+          </>
+        ) : (
+          <>
+            <div className="text-[10px] font-bold text-white/60 mb-2 border-b border-white/5 pb-2">Calidad Cobertura (SNR)</div>
+            <LegendItem color="#3b82f6" label="Excelente (0 a 10 dB)" />
+            <LegendItem color="#22c55e" label="Buena (-10 a 0 dB)" />
+            <LegendItem color="#eab308" label="Regular (-15 a -10 dB)" />
+            <LegendItem color="#ef4444" label="Débil (-20 a -15 dB)" />
+          </>
+        )}
       </div>
     </div>
   );
