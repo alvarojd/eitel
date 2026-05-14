@@ -145,7 +145,7 @@ export function SensorDrawer() {
  </div>
 
  {/* Tabs Navigation (Admin only) */}
- {isAdmin && (
+ {isAdmin ? (
  <div className="flex px-6 pt-2 border-b border-slate-800 bg-slate-900 sticky top-[77px] z-10 shadow-lg">
  <button
  onClick={() => setActiveTab('details')}
@@ -155,9 +155,9 @@ export function SensorDrawer() {
  )}
  >
  Detalles
- {activeTab === 'details' && (
+ {activeTab === 'details' ? (
  <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500" />
- )}
+ ) : null}
  </button>
  <button
  onClick={() => setActiveTab('admin')}
@@ -168,12 +168,12 @@ export function SensorDrawer() {
  >
  <Settings size={14} />
  Administración
- {activeTab === 'admin' && (
+ {activeTab === 'admin' ? (
  <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-rose-500" />
- )}
+ ) : null}
  </button>
  </div>
- )}
+ ) : null}
 
  {/* Content Container */}
  <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
@@ -201,6 +201,16 @@ function SensorDetailsContent({ selectedSensor, history, loading, lq }: {
  loading: boolean, 
  lq: { level: LinkQualityLevel, score: number } 
 }) {
+  // Hoist useMemo out of conditional render block
+  const { currentMin, currentMax } = useMemo(() => {
+    if (!history || history.length === 0) return { currentMax: 32, currentMin: 13 };
+    const dataValues = history.map(h => h.value).filter(v => v != null);
+    return {
+      currentMax: Math.max(...dataValues, 30) + 2,
+      currentMin: Math.min(...dataValues, 15) - 2,
+    };
+  }, [history]);
+
  return (
  <div className="space-y-8 animate-in fade-in duration-500">
  {/* Status Badge */}
@@ -265,17 +275,7 @@ function SensorDetailsContent({ selectedSensor, history, loading, lq }: {
  <div className="h-64 bg-slate-950/50 border border-slate-800 rounded-2xl overflow-hidden flex items-center justify-center p-2">
  {loading ? (
  <Loader2 size={24} className="animate-spin text-slate-700" />
- ) : history.length > 0 ? (() => {
-  const { currentMin, currentMax } = useMemo(() => {
-    if (history.length === 0) return { currentMax: 32, currentMin: 13 };
-    const dataValues = history.map(h => h.value).filter(v => v != null);
-    return {
-      currentMax: Math.max(...dataValues, 30) + 2,
-      currentMin: Math.min(...dataValues, 15) - 2,
-    };
-  }, [history]);
-
- return (
+ ) : history.length > 0 ? (
  <ResponsiveContainer width="100%" height="100%">
  <AreaChart data={history} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
  <CartesianGrid strokeDasharray="3 3" vertical={true} stroke="#ffffff" strokeOpacity={0.1} />
@@ -313,8 +313,7 @@ function SensorDetailsContent({ selectedSensor, history, loading, lq }: {
  />
  </AreaChart>
  </ResponsiveContainer>
- );
- })() : (
+ ) : (
  <div className="text-[10px] text-white/40 font-mono">SIN DATOS SUFICIENTES (24H)</div>
  )}
  </div>
@@ -364,7 +363,7 @@ function SensorDetailsContent({ selectedSensor, history, loading, lq }: {
  </div>
  </div>
 
- {selectedSensor.latitude && selectedSensor.longitude && (
+ {selectedSensor.latitude && selectedSensor.longitude ? (
  <a 
  href={`https://maps.google.com/?q=${selectedSensor.latitude},${selectedSensor.longitude}`}
  target="_blank"
@@ -373,7 +372,7 @@ function SensorDetailsContent({ selectedSensor, history, loading, lq }: {
  <ExternalLink size={14} className="group-hover:rotate-12 transition-transform" />
  UBICACIÓN EXACTA (GOOGLE MAPS)
  </a>
- )}
+ ) : null}
  </div>
  );
 }
