@@ -1,7 +1,9 @@
 {
-  "name": "v2",
+  "name": "hexasense-iot-dashboard",
   "version": "0.1.0",
-  "private": true,
+  "description": "Hexasense IoT Dashboard - LoRaWAN Management",
+  "author": "Álvaro Jaramillo Duque",
+  "license": "AGPL-3.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
