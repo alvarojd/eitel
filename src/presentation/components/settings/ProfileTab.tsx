@@ -23,7 +23,6 @@ export function ProfileTab() {
    
     try {
       await updateOwnPassword(
-        user?.id || '',
         newPassword
       );
       setSuccess('Tu contraseña ha sido actualizada correctamente.');

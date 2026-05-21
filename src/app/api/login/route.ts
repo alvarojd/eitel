@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/infrastructure/database/db';
-import { users } from '@/infrastructure/database/schema';
-import { eq } from 'drizzle-orm';
+import { getUserRepository } from '@/infrastructure/di/container';
 import { comparePassword, generateToken } from '@/lib/auth';
 import { UserRole } from '@/core/entities/User';
 
@@ -13,29 +11,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Faltan credenciales' }, { status: 400 });
     }
 
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const userRepository = getUserRepository();
+    const userCredentials = await userRepository.getUserCredentialsByUsername(username);
 
-    if (!user) {
+    if (!userCredentials) {
       return NextResponse.json({ error: 'Usuario o contraseña incorrectos' }, { status: 401 });
     }
 
-    const isValid = await comparePassword(password, user.passwordHash);
+    const isValid = await comparePassword(password, userCredentials.passwordHash);
     if (!isValid) {
       return NextResponse.json({ error: 'Usuario o contraseña incorrectos' }, { status: 401 });
     }
 
     const token = generateToken({
-      id: user.id,
-      username: username,
-      role: user.role as UserRole
+      id: userCredentials.id,
+      username: userCredentials.username,
+      role: userCredentials.role as UserRole
     });
 
     const response = NextResponse.json({
       token,
       user: {
-        id: user.id,
-        username: user.username,
-        role: user.role as UserRole
+        id: userCredentials.id,
+        username: userCredentials.username,
+        role: userCredentials.role as UserRole
       }
     });
 

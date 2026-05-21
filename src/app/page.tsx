@@ -1,17 +1,27 @@
 import { getSensors } from '@/infrastructure/actions/sensorActions';
 import { DashboardShell } from '@/presentation/components/layout/DashboardShell';
 import { DashboardContent } from '@/presentation/components/dashboard/DashboardContent';
-import { SensorDrawer } from '@/presentation/components/dashboard/SensorDrawer';
 import { SensorProvider } from '@/presentation/context/SensorContext';
 import { DashboardStats } from '@/presentation/components/common/DashboardStats';
 import { StatusFilterBar } from '@/presentation/components/common/StatusFilterBar';
 import { PageHeader } from '@/presentation/components/layout/PageHeader';
-
 import { getProjectName } from '@/infrastructure/actions/systemActions';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { verifyToken } from '@/lib/auth';
 
-export const revalidate = 60;
+export const revalidate = 0; // Force request-time validation
 
 export default async function DashboardPage() {
+  // Server-side session verification before database calls
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+  const session = token ? verifyToken(token) : null;
+
+  if (!session) {
+    redirect('/login');
+  }
+
   const [sensors, projectName] = await Promise.all([
     getSensors(),
     getProjectName()

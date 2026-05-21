@@ -20,8 +20,12 @@ export async function proxy(request: NextRequest) {
   const decoded = token ? await verifyJWTEu(token) : null;
   const { pathname } = request.nextUrl;
 
-  // Define public paths
-  const isPublicPath = pathname === '/login' || pathname.startsWith('/api/login') || pathname.startsWith('/api/webhook');
+  // Define public paths (including health status check and iot webhook)
+  const isPublicPath =
+    pathname === '/login' ||
+    pathname.startsWith('/api/login') ||
+    pathname.startsWith('/api/webhook') ||
+    pathname.startsWith('/api/health');
 
   if (isPublicPath) {
     if (decoded && pathname === '/login') {

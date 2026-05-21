@@ -24,6 +24,7 @@ async function requireSession(): Promise<TokenPayload> {
 }
 
 export async function getUsers() {
+  await requireSession();
   try {
     const userRepository = getUserRepository();
     const users = await userRepository.getUsers();
@@ -35,12 +36,12 @@ export async function getUsers() {
 }
 
 export async function createUser(
-  adminId: string,
-  adminUsername: string,
   username: string, 
   password: string, 
   role: UserRole
 ) {
+  const session = await requireAdminSession();
+
   if (password.length < 8) {
     throw new Error('La contraseña debe tener al menos 8 caracteres');
   }
@@ -55,7 +56,7 @@ export async function createUser(
     const passwordHash = await hashPassword(password);
     await userRepository.createUser(username, passwordHash, role);
     
-    await logAction(adminId, adminUsername, 'CREATE_USER', `Creado usuario: ${username} (${role})`);
+    await logAction(session.id, session.username, 'CREATE_USER', `Creado usuario: ${username} (${role})`);
     
     return { success: true };
   } catch (error: any) {
@@ -65,11 +66,11 @@ export async function createUser(
 }
 
 export async function updateUserPassword(
-  operatorId: string,
-  operatorUsername: string,
   targetUserId: string, 
   newPassword: string
 ) {
+  const session = await requireAdminSession();
+
   if (newPassword.length < 8) {
     throw new Error('La contraseña debe tener al menos 8 caracteres');
   }
@@ -82,7 +83,7 @@ export async function updateUserPassword(
     const passwordHash = await hashPassword(newPassword);
     await userRepository.updateUserPassword(targetUserId, passwordHash);
     
-    await logAction(operatorId, operatorUsername, 'UPDATE_USER_PASSWORD', `Actualizada contraseña de: ${user.username}`);
+    await logAction(session.id, session.username, 'UPDATE_USER_PASSWORD', `Actualizada contraseña de: ${user.username}`);
     
     return { success: true };
   } catch (error: any) {
@@ -92,11 +93,11 @@ export async function updateUserPassword(
 }
 
 export async function deleteUser(
-  adminId: string,
-  adminUsername: string,
   targetUserId: string
 ) {
-  if (adminId === targetUserId) {
+  const session = await requireAdminSession();
+
+  if (session.id === targetUserId) {
     throw new Error('No puedes eliminar tu propio usuario');
   }
 
@@ -119,7 +120,7 @@ export async function deleteUser(
 
     await userRepository.deleteUser(targetUserId);
     
-    await logAction(adminId, adminUsername, 'DELETE_USER', `Eliminado usuario: ${targetUser.username}`);
+    await logAction(session.id, session.username, 'DELETE_USER', `Eliminado usuario: ${targetUser.username}`);
 
     return { success: true };
   } catch (error: any) {
@@ -129,15 +130,9 @@ export async function deleteUser(
 }
 
 export async function updateOwnPassword(
-  targetUserId: string, 
   newPassword: string
 ) {
   const session = await requireSession();
-  
-  // Users can only change their own password unless they're admin
-  if (session.role !== 'ADMIN' && session.id !== targetUserId) {
-    throw new Error('No autorizado para cambiar la contraseña de otro usuario');
-  }
 
   if (newPassword.length < 8) {
     throw new Error('La contraseña debe tener al menos 8 caracteres');
@@ -145,11 +140,11 @@ export async function updateOwnPassword(
 
   try {
     const userRepository = getUserRepository();
-    const user = await userRepository.getUserById(targetUserId);
+    const user = await userRepository.getUserById(session.id);
     if (!user) throw new Error('Usuario no encontrado');
     
     const passwordHash = await hashPassword(newPassword);
-    await userRepository.updateUserPassword(targetUserId, passwordHash);
+    await userRepository.updateUserPassword(session.id, passwordHash);
     
     await logAction(session.id, session.username, 'UPDATE_USER_PASSWORD', `Actualizada contraseña de: ${user.username}`);
     

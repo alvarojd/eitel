@@ -4,8 +4,27 @@ import { db } from '../database/db';
 import { alertEmails } from '../database/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
+
+async function requireSession() {
+  const token = (await cookies()).get('auth_token')?.value;
+  if (!token) throw new Error('No autorizado. Sesión expirada o inválida.');
+  const session = verifyToken(token);
+  if (!session) throw new Error('No autorizado.');
+  return session;
+}
+
+async function requireAdminSession() {
+  const session = await requireSession();
+  if (session.role !== 'ADMIN') {
+    throw new Error('No autorizado. Requiere rol de Administrador.');
+  }
+  return session;
+}
 
 export async function getAlertEmails() {
+  await requireSession();
   try {
     const emails = await db.select().from(alertEmails).orderBy(alertEmails.createdAt);
     return emails;
@@ -16,6 +35,7 @@ export async function getAlertEmails() {
 }
 
 export async function addAlertEmail(email: string) {
+  await requireAdminSession();
   try {
     if (!email || !email.includes('@')) {
       return { success: false, error: 'Correo electrónico inválido' };
@@ -35,6 +55,7 @@ export async function addAlertEmail(email: string) {
 }
 
 export async function removeAlertEmail(id: string) {
+  await requireAdminSession();
   try {
     await db.delete(alertEmails).where(eq(alertEmails.id, id));
     revalidatePath('/settings');

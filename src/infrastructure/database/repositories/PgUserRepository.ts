@@ -1,4 +1,4 @@
-import { UserRepository, User } from '../../../core/repositories/UserRepository';
+import { UserRepository, User, UserCredentials } from '../../../core/repositories/UserRepository';
 import { UserRole } from '../../../core/entities/User';
 import { db } from '../db';
 import { users } from '../schema';
@@ -48,5 +48,17 @@ export class PgUserRepository implements UserRepository {
   async deleteUser(id: string): Promise<void> {
     await db.delete(users).where(eq(users.id, id));
   }
-}
 
+  async getUserCredentialsByUsername(username: string): Promise<UserCredentials | null> {
+    const rows = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    if (rows.length === 0) return null;
+    const user = rows[0];
+    return {
+      id: user.id,
+      username: user.username,
+      role: user.role as UserRole,
+      created_at: user.createdAt as Date,
+      passwordHash: user.passwordHash
+    };
+  }
+}

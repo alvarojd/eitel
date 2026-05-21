@@ -50,8 +50,8 @@ export class PgSensorRepository implements SensorRepository {
         id: row.dev_eui || row.device_id,
         devEui: row.dev_eui,
         name: row.name || row.device_id,
-        latitude: row.latitude ? parseFloat(row.latitude) : undefined,
-        longitude: row.longitude ? parseFloat(row.longitude) : undefined,
+        latitude: row.latitude ?? undefined,
+        longitude: row.longitude ?? undefined,
         gatewayId: row.gateway_id,
         registeredAt: row.registered_at ? new Date(row.registered_at).toISOString() : undefined,
         lastSeen: row.measured_at ? new Date(row.measured_at).toISOString() : undefined,
@@ -59,13 +59,13 @@ export class PgSensorRepository implements SensorRepository {
         latestMeasurement: row.measured_at ? {
            sensorId: row.dev_eui || row.device_id,
            timestamp: new Date(row.measured_at).toISOString(),
-           temperature: row.temperature ? parseFloat(row.temperature) : 0,
-           humidity: row.humidity ? parseFloat(row.humidity) : 0,
-           co2: row.co2,
+           temperature: row.temperature ?? 0,
+           humidity: row.humidity ?? 0,
+           co2: row.co2 ? Number(row.co2) : undefined,
            battery: row.battery,
            presence: row.presence,
            rssi: row.rssi,
-           snr: parseFloat(row.snr || '0')
+           snr: row.snr ?? 0
         } : undefined,
         indicators: {
           lowBattery: (row.battery || 0) < 20,
@@ -77,7 +77,7 @@ export class PgSensorRepository implements SensorRepository {
 
   async updateSensor(devEui: string, name: string, latitude: number | null, longitude: number | null): Promise<void> {
     await db.update(devices)
-      .set({ name, latitude: latitude ? String(latitude) : null, longitude: longitude ? String(longitude) : null })
+      .set({ name, latitude, longitude })
       .where(eq(devices.devEui, devEui.toUpperCase()));
   }
 

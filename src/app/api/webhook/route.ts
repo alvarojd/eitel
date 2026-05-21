@@ -51,6 +51,7 @@ function calcularPorcentajeLineal(voltaje: number): number {
   // Redondear a un número entero y asegurar que se mantiene en el rango de seguridad
   return Math.max(0, Math.min(100, Math.round(porcentaje)));
 }
+
 export async function POST(req: NextRequest) {
   const WEBHOOK_SECRET = process.env.TTN_WEBHOOK_SECRET;
   
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
     const co2         = clamp(Math.round(parseNumeric(payload.CO2, 0)), 0, 10000);
     const presence    = payload.presence === true;
 
-    // Handle Coordinates
+    // Handle Coordinates safely across all fallback options for both organizations
     let latitude = payload.latitude || payload.lat || payload.gps_lat;
     let longitude = payload.longitude || payload.lon || payload.lng || payload.gps_lng;
 
@@ -133,6 +134,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const parsedLat = (latitude !== undefined && latitude !== null) ? clamp(parseNumeric(latitude, 0), -90, 90) : null;
+    const parsedLng = (longitude !== undefined && longitude !== null) ? clamp(parseNumeric(longitude, 0), -180, 180) : null;
+
     // Battery calculation - FIXED: Proper commas
     let battery = 100;
     if (typeof payload.battery_voltage === 'number') {
@@ -144,80 +148,90 @@ export async function POST(req: NextRequest) {
     // Determine status (Domain Logic)
     const estado_id = determineStatus({ temperature, humidity, co2 });
 
-    // --- Alerta Inmediata ---
+    // --- Alerta Inmediata en Segundo Plano (Fire-and-Forget) ---
     const [existingDevice] = await db.select().from(devices).where(eq(devices.devEui, dev_eui));
     let alertSentAt: Date | null = null;
 
     if (battery < 20 && (!existingDevice || existingDevice.battery === null || existingDevice.battery >= 20)) {
-      const recipients = await getAlertRecipients();
-      if (recipients.length > 0) {
-        await sendEmail({
-          to: recipients,
-          subject: `⚠️ Alerta Crítica: Batería baja en ${name || dev_eui}`,
-          react: React.createElement(AlertEmailTemplate, {
-            type: 'battery',
-            devEui: dev_eui,
-            name: name,
-            battery: battery,
-            latitude: latitude ? latitude.toString() : null,
-            longitude: longitude ? longitude.toString() : null,
-          }),
+      alertSentAt = new Date();
+      
+      // Lanzamos la promesa sin await para liberar la petición HTTP del webhook inmediatamente
+      getAlertRecipients()
+        .then((recipients) => {
+          if (recipients.length > 0) {
+            return sendEmail({
+              to: recipients,
+              subject: `⚠️ Alerta Crítica: Batería baja en ${name || dev_eui}`,
+              react: React.createElement(AlertEmailTemplate, {
+                type: 'battery',
+                devEui: dev_eui,
+                name: name,
+                battery: battery,
+                latitude: parsedLat ? parsedLat.toString() : null,
+                longitude: parsedLng ? parsedLng.toString() : null,
+              }),
+            });
+          }
+        })
+        .catch((emailErr) => {
+          // Logueamos pero no tumbamos la ingesta del sensor
+          console.error('Error enviando alerta de batería baja en background:', emailErr);
         });
-        alertSentAt = new Date();
-      }
     }
 
-    // Database Updates using Drizzle ORM
-    await db.insert(devices)
-      .values({
-        devEui: dev_eui,
-        deviceId: device_id,
-        name: name,
-        battery,
-        rssi,
-        snr: snr.toString(),
-        latitude: latitude ? latitude.toString() : null,
-        longitude: longitude ? longitude.toString() : null,
-        gatewayId: gateway_id,
-        createdAt: new Date(received_at),
-        temperature: temperature.toString(),
-        humidity: humidity.toString(),
-        co2: co2.toString(),
-        estadoId: estado_id,
-        presence,
-        lastMeasuredAt: new Date(received_at),
-        lastBatteryAlertSentAt: alertSentAt,
-      })
-      .onConflictDoUpdate({
-        target: devices.devEui,
-        set: {
-          name: sql`COALESCE(devices.name, EXCLUDED.name)`,
-          battery: sql`EXCLUDED.battery`,
-          rssi: sql`EXCLUDED.rssi`,
-          snr: sql`EXCLUDED.snr`,
-          latitude: sql`COALESCE(devices.latitude, EXCLUDED.latitude)`,
-          longitude: sql`COALESCE(devices.longitude, EXCLUDED.longitude)`,
-          gatewayId: sql`EXCLUDED.gateway_id`,
-          temperature: sql`EXCLUDED.temperature`,
-          humidity: sql`EXCLUDED.humidity`,
-          co2: sql`EXCLUDED.co2`,
-          estadoId: sql`EXCLUDED.estado_id`,
-          presence: sql`EXCLUDED.presence`,
-          lastMeasuredAt: sql`EXCLUDED.last_measured_at`,
-          ...(alertSentAt ? { lastBatteryAlertSentAt: alertSentAt } : {})
-        }
-      });
+    // Database Updates using Drizzle ORM wrapped in a safe Transaction
+    await db.transaction(async (tx) => {
+      await tx.insert(devices)
+        .values({
+          devEui: dev_eui,
+          deviceId: device_id,
+          name: name,
+          battery,
+          rssi,
+          snr: snr,
+          latitude: parsedLat,
+          longitude: parsedLng,
+          gatewayId: gateway_id,
+          createdAt: new Date(received_at),
+          temperature: temperature,
+          humidity: humidity,
+          co2: co2,
+          estadoId: estado_id,
+          presence,
+          lastMeasuredAt: new Date(received_at),
+          lastBatteryAlertSentAt: alertSentAt,
+        })
+        .onConflictDoUpdate({
+          target: devices.devEui,
+          set: {
+            name: sql`COALESCE(devices.name, EXCLUDED.name)`,
+            battery: sql`EXCLUDED.battery`,
+            rssi: sql`EXCLUDED.rssi`,
+            snr: sql`EXCLUDED.snr`,
+            latitude: sql`COALESCE(devices.latitude, EXCLUDED.latitude)`,
+            longitude: sql`COALESCE(devices.longitude, EXCLUDED.longitude)`,
+            gatewayId: sql`EXCLUDED.gateway_id`,
+            temperature: sql`EXCLUDED.temperature`,
+            humidity: sql`EXCLUDED.humidity`,
+            co2: sql`EXCLUDED.co2`,
+            estadoId: sql`EXCLUDED.estado_id`,
+            presence: sql`EXCLUDED.presence`,
+            lastMeasuredAt: sql`EXCLUDED.last_measured_at`,
+            ...(alertSentAt ? { lastBatteryAlertSentAt: alertSentAt } : {})
+          }
+        });
 
-    await db.insert(measurements)
-      .values({
-        devEui: dev_eui,
-        temperature: temperature.toString(),
-        humidity: humidity.toString(),
-        co2: co2,
-        presence,
-        estadoId: estado_id,
-        createdAt: new Date(received_at)
-      });
+      await tx.insert(measurements)
+        .values({
+          devEui: dev_eui,
+          temperature: temperature,
+          humidity: humidity,
+          co2: co2,
+          presence,
+          estadoId: estado_id,
+          createdAt: new Date(received_at)
+        });
+    });
 
     return NextResponse.json({ success: true }, { status: 200 });
 

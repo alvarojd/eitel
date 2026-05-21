@@ -1,8 +1,20 @@
 'use server';
 
 import { PgSystemRepository } from '../database/repositories/PgSystemRepository';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
 
 const systemRepository = new PgSystemRepository();
+
+async function requireAdminSession() {
+  const token = (await cookies()).get('auth_token')?.value;
+  if (!token) throw new Error('No autorizado. Sesión expirada o inválida.');
+  const session = verifyToken(token);
+  if (!session || session.role !== 'ADMIN') {
+    throw new Error('No autorizado. Requiere rol de Administrador.');
+  }
+  return session;
+}
 
 export async function getSystemSettings(): Promise<Record<string, string>> {
   try {
@@ -25,6 +37,8 @@ export async function getProjectName(): Promise<string> {
 }
 
 export async function updateProjectName(newName: string): Promise<boolean> {
+  await requireAdminSession();
+  
   if (!newName.trim()) throw new Error('El nombre del proyecto no puede estar vacío');
   
   try {

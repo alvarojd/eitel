@@ -1,6 +1,16 @@
 'use server';
 
 import { getAuditRepository } from '../di/container';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
+
+async function requireSession() {
+  const token = (await cookies()).get('auth_token')?.value;
+  if (!token) throw new Error('No autorizado. Sesión expirada o inválida.');
+  const session = verifyToken(token);
+  if (!session) throw new Error('No autorizado.');
+  return session;
+}
 
 export async function logAction(
   userId: string | null,
@@ -17,6 +27,7 @@ export async function logAction(
 }
 
 export async function getAuditLogs(limit: number = 100) {
+  await requireSession();
   try {
     const auditRepository = getAuditRepository();
     return await auditRepository.getAuditLogs(limit);

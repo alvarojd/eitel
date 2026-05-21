@@ -7,6 +7,10 @@ export interface User {
   created_at: Date;
 }
 
+export interface UserCredentials extends User {
+  passwordHash: string;
+}
+
 export interface UserRepository {
   getUsers(): Promise<User[]>;
   getUserByUsername(username: string): Promise<{ id: string } | null>;
@@ -15,4 +19,5 @@ export interface UserRepository {
   createUser(username: string, passwordHash: string, role: UserRole): Promise<void>;
   updateUserPassword(id: string, passwordHash: string): Promise<void>;
   deleteUser(id: string): Promise<void>;
+  getUserCredentialsByUsername(username: string): Promise<UserCredentials | null>;
 }

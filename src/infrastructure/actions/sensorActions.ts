@@ -14,6 +14,14 @@ const UpdateSensorSchema = z.object({
   longitude: z.number().nullable()
 });
 
+async function requireSession(): Promise<TokenPayload> {
+  const token = (await cookies()).get('auth_token')?.value;
+  if (!token) throw new Error('No autorizado. Sesión expirada o inválida.');
+  const session = verifyToken(token);
+  if (!session) throw new Error('No autorizado.');
+  return session;
+}
+
 async function requireAdminSession(): Promise<TokenPayload> {
   const token = (await cookies()).get('auth_token')?.value;
   if (!token) throw new Error('No autorizado. Sesión expirada o inválida.');
@@ -23,6 +31,7 @@ async function requireAdminSession(): Promise<TokenPayload> {
 }
 
 export async function getSensors(): Promise<SensorState[]> {
+  await requireSession();
   try {
     return await getSensorRepository().getSensors();
   } catch (error) {
@@ -82,4 +91,3 @@ export async function deleteSensor(
     throw new Error('Error al eliminar el sensor');
   }
 }
-

@@ -1,4 +1,4 @@
-import { pgTable, unique, pgPolicy, check, uuid, text, timestamp, foreignKey, index, bigserial, numeric, integer, boolean, varchar } from "drizzle-orm/pg-core"
+import { pgTable, unique, pgPolicy, check, uuid, text, timestamp, foreignKey, index, bigserial, integer, boolean, varchar, real } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -34,8 +34,8 @@ export const auditLogs = pgTable("audit_logs", {
 export const measurements = pgTable("measurements", {
 	id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
 	devEui: text("dev_eui"),
-	temperature: numeric().notNull(),
-	humidity: numeric().notNull(),
+	temperature: real().notNull(),
+	humidity: real().notNull(),
 	co2: integer().notNull(),
 	presence: boolean().default(false),
 	estadoId: integer("estado_id").notNull(),
@@ -73,14 +73,14 @@ export const devices = pgTable("devices", {
 	name: text(),
 	battery: integer().default(100),
 	rssi: integer().default(sql`'-100'`),
-	latitude: numeric(),
-	longitude: numeric(),
+	latitude: real(),
+	longitude: real(),
 	gatewayId: text("gateway_id"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
-	snr: numeric().default('0'),
-	temperature: numeric(),
-	humidity: numeric(),
-	co2: numeric(),
+	snr: real().default(0),
+	temperature: real(),
+	humidity: real(),
+	co2: real(),
 	estadoId: integer("estado_id"),
 	presence: boolean(),
 	lastMeasuredAt: timestamp("last_measured_at", { withTimezone: true, mode: 'date' }),

@@ -20,7 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 import { 
   getUsers, 
   createUser, 
-  updateOwnPassword, 
+  updateUserPassword, 
   deleteUser 
 } from '@/infrastructure/actions/userActions';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -75,8 +75,6 @@ export function UsersTab() {
     setError('');
     try {
       await createUser(
-        currentUser.id,
-        currentUser.username,
         newUsername,
         newPassword,
         newRole
@@ -96,7 +94,7 @@ export function UsersTab() {
     if (!currentUser) return;
     if (!window.confirm(`¿Seguro que deseas eliminar al usuario @${username}?`)) return;
     try {
-      await deleteUser(currentUser.id, currentUser.username, userId);
+      await deleteUser(userId);
       refreshUsers();
     } catch (e: any) {
       alert(e.message);
@@ -107,7 +105,7 @@ export function UsersTab() {
     if (updatePassword.length < 8) return;
     setIsSubmitting(true);
     try {
-      await updateOwnPassword(
+      await updateUserPassword(
         userId,
         updatePassword
       );
