@@ -45,7 +45,7 @@ export class PgSensorRepository implements SensorRepository {
       measured_at: devices.lastMeasuredAt,
       has_recent_presence: sql<boolean>`EXISTS(
         SELECT 1 FROM measurements m3 
-        WHERE m3.dev_eui = ${devices.devEui} 
+        WHERE m3.dev_eui = devices.dev_eui 
         AND m3.presence = true 
         AND m3.created_at > NOW() - make_interval(hours => ${RECENT_PRESENCE_HOURS})
       )`.as('has_recent_presence'),

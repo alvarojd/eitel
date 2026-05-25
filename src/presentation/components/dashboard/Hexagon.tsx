@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { SensorState } from '@/core/entities/Sensor';
 import { HEX_SIZE, STATUS_COLORS } from '@/core/constants';
-import { Battery, Users } from 'lucide-react';
+import { Battery, UserX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HexagonProps {
@@ -78,7 +78,7 @@ export function HexagonComponent({ sensor, x, y, isSelected, onSelect }: Hexagon
         )}
         {isNoOccupancy && (
           <g transform="translate(4, -10) scale(0.4)">
-             <Users className="text-white fill-amber-500" />
+             <UserX className="text-white fill-indigo-500" />
           </g>
         )}
       </motion.g>
