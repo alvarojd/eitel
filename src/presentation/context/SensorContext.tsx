@@ -5,6 +5,7 @@ import { SensorState } from '@/core/entities/Sensor';
 import { getSensors } from '@/infrastructure/actions/sensorActions';
 import { filterSensors } from '@/core/utils/filters';
 import { useFilter } from './FilterContext';
+import { SENSOR_POLL_INTERVAL_MS } from '@/core/constants';
 
 interface SensorContextType {
   sensors: SensorState[];
@@ -54,7 +55,7 @@ export function SensorProvider({
       }
     };
 
-    const interval = setInterval(poll, 30000); // Cada 30 segundos
+    const interval = setInterval(poll, SENSOR_POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, []);
 

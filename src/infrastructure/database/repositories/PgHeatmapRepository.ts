@@ -2,6 +2,18 @@ import { HeatmapRepository, HeatmapDataPoint } from '../../../core/repositories/
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
 
+interface HeatmapRow {
+  device_id: string;
+  dev_eui: string;
+  name: string | null;
+  timestamp: Date;
+  temperature: number | null;
+  humidity: number | null;
+  co2: number | null;
+  presence: boolean | null;
+  read_count: number;
+}
+
 export class PgHeatmapRepository implements HeatmapRepository {
   async getHeatmapData(): Promise<HeatmapDataPoint[]> {
     const { rows } = await db.execute(sql`
@@ -46,7 +58,17 @@ export class PgHeatmapRepository implements HeatmapRepository {
             ON dh.dev_eui = am.dev_eui AND dh.hour = am.hour
         ORDER BY dh.name ASC, dh.hour ASC;
     `);
-    return rows as any as HeatmapDataPoint[];
+    return (rows as unknown as HeatmapRow[]).map(r => ({
+      device_id: r.device_id,
+      dev_eui: r.dev_eui,
+      name: r.name,
+      timestamp: r.timestamp,
+      temperature: String(r.temperature ?? ''),
+      humidity: String(r.humidity ?? ''),
+      co2: String(r.co2 ?? ''),
+      presence: r.presence ?? false,
+      read_count: r.read_count,
+    }));
   }
 }
 

@@ -1,31 +1,29 @@
 import { NextResponse } from 'next/server';
 import { db } from '../../../../infrastructure/database/db';
 import { devices } from '../../../../infrastructure/database/schema';
-import { lt, and, or, isNull, lte, eq } from 'drizzle-orm';
+import { lt, and, or, isNull, lte, inArray } from 'drizzle-orm';
 import { getAlertRecipients, sendEmail } from '../../../../lib/email/mailer';
 import { AlertEmailTemplate } from '../../../../emails/AlertEmailTemplate';
+import { BATTERY_LOW_PERCENT, CRON_REMINDER_DAYS } from '../../../../core/constants';
 import React from 'react';
 
 export async function GET(request: Request) {
   try {
-    // Vercel Cron Authentication: Validate the request is from Vercel CRON
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && process.env.NODE_ENV !== 'development') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Estrategia: "Si el sensor sigue por debajo del 20%, envías un recordatorio cada 7 días"
-    // Buscamos dispositivos con battery < 20 donde lastBatteryAlertSentAt es null o fue hace más de 7 días.
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const reminderThreshold = new Date();
+    reminderThreshold.setDate(reminderThreshold.getDate() - CRON_REMINDER_DAYS);
 
     const lowBatteryDevices = await db.select().from(devices)
       .where(
         and(
-          lt(devices.battery, 20),
+          lt(devices.battery, BATTERY_LOW_PERCENT),
           or(
             isNull(devices.lastBatteryAlertSentAt),
-            lte(devices.lastBatteryAlertSentAt, sevenDaysAgo)
+            lte(devices.lastBatteryAlertSentAt, reminderThreshold)
           )
         )
       );
@@ -39,11 +37,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: 'No recipients configured.' });
     }
 
-    let emailsSent = 0;
     const now = new Date();
 
-    for (const device of lowBatteryDevices) {
-      await sendEmail({
+    const emailPromises = lowBatteryDevices.map(device =>
+      sendEmail({
         to: recipients,
         subject: `⚠️ Recordatorio Semanal: Batería baja en ${device.name || device.devEui}`,
         react: React.createElement(AlertEmailTemplate, {
@@ -54,17 +51,18 @@ export async function GET(request: Request) {
           latitude: device.latitude ? device.latitude.toString() : null,
           longitude: device.longitude ? device.longitude.toString() : null,
         }),
-      });
+      })
+    );
 
-      // Update the DB to record that we just sent a reminder
-      await db.update(devices)
-        .set({ lastBatteryAlertSentAt: now })
-        .where(eq(devices.devEui, device.devEui));
-      
-      emailsSent++;
-    }
+    await Promise.allSettled(emailPromises);
 
-    return NextResponse.json({ success: true, emailsSent, devices: lowBatteryDevices.map(d => d.devEui) });
+    await db.update(devices)
+      .set({ lastBatteryAlertSentAt: now })
+      .where(
+        inArray(devices.devEui, lowBatteryDevices.map(d => d.devEui))
+      );
+
+    return NextResponse.json({ success: true, emailsSent: lowBatteryDevices.length, devices: lowBatteryDevices.map(d => d.devEui) });
   } catch (error) {
     console.error('Error in battery-reminders cron:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

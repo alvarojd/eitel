@@ -1,7 +1,7 @@
 export interface HeatmapDataPoint {
   device_id: string;
   dev_eui: string;
-  name: string;
+  name: string | null;
   timestamp: Date;
   temperature: string;
   humidity: string;

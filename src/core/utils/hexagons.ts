@@ -11,8 +11,9 @@ export const getHexPositions = (count: number): { q: number; r: number }[] => {
     { q: -1, r: 0 }, { q: -1, r: 1 }, { q: 0, r: 1 }
   ];
 
-  while (positions.length < count && queue.length > 0) {
-    const current = queue.shift()!;
+  let head = 0;
+  while (positions.length < count && head < queue.length) {
+    const current = queue[head++];
     positions.push(current);
 
     for (const dir of directions) {

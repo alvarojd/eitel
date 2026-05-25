@@ -1,34 +1,30 @@
 import { NextResponse } from 'next/server';
 import { db } from '../../../../infrastructure/database/db';
 import { devices } from '../../../../infrastructure/database/schema';
-import { lte, and, or, isNull, eq } from 'drizzle-orm';
+import { lte, and, or, isNull, inArray } from 'drizzle-orm';
 import { getAlertRecipients, sendEmail } from '../../../../lib/email/mailer';
 import { AlertEmailTemplate } from '../../../../emails/AlertEmailTemplate';
+import { CRON_REMINDER_DAYS, OFFLINE_ALERT_HOURS } from '../../../../core/constants';
 import React from 'react';
 
-// Format helper
 function formatTimeDifference(lastMeasuredAt: Date): string {
   const diffHours = Math.floor((new Date().getTime() - lastMeasuredAt.getTime()) / (1000 * 60 * 60));
-  if (diffHours < 48) return `${diffHours} horas`;
+  if (diffHours < OFFLINE_ALERT_HOURS * 2) return `${diffHours} horas`;
   return `${Math.floor(diffHours / 24)} días`;
 }
 
 export async function GET(request: Request) {
   try {
-    // Vercel Cron Authentication: Validate the request is from Vercel CRON
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && process.env.NODE_ENV !== 'development') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Estrategia: "Si el sensor deja de enviar datos por más de 24 horas, envías un correo semanal"
-    // Buscamos dispositivos cuyo lastMeasuredAt sea <= 24 horas atrás
-    // Y que lastOfflineAlertSentAt sea null o haya sido hace más de 7 días (es semanal).
     const twentyFourHoursAgo = new Date();
-    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - OFFLINE_ALERT_HOURS);
     
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - CRON_REMINDER_DAYS);
 
     const offlineDevices = await db.select().from(devices)
       .where(
@@ -50,13 +46,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: 'No recipients configured.' });
     }
 
-    let emailsSent = 0;
     const now = new Date();
 
-    for (const device of offlineDevices) {
-      if (!device.lastMeasuredAt) continue; // Safety check
-
-      await sendEmail({
+    const emailPromises = offlineDevices.map(device => {
+      if (!device.lastMeasuredAt) return Promise.resolve();
+      return sendEmail({
         to: recipients,
         subject: `🔴 Alerta Crítica: Sensor offline - ${device.name || device.devEui}`,
         react: React.createElement(AlertEmailTemplate, {
@@ -69,16 +63,17 @@ export async function GET(request: Request) {
           timeSinceLastMessage: formatTimeDifference(device.lastMeasuredAt),
         }),
       });
+    });
 
-      // Update the DB
-      await db.update(devices)
-        .set({ lastOfflineAlertSentAt: now })
-        .where(eq(devices.devEui, device.devEui));
-      
-      emailsSent++;
-    }
+    await Promise.allSettled(emailPromises);
 
-    return NextResponse.json({ success: true, emailsSent, devices: offlineDevices.map(d => d.devEui) });
+    await db.update(devices)
+      .set({ lastOfflineAlertSentAt: now })
+      .where(
+        inArray(devices.devEui, offlineDevices.map(d => d.devEui))
+      );
+
+    return NextResponse.json({ success: true, emailsSent: offlineDevices.length, devices: offlineDevices.map(d => d.devEui) });
   } catch (error) {
     console.error('Error in offline-alerts cron:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

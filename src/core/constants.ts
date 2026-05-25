@@ -2,6 +2,33 @@
 export const HEX_SIZE = 22;
 export const HEX_GAP = 2;
 
+// Sensor Thresholds
+export const TEMP_CRITICAL_LOW = 16;
+export const TEMP_WARNING_LOW = 18;
+export const TEMP_CRITICAL_HIGH = 27;
+export const CO2_CRITICAL = 1500;
+export const CO2_WARNING = 1000;
+export const HUM_WARNING_HIGH = 70;
+export const HUM_WARNING_LOW = 30;
+
+// Battery Thresholds (Saft LS14500 calibration)
+export const BATTERY_FULL_VOLTAGE = 3.65;
+export const BATTERY_PLATEAU_END = 3.15;
+export const BATTERY_DROP_START = 2.80;
+export const BATTERY_EMPTY_VOLTAGE = 2.00;
+export const BATTERY_LOW_PERCENT = 20;
+
+// Time Thresholds
+export const OFFLINE_MINUTES = 120;
+export const RECENT_PRESENCE_HOURS = 48;
+export const SENSOR_POLL_INTERVAL_MS = 30000;
+export const CRON_REMINDER_DAYS = 7;
+export const OFFLINE_ALERT_HOURS = 24;
+
+// Analytics Limits
+export const MAX_EXPORT_ROWS = 10000;
+export const MAX_ANALYTICS_ROWS = 5000;
+
 // Colores basados en el mapa de estados numéricos
 // 0: Negro (Otro estado)
 // 1: Gris (Desconectado)

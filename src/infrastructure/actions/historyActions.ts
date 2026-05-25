@@ -1,6 +1,21 @@
 'use server'
 
 import { getHistoryRepository } from '../di/container';
+import { z } from 'zod';
+
+const DateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha inválido (YYYY-MM-DD)').optional();
+
+const ReportsParamsSchema = z.object({
+  days: z.number().int().positive(),
+  devEui: z.string().optional(),
+});
+
+const ExportCSVSchema = z.object({
+  deviceIds: z.array(z.string().min(1)).min(1),
+  startDate: DateStringSchema,
+  endDate: DateStringSchema,
+  allData: z.boolean().default(false),
+});
 
 export async function getSensorHistory(deviceId: string) {
   const historyRepository = getHistoryRepository();
@@ -23,6 +38,7 @@ export async function getSensorHistory(deviceId: string) {
 export async function getReports(days: number, devEui?: string) {
   const historyRepository = getHistoryRepository();
   try {
+    ReportsParamsSchema.parse({ days, devEui });
     const rows = await historyRepository.getReports(days, devEui);
 
     return rows.map(r => ({
@@ -42,9 +58,9 @@ export async function getReports(days: number, devEui?: string) {
 export async function exportSensorDataCSV(deviceIds: string[], startDate?: string, endDate?: string, allData: boolean = false) {
   const historyRepository = getHistoryRepository();
   try {
+    ExportCSVSchema.parse({ deviceIds, startDate, endDate, allData });
     const rows = await historyRepository.getExportData(deviceIds, startDate, endDate, allData);
 
-    // Generate CSV string
     const headers = ["Fecha", "ID Dispositivo", "Nombre Sensor", "Temperatura (°C)", "Humedad (%)", "CO2 (ppm)", "Presencia"];
     let csvContent = headers.join(';') + '\n';
 

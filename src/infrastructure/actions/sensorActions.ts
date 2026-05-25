@@ -36,7 +36,7 @@ export async function getSensors(): Promise<SensorState[]> {
     return await getSensorRepository().getSensors();
   } catch (error) {
     console.error('Error in getSensors action:', error);
-    return [];
+    throw new Error('Error al cargar sensores. Verifique la conexión con la base de datos.');
   }
 }
 

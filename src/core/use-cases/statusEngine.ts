@@ -1,5 +1,14 @@
 // src/core/use-cases/statusEngine.ts
 import { SensorStatus } from '../entities/Sensor';
+import {
+  TEMP_CRITICAL_LOW,
+  TEMP_CRITICAL_HIGH,
+  TEMP_WARNING_LOW,
+  CO2_CRITICAL,
+  CO2_WARNING,
+  HUM_WARNING_HIGH,
+  HUM_WARNING_LOW,
+} from '../constants';
 
 export interface SensorReadings {
   temperature: number;
@@ -10,17 +19,14 @@ export interface SensorReadings {
 export function determineStatus(readings: SensorReadings): SensorStatus {
   const { temperature, humidity, co2 } = readings;
 
-  // Critical (Red) - Highest priority
-  if (temperature < 16) return SensorStatus.CRITICAL_COLD;
-  if (temperature > 27) return SensorStatus.CRITICAL_HEAT;
-  if (co2 > 1500) return SensorStatus.CRITICAL_GAS;
+  if (temperature < TEMP_CRITICAL_LOW) return SensorStatus.CRITICAL_COLD;
+  if (temperature > TEMP_CRITICAL_HIGH) return SensorStatus.CRITICAL_HEAT;
+  if (co2 > CO2_CRITICAL) return SensorStatus.CRITICAL_GAS;
 
-  // Warnings (Orange)
-  if (temperature < 18) return SensorStatus.WARNING_COLD;
-  if (co2 >= 1000) return SensorStatus.WARNING_STALE_AIR;
-  if (humidity > 70) return SensorStatus.WARNING_MOLD;
-  if (humidity < 30) return SensorStatus.WARNING_DRY;
+  if (temperature < TEMP_WARNING_LOW) return SensorStatus.WARNING_COLD;
+  if (co2 >= CO2_WARNING) return SensorStatus.WARNING_STALE_AIR;
+  if (humidity > HUM_WARNING_HIGH) return SensorStatus.WARNING_MOLD;
+  if (humidity < HUM_WARNING_LOW) return SensorStatus.WARNING_DRY;
 
-  // If we reach here, all conditions for IDEAL are met by elimination
   return SensorStatus.IDEAL;
 }

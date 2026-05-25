@@ -35,8 +35,8 @@ export function LoginComponent() {
 
  const data = await response.json();
 
- if (response.ok) {
- login(data.token, data.user);
+  if (response.ok) {
+  login(data.user);
  } else {
  setError(data.error || 'Credenciales inválidas');
  }

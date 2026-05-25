@@ -5,6 +5,14 @@ import { sql, eq } from 'drizzle-orm';
 import { determineStatus } from '../../../core/use-cases/statusEngine';
 import { getAlertRecipients, sendEmail } from '../../../lib/email/mailer';
 import { AlertEmailTemplate } from '../../../emails/AlertEmailTemplate';
+import { checkRateLimit } from '../../../lib/rate-limit';
+import {
+  BATTERY_FULL_VOLTAGE,
+  BATTERY_PLATEAU_END,
+  BATTERY_DROP_START,
+  BATTERY_EMPTY_VOLTAGE,
+  BATTERY_LOW_PERCENT,
+} from '../../../core/constants';
 import React from 'react';
 
 // --- Sanitization Helpers ---
@@ -29,26 +37,19 @@ function sanitizeString(value: unknown, maxLength: number = 255): string {
  * @returns Porcentaje de carga estimado entre 0 y 100.
  */
 function calcularPorcentajeLineal(voltaje: number): number {
-  // Rango superior de seguridad por si la pila nueva reporta más de 3.67V en vacío
-  if (voltaje >= 3.65) return 100;
-  if (voltaje <= 2.00) return 0;
+  if (voltaje >= BATTERY_FULL_VOLTAGE) return 100;
+  if (voltaje <= BATTERY_EMPTY_VOLTAGE) return 0;
 
   let porcentaje = 0;
 
-  // TRAMO 1: Meseta saludable (De 3.65V a 3.15V -> Del 100% al 15%)
-  if (voltaje > 3.15) {
-    porcentaje = 15 + ((voltaje - 3.15) * (100 - 15)) / (3.65 - 3.15);
-  } 
-  // TRAMO 2: Fin de meseta / Alerta baja (De 3.15V a 2.80V -> Del 15% al 5%)
-  else if (voltaje > 2.80) {
-    porcentaje = 5 + ((voltaje - 2.80) * (15 - 5)) / (3.15 - 2.80);
-  } 
-  // TRAMO 3: Caída crítica / Agotamiento (De 2.80V a 2.00V -> Del 5% al 0%)
-  else {
-    porcentaje = 0 + ((voltaje - 2.00) * (5 - 0)) / (2.80 - 2.00);
+  if (voltaje > BATTERY_PLATEAU_END) {
+    porcentaje = 15 + ((voltaje - BATTERY_PLATEAU_END) * 85) / (BATTERY_FULL_VOLTAGE - BATTERY_PLATEAU_END);
+  } else if (voltaje > BATTERY_DROP_START) {
+    porcentaje = 5 + ((voltaje - BATTERY_DROP_START) * 10) / (BATTERY_PLATEAU_END - BATTERY_DROP_START);
+  } else {
+    porcentaje = ((voltaje - BATTERY_EMPTY_VOLTAGE) * 5) / (BATTERY_DROP_START - BATTERY_EMPTY_VOLTAGE);
   }
 
-  // Redondear a un número entero y asegurar que se mantiene en el rango de seguridad
   return Math.max(0, Math.min(100, Math.round(porcentaje)));
 }
 
@@ -68,6 +69,10 @@ export async function POST(req: NextRequest) {
     if (authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
       console.warn(`Unauthorized webhook attempt from IP: ${ip}`);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (ip) {
+      checkRateLimit(ip, 60, 60_000);
     }
 
     // 2. Parse TTN Payload
@@ -152,7 +157,7 @@ export async function POST(req: NextRequest) {
     const [existingDevice] = await db.select().from(devices).where(eq(devices.devEui, dev_eui));
     let alertSentAt: Date | null = null;
 
-    if (battery < 20 && (!existingDevice || existingDevice.battery === null || existingDevice.battery >= 20)) {
+    if (battery < BATTERY_LOW_PERCENT && (!existingDevice || existingDevice.battery === null || existingDevice.battery >= BATTERY_LOW_PERCENT)) {
       alertSentAt = new Date();
       
       // Lanzamos la promesa sin await para liberar la petición HTTP del webhook inmediatamente

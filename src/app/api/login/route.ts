@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { getUserRepository } from '@/infrastructure/di/container';
 import { comparePassword, generateToken } from '@/lib/auth';
 import { UserRole } from '@/core/entities/User';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
+    if (!checkRateLimit(ip, 5, 60_000)) {
+      return NextResponse.json({ error: 'Demasiados intentos. Intente en 1 minuto.' }, { status: 429 });
+    }
+
     const { username, password } = await request.json();
 
     if (!username || !password) {
@@ -30,7 +36,6 @@ export async function POST(request: Request) {
     });
 
     const response = NextResponse.json({
-      token,
       user: {
         id: userCredentials.id,
         username: userCredentials.username,
@@ -40,7 +45,7 @@ export async function POST(request: Request) {
 
     // Set cookie for middleware protection
     response.cookies.set('auth_token', token, {
-      httpOnly: true, // Set to true for more security
+      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 // 24 hours

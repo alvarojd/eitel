@@ -61,8 +61,7 @@ export async function verifyJWTEu(token: string): Promise<any | null> {
     }
 
     return payload;
-  } catch (err) {
-    console.error('JWT Edge Verification Error:', err);
+  } catch {
     return null;
   }
 }

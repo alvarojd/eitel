@@ -2,6 +2,7 @@ import { HistoryRepository, HistoryDataPoint, ReportDataPoint, ExportDataPoint }
 import { db } from '../db';
 import { measurements, devices } from '../schema';
 import { eq, or, and, asc, desc, sql, inArray, gte, lt } from 'drizzle-orm';
+import { MAX_EXPORT_ROWS } from '../../../core/constants';
 
 export class PgHistoryRepository implements HistoryRepository {
   async getSensorHistory(deviceId: string): Promise<HistoryDataPoint[]> {
@@ -23,10 +24,11 @@ export class PgHistoryRepository implements HistoryRepository {
     .orderBy(asc(measurements.createdAt));
 
     return rows.map(r => ({
-      ...r,
-      co2: String(r.co2),
-      created_at: r.created_at as Date,
-    })) as unknown as HistoryDataPoint[];
+      temperature: String(r.temperature),
+      humidity: String(r.humidity),
+      co2: String(r.co2 ?? ''),
+      created_at: r.created_at ?? new Date(0),
+    }));
   }
 
   async getReports(days: number, devEui?: string): Promise<ReportDataPoint[]> {
@@ -58,7 +60,14 @@ export class PgHistoryRepository implements HistoryRepository {
       .groupBy(measurements.devEui, sql`date_trunc('hour', ${measurements.createdAt})`)
       .orderBy(asc(timestampCol));
 
-    return rows as any as ReportDataPoint[];
+    return rows.map(r => ({
+      dev_eui: r.dev_eui ?? '',
+      timestamp: r.timestamp as Date,
+      temperature: String(r.temperature ?? '0'),
+      humidity: String(r.humidity ?? '0'),
+      co2: String(r.co2 ?? '0'),
+      presence: r.presence as boolean,
+    }));
   }
 
   async getExportData(deviceIds: string[], startDate?: string, endDate?: string, allData: boolean = false): Promise<ExportDataPoint[]> {
@@ -91,17 +100,18 @@ export class PgHistoryRepository implements HistoryRepository {
       }
     }
 
-    const rows = await baseQuery.orderBy(desc(measurements.createdAt));
+    const rows = await baseQuery
+      .orderBy(desc(measurements.createdAt))
+      .limit(MAX_EXPORT_ROWS);
     return rows.map(r => ({
-      ...r,
+      created_at: r.created_at ?? new Date(0),
+      dev_eui: r.dev_eui ?? '',
+      device_name: r.device_name ?? '',
       temperature: Number(r.temperature),
       humidity: Number(r.humidity),
       co2: Number(r.co2),
-      created_at: r.created_at as Date,
-      dev_eui: r.dev_eui as string,
-      device_name: r.device_name as string,
-      presence: r.presence as boolean,
-    })) as ExportDataPoint[];
+      presence: Boolean(r.presence),
+    }));
   }
 }
 

@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/infrastructure/database/db';
+import { sql } from 'drizzle-orm';
+import { db } from '@/infrastructure/database/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // Check DB connection
     const start = Date.now();
-    await sql`SELECT 1`;
+    await db.execute(sql`SELECT 1`);
     const latency = Date.now() - start;
 
     return NextResponse.json({
