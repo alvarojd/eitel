@@ -5,6 +5,7 @@ import { SensorState } from '@/core/entities/Sensor';
 import { getSensors } from '@/infrastructure/actions/sensorActions';
 import { filterSensors } from '@/core/utils/filters';
 import { useFilter } from './FilterContext';
+import { useAuth } from './AuthContext';
 import { SENSOR_POLL_INTERVAL_MS } from '@/core/constants';
 
 interface SensorContextType {
@@ -30,6 +31,7 @@ export function SensorProvider({
   initialSensors?: SensorState[];
 }) {
   const { activeFilter, searchTerm } = useFilter();
+  const { isAuthenticated } = useAuth();
   const [sensors, setSensors] = useState<SensorState[]>(initialSensors);
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -42,8 +44,10 @@ export function SensorProvider({
     }
   }, [initialSensors]);
 
-  // Polling para mantener los datos frescos
+  // Polling para mantener los datos frescos solo si el usuario está autenticado
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const poll = async () => {
       try {
         const freshSensors = await getSensors();
@@ -57,7 +61,7 @@ export function SensorProvider({
 
     const interval = setInterval(poll, SENSOR_POLL_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated]);
 
   const filteredSensors = useMemo(() => {
     return filterSensors(sensors, activeFilter, searchTerm);
