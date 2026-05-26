@@ -7,6 +7,8 @@ import { AlertEmailTemplate } from '../../../../emails/AlertEmailTemplate';
 import { CRON_REMINDER_DAYS, OFFLINE_ALERT_HOURS } from '../../../../core/constants';
 import React from 'react';
 
+export const dynamic = 'force-dynamic';
+
 function formatTimeDifference(lastMeasuredAt: Date): string {
   const diffHours = Math.floor((new Date().getTime() - lastMeasuredAt.getTime()) / (1000 * 60 * 60));
   if (diffHours < OFFLINE_ALERT_HOURS * 2) return `${diffHours} horas`;
@@ -47,10 +49,11 @@ export async function GET(request: Request) {
     }
 
     const now = new Date();
+    const successfulDevices: string[] = [];
 
-    const emailPromises = offlineDevices.map(device => {
-      if (!device.lastMeasuredAt) return Promise.resolve();
-      return sendEmail({
+    const emailPromises = offlineDevices.map(async (device) => {
+      if (!device.lastMeasuredAt) return;
+      const result = await sendEmail({
         to: recipients,
         subject: `🔴 Alerta Crítica: Sensor offline - ${device.name || device.devEui}`,
         react: React.createElement(AlertEmailTemplate, {
@@ -63,17 +66,26 @@ export async function GET(request: Request) {
           timeSinceLastMessage: formatTimeDifference(device.lastMeasuredAt),
         }),
       });
+      if (result.success) {
+        successfulDevices.push(device.devEui);
+      }
     });
 
-    await Promise.allSettled(emailPromises);
+    await Promise.all(emailPromises);
 
-    await db.update(devices)
-      .set({ lastOfflineAlertSentAt: now })
-      .where(
-        inArray(devices.devEui, offlineDevices.map(d => d.devEui))
-      );
+    if (successfulDevices.length > 0) {
+      await db.update(devices)
+        .set({ lastOfflineAlertSentAt: now })
+        .where(
+          inArray(devices.devEui, successfulDevices)
+        );
+    }
 
-    return NextResponse.json({ success: true, emailsSent: offlineDevices.length, devices: offlineDevices.map(d => d.devEui) });
+    return NextResponse.json({ 
+      success: true, 
+      emailsSent: successfulDevices.length, 
+      devices: successfulDevices 
+    });
   } catch (error) {
     console.error('Error in offline-alerts cron:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

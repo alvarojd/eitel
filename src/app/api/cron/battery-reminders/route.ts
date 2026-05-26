@@ -7,6 +7,8 @@ import { AlertEmailTemplate } from '../../../../emails/AlertEmailTemplate';
 import { BATTERY_LOW_PERCENT, CRON_REMINDER_DAYS } from '../../../../core/constants';
 import React from 'react';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -38,9 +40,10 @@ export async function GET(request: Request) {
     }
 
     const now = new Date();
+    const successfulDevices: string[] = [];
 
-    const emailPromises = lowBatteryDevices.map(device =>
-      sendEmail({
+    const emailPromises = lowBatteryDevices.map(async (device) => {
+      const result = await sendEmail({
         to: recipients,
         subject: `⚠️ Recordatorio Semanal: Batería baja en ${device.name || device.devEui}`,
         react: React.createElement(AlertEmailTemplate, {
@@ -51,18 +54,27 @@ export async function GET(request: Request) {
           latitude: device.latitude ? device.latitude.toString() : null,
           longitude: device.longitude ? device.longitude.toString() : null,
         }),
-      })
-    );
+      });
+      if (result.success) {
+        successfulDevices.push(device.devEui);
+      }
+    });
 
-    await Promise.allSettled(emailPromises);
+    await Promise.all(emailPromises);
 
-    await db.update(devices)
-      .set({ lastBatteryAlertSentAt: now })
-      .where(
-        inArray(devices.devEui, lowBatteryDevices.map(d => d.devEui))
-      );
+    if (successfulDevices.length > 0) {
+      await db.update(devices)
+        .set({ lastBatteryAlertSentAt: now })
+        .where(
+          inArray(devices.devEui, successfulDevices)
+        );
+    }
 
-    return NextResponse.json({ success: true, emailsSent: lowBatteryDevices.length, devices: lowBatteryDevices.map(d => d.devEui) });
+    return NextResponse.json({ 
+      success: true, 
+      emailsSent: successfulDevices.length, 
+      devices: successfulDevices 
+    });
   } catch (error) {
     console.error('Error in battery-reminders cron:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
