@@ -25,6 +25,7 @@ export async function proxy(request: NextRequest) {
     pathname === '/login' ||
     pathname.startsWith('/api/login') ||
     pathname.startsWith('/api/webhook') ||
+    pathname.startsWith('/api/cron') ||
     pathname.startsWith('/api/health');
 
   if (isPublicPath) {
