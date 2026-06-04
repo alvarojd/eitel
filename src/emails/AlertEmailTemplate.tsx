@@ -65,7 +65,7 @@ export const AlertEmailTemplate = ({
                 <strong>DevEUI:</strong> {devEui}
               </Text>
               <Text className="text-black text-[14px] leading-[24px] m-0 mt-2">
-                <strong>Alias:</strong> {name || 'N/A'}
+                <strong>Nombre:</strong> {name || 'N/A'}
               </Text>
               {isBatteryAlert && (
                 <Text className="text-black text-[14px] leading-[24px] m-0 mt-2 text-orange-600">

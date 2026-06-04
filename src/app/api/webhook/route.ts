@@ -142,8 +142,10 @@ export async function POST(req: NextRequest) {
     const parsedLat = (latitude !== undefined && latitude !== null) ? clamp(parseNumeric(latitude, 0), -90, 90) : null;
     const parsedLng = (longitude !== undefined && longitude !== null) ? clamp(parseNumeric(longitude, 0), -180, 180) : null;
 
+    const [existingDevice] = await db.select().from(devices).where(eq(devices.devEui, dev_eui));
+    
     // Battery calculation - FIXED: Proper commas
-    let battery = 100;
+    let battery = existingDevice?.battery ?? 100;
     if (typeof payload.battery_voltage === 'number') {
       battery = calcularPorcentajeLineal(payload.battery_voltage);
     } else if (typeof payload.battery === 'number') {
@@ -154,10 +156,13 @@ export async function POST(req: NextRequest) {
     const estado_id = determineStatus({ temperature, humidity, co2 });
 
     // --- Alerta Inmediata en Segundo Plano (Fire-and-Forget) ---
-    const [existingDevice] = await db.select().from(devices).where(eq(devices.devEui, dev_eui));
     let alertSentAt: Date | null = null;
 
-    if (battery < BATTERY_LOW_PERCENT && (!existingDevice || existingDevice.battery === null || existingDevice.battery >= BATTERY_LOW_PERCENT)) {
+    // Solo enviar si es la primera vez que baja del 20%
+    // Esto previene que envíe correos repetidos cada vez que la batería fluctúa o cambia de valor por debajo del 20%.
+    const isFirstTimeLow = (!existingDevice || existingDevice.battery === null || existingDevice.battery >= BATTERY_LOW_PERCENT);
+
+    if (battery < BATTERY_LOW_PERCENT && isFirstTimeLow) {
       alertSentAt = new Date();
       
       // Lanzamos la promesa sin await para liberar la petición HTTP del webhook inmediatamente
@@ -166,11 +171,11 @@ export async function POST(req: NextRequest) {
           if (recipients.length > 0) {
             return sendEmail({
               to: recipients,
-              subject: `⚠️ Alerta Crítica: Batería baja en ${name || dev_eui}`,
+              subject: `⚠️ Alerta Crítica: Batería baja en ${existingDevice?.name || name || dev_eui}`,
               react: React.createElement(AlertEmailTemplate, {
                 type: 'battery',
                 devEui: dev_eui,
-                name: name,
+                name: existingDevice?.name || name,
                 battery: battery,
                 latitude: parsedLat ? parsedLat.toString() : null,
                 longitude: parsedLng ? parsedLng.toString() : null,
