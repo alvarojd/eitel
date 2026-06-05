@@ -1,27 +1,23 @@
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+import { kv } from '@vercel/kv';
 
-const CLEANUP_INTERVAL = 60_000;
-let lastCleanup = Date.now();
+export async function checkRateLimit(ip: string, maxAttempts: number = 5, windowMs: number = 60_000): Promise<boolean> {
+  try {
+    const key = `rate-limit:${ip}`;
+    const windowSeconds = Math.floor(windowMs / 1000);
+    
+    const currentAttempts = await kv.incr(key);
 
-export function checkRateLimit(ip: string, maxAttempts: number = 5, windowMs: number = 60_000): boolean {
-  const now = Date.now();
-
-  if (now - lastCleanup > CLEANUP_INTERVAL) {
-    for (const [key, entry] of rateLimitMap) {
-      if (now > entry.resetAt) rateLimitMap.delete(key);
+    if (currentAttempts === 1) {
+      await kv.expire(key, windowSeconds);
     }
-    lastCleanup = now;
-  }
 
-  const entry = rateLimitMap.get(ip);
+    if (currentAttempts > maxAttempts) {
+      return false;
+    }
 
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + windowMs });
     return true;
+  } catch (error) {
+    console.warn('Vercel KV error, ignorando límite (asegúrate de que KV_REST_API_URL y KV_REST_API_TOKEN estén en .env):', error);
+    return true; // Fail-open
   }
-
-  if (entry.count >= maxAttempts) return false;
-
-  entry.count++;
-  return true;
 }

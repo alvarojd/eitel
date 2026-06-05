@@ -4,12 +4,14 @@ import { auditLogs } from '../schema';
 import { desc } from 'drizzle-orm';
 
 export class PgAuditRepository implements AuditRepository {
-  async logAction(userId: string | null, username: string, action: string, details?: string): Promise<void> {
+  async logAction(userId: string | null, username: string, action: string, details?: string, ipAddress?: string | null, userAgent?: string | null): Promise<void> {
     await db.insert(auditLogs).values({
       userId,
       username,
       action,
       details: details || null,
+      ipAddress: ipAddress || null,
+      userAgent: userAgent || null,
     });
   }
 
@@ -19,6 +21,8 @@ export class PgAuditRepository implements AuditRepository {
       username: auditLogs.username,
       action: auditLogs.action,
       details: auditLogs.details,
+      ipAddress: auditLogs.ipAddress,
+      userAgent: auditLogs.userAgent,
       created_at: auditLogs.createdAt,
     })
     .from(auditLogs)

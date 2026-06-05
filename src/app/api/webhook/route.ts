@@ -72,7 +72,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (ip) {
-      checkRateLimit(ip, 60, 60_000);
+      const allowed = await checkRateLimit(ip, 60, 60_000);
+      if (!allowed) {
+        return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 });
+      }
     }
 
     // 2. Parse TTN Payload

@@ -1,7 +1,7 @@
 'use server';
 
 import { getAuditRepository } from '../di/container';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 
 async function requireSession() {
@@ -19,8 +19,12 @@ export async function logAction(
   details?: string
 ) {
   try {
+    const headersList = await headers();
+    const ipAddress = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown';
+    const userAgent = headersList.get('user-agent') || 'unknown';
+
     const auditRepository = getAuditRepository();
-    await auditRepository.logAction(userId, username, action, details);
+    await auditRepository.logAction(userId, username, action, details, ipAddress, userAgent);
   } catch (error) {
     console.error('Failed to log action:', error);
   }

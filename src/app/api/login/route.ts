@@ -7,7 +7,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 export async function POST(request: Request) {
   try {
     const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
-    if (!checkRateLimit(ip, 5, 60_000)) {
+    if (!(await checkRateLimit(ip, 5, 60_000))) {
       return NextResponse.json({ error: 'Demasiados intentos. Intente en 1 minuto.' }, { status: 429 });
     }
 

@@ -21,6 +21,8 @@ export const auditLogs = pgTable("audit_logs", {
 	username: text(),
 	action: text().notNull(),
 	details: text(),
+	ipAddress: text("ip_address"),
+	userAgent: text("user_agent"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [
 	foreignKey({
