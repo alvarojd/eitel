@@ -13,7 +13,8 @@ import {
   BATTERY_EMPTY_VOLTAGE,
   BATTERY_LOW_PERCENT,
 } from '../../../core/constants';
-import { getParsedThresholds } from '../../../infrastructure/actions/systemActions';
+import { systemSettings } from '../../../infrastructure/database/schema';
+import { ThresholdSettings } from '../../../core/use-cases/statusEngine';
 import React from 'react';
 
 // --- Sanitization Helpers ---
@@ -156,8 +157,28 @@ export async function POST(req: NextRequest) {
       battery = Math.min(100, Math.max(0, Math.round(payload.battery)));
     }
 
-    // Fetch dynamic thresholds from settings
-    const thresholds = await getParsedThresholds();
+    // Fetch dynamic thresholds directly from DB (avoid 'use server' module import)
+    let thresholds: ThresholdSettings | undefined;
+    try {
+      const rows = await db.select({ key: systemSettings.key, value: systemSettings.value }).from(systemSettings);
+      const settingsMap: Record<string, string> = {};
+      for (const row of rows) {
+        if (row.key && row.value) settingsMap[row.key] = row.value;
+      }
+      const parse = (k: string) => { const v = settingsMap[k]; return v ? parseFloat(v) : undefined; };
+      thresholds = {
+        TEMP_CRITICAL_LOW: parse('threshold_temp_critical_low'),
+        TEMP_CRITICAL_HIGH: parse('threshold_temp_critical_high'),
+        TEMP_WARNING_LOW: parse('threshold_temp_warning_low'),
+        CO2_CRITICAL: parse('threshold_co2_critical'),
+        CO2_WARNING: parse('threshold_co2_warning'),
+        HUM_WARNING_HIGH: parse('threshold_hum_warning_high'),
+        HUM_WARNING_LOW: parse('threshold_hum_warning_low'),
+      };
+    } catch (e) {
+      console.warn('Could not load custom thresholds, using defaults:', e);
+      thresholds = undefined; // determineStatus will use hardcoded defaults
+    }
 
     // Determine status (Domain Logic)
     const estado_id = determineStatus({ temperature, humidity, co2 }, thresholds);
