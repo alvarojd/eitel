@@ -13,6 +13,7 @@ import {
   BATTERY_EMPTY_VOLTAGE,
   BATTERY_LOW_PERCENT,
 } from '../../../core/constants';
+import { getParsedThresholds } from '../../../infrastructure/actions/systemActions';
 import React from 'react';
 
 // --- Sanitization Helpers ---
@@ -156,7 +157,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch dynamic thresholds from settings
-    const { getParsedThresholds } = require('../../../infrastructure/actions/systemActions');
     const thresholds = await getParsedThresholds();
 
     // Determine status (Domain Logic)

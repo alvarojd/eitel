@@ -3,12 +3,12 @@
 import { determineStatus } from '../../core/use-cases/statusEngine';
 import { SensorStatus } from '../../core/entities/Sensor';
 import { getHeatmapRepository } from '../di/container';
+import { getParsedThresholds } from './systemActions';
 
 export async function getHeatmapData() {
   try {
     const heatmapRepository = getHeatmapRepository();
     const rows = await heatmapRepository.getHeatmapData();
-    const { getParsedThresholds } = require('./systemActions');
     const thresholds = await getParsedThresholds();
 
     const heatmapMap = new Map<string, any>();
