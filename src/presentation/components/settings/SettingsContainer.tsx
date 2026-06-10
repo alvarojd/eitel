@@ -20,9 +20,10 @@ import { UsersTab } from './UsersTab';
 import { AuditLogsTab } from './AuditLogsTab';
 import { SystemTab } from './SystemTab';
 import { AlertsTab } from './AlertsTab';
-import { BellRing } from 'lucide-react';
+import { ThresholdsTab } from './ThresholdsTab';
+import { BellRing, Sliders } from 'lucide-react';
 
-type SettingsTab = 'perfil' | 'usuarios' | 'logs' | 'alertas' | 'sistema';
+type SettingsTab = 'perfil' | 'usuarios' | 'logs' | 'alertas' | 'umbrales' | 'sistema';
 
 export function SettingsContainer() {
  const { isAdmin, user } = useAuth();
@@ -33,7 +34,8 @@ export function SettingsContainer() {
  ...(isAdmin ? [
  { id: 'usuarios', label: 'Gestión de Usuarios', icon: UsersIcon, color: 'text-indigo-400' },
  { id: 'logs', label: 'Auditoría del Sistema', icon: FileText, color: 'text-rose-400' },
- { id: 'alertas', label: 'Configuración de Alertas', icon: BellRing, color: 'text-amber-400' }
+ { id: 'alertas', label: 'Configuración de Alertas', icon: BellRing, color: 'text-amber-400' },
+ { id: 'umbrales', label: 'Umbrales y Límites', icon: Sliders, color: 'text-blue-400' }
  ] : []),
  { id: 'sistema', label: 'Información Técnica', icon: Server, color: 'text-sky-400' }
  ];
@@ -133,6 +135,7 @@ export function SettingsContainer() {
  {activeTab === 'usuarios' && isAdmin && <UsersTab />}
  {activeTab === 'logs' && isAdmin && <AuditLogsTab />}
  {activeTab === 'alertas' && isAdmin && <AlertsTab />}
+ {activeTab === 'umbrales' && isAdmin && <ThresholdsTab />}
  {activeTab === 'sistema' && <SystemTab />}
  </motion.div>
  </AnimatePresence>

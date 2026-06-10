@@ -23,4 +23,19 @@ export class PgSystemRepository implements SystemRepository {
         set: { value: newName },
       });
   }
+
+  async updateSystemSettings(settings: Record<string, string>): Promise<void> {
+    const entries = Object.entries(settings);
+    if (entries.length === 0) return;
+
+    // Use a transaction or simply multiple inserts for simplicity in sqlite/pg
+    for (const [key, value] of entries) {
+      await db.insert(systemSettings)
+        .values({ key, value })
+        .onConflictDoUpdate({
+          target: systemSettings.key,
+          set: { value },
+        });
+    }
+  }
 }

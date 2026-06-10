@@ -1,4 +1,4 @@
-import { determineStatus } from './statusEngine';
+import { determineStatus, ThresholdSettings } from './statusEngine';
 import { SensorStatus } from '../entities/Sensor';
 
 export interface HistoryDataPoint {
@@ -46,7 +46,8 @@ export interface AggregatedMetrics {
 
 export const calculateReportMetrics = (
   data: HistoryDataPoint[],
-  presenceFilter: PresenceFilterType
+  presenceFilter: PresenceFilterType,
+  thresholds?: ThresholdSettings
 ): { percentages: ReportPercentages; totalHours: number; metrics: AggregatedMetrics } => {
   const filteredData = data.filter((d) => {
     if (presenceFilter === 'with-presence') return d.presence === true;
@@ -79,7 +80,7 @@ export const calculateReportMetrics = (
 
   filteredData.forEach(d => {
     // 1. Status Counts
-    const status = determineStatus({ temperature: d.temperature, humidity: d.humidity, co2: d.co2 });
+    const status = determineStatus({ temperature: d.temperature, humidity: d.humidity, co2: d.co2 }, thresholds);
     if (counts[status as keyof typeof counts] !== undefined) {
       counts[status as keyof typeof counts]++;
     } else {

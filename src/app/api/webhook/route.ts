@@ -155,8 +155,12 @@ export async function POST(req: NextRequest) {
       battery = Math.min(100, Math.max(0, Math.round(payload.battery)));
     }
 
+    // Fetch dynamic thresholds from settings
+    const { getParsedThresholds } = require('../../../infrastructure/actions/systemActions');
+    const thresholds = await getParsedThresholds();
+
     // Determine status (Domain Logic)
-    const estado_id = determineStatus({ temperature, humidity, co2 });
+    const estado_id = determineStatus({ temperature, humidity, co2 }, thresholds);
 
     // --- Alerta Inmediata en Segundo Plano (Fire-and-Forget) ---
     let alertSentAt: Date | null = null;

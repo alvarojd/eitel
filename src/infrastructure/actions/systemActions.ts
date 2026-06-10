@@ -49,3 +49,34 @@ export async function updateProjectName(newName: string): Promise<boolean> {
     throw new Error('Error al actualizar el nombre del proyecto');
   }
 }
+
+export async function updateSystemSettingsAction(settings: Record<string, string>): Promise<boolean> {
+  await requireAdminSession();
+  
+  try {
+    await systemRepository.updateSystemSettings(settings);
+    return true;
+  } catch (error) {
+    console.error('Error updating system settings:', error);
+    throw new Error('Error al actualizar la configuración del sistema');
+  }
+}
+
+export async function getParsedThresholds() {
+  const settings = await getSystemSettings();
+  
+  const parseSetting = (key: string) => {
+    const val = settings[key];
+    return val !== undefined && val !== '' ? parseFloat(val) : undefined;
+  };
+
+  return {
+    TEMP_CRITICAL_LOW: parseSetting('threshold_temp_critical_low'),
+    TEMP_CRITICAL_HIGH: parseSetting('threshold_temp_critical_high'),
+    TEMP_WARNING_LOW: parseSetting('threshold_temp_warning_low'),
+    CO2_CRITICAL: parseSetting('threshold_co2_critical'),
+    CO2_WARNING: parseSetting('threshold_co2_warning'),
+    HUM_WARNING_HIGH: parseSetting('threshold_hum_warning_high'),
+    HUM_WARNING_LOW: parseSetting('threshold_hum_warning_low'),
+  };
+}

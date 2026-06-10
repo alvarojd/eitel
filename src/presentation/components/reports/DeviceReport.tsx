@@ -11,12 +11,13 @@ interface DeviceReportProps {
   sensor: SensorState | null;
   data: HistoryDataPoint[];
   presenceFilter: PresenceFilterType;
+  thresholds?: any;
 }
 
-export function DeviceReport({ sensor, data, presenceFilter }: DeviceReportProps) {
+export function DeviceReport({ sensor, data, presenceFilter, thresholds }: DeviceReportProps) {
   if (!sensor) return null;
 
-  const { percentages, totalHours, metrics } = useMemo(() => calculateReportMetrics(data, presenceFilter), [data, presenceFilter]);
+  const { percentages, totalHours, metrics } = useMemo(() => calculateReportMetrics(data, presenceFilter, thresholds), [data, presenceFilter, thresholds]);
 
   const pieData = useMemo(() => {
     const red = percentages[2] + percentages[3] + percentages[4];

@@ -16,17 +16,35 @@ export interface SensorReadings {
   co2: number;
 }
 
-export function determineStatus(readings: SensorReadings): SensorStatus {
+export interface ThresholdSettings {
+  TEMP_CRITICAL_LOW?: number;
+  TEMP_CRITICAL_HIGH?: number;
+  TEMP_WARNING_LOW?: number;
+  CO2_CRITICAL?: number;
+  CO2_WARNING?: number;
+  HUM_WARNING_HIGH?: number;
+  HUM_WARNING_LOW?: number;
+}
+
+export function determineStatus(readings: SensorReadings, thresholds?: ThresholdSettings): SensorStatus {
   const { temperature, humidity, co2 } = readings;
 
-  if (temperature < TEMP_CRITICAL_LOW) return SensorStatus.CRITICAL_COLD;
-  if (temperature > TEMP_CRITICAL_HIGH) return SensorStatus.CRITICAL_HEAT;
-  if (co2 > CO2_CRITICAL) return SensorStatus.CRITICAL_GAS;
+  const tCritLow = thresholds?.TEMP_CRITICAL_LOW ?? TEMP_CRITICAL_LOW;
+  const tCritHigh = thresholds?.TEMP_CRITICAL_HIGH ?? TEMP_CRITICAL_HIGH;
+  const tWarnLow = thresholds?.TEMP_WARNING_LOW ?? TEMP_WARNING_LOW;
+  const co2Crit = thresholds?.CO2_CRITICAL ?? CO2_CRITICAL;
+  const co2Warn = thresholds?.CO2_WARNING ?? CO2_WARNING;
+  const humWarnHigh = thresholds?.HUM_WARNING_HIGH ?? HUM_WARNING_HIGH;
+  const humWarnLow = thresholds?.HUM_WARNING_LOW ?? HUM_WARNING_LOW;
 
-  if (temperature < TEMP_WARNING_LOW) return SensorStatus.WARNING_COLD;
-  if (co2 >= CO2_WARNING) return SensorStatus.WARNING_STALE_AIR;
-  if (humidity > HUM_WARNING_HIGH) return SensorStatus.WARNING_MOLD;
-  if (humidity < HUM_WARNING_LOW) return SensorStatus.WARNING_DRY;
+  if (temperature < tCritLow) return SensorStatus.CRITICAL_COLD;
+  if (temperature > tCritHigh) return SensorStatus.CRITICAL_HEAT;
+  if (co2 > co2Crit) return SensorStatus.CRITICAL_GAS;
+
+  if (temperature < tWarnLow) return SensorStatus.WARNING_COLD;
+  if (co2 >= co2Warn) return SensorStatus.WARNING_STALE_AIR;
+  if (humidity > humWarnHigh) return SensorStatus.WARNING_MOLD;
+  if (humidity < humWarnLow) return SensorStatus.WARNING_DRY;
 
   return SensorStatus.IDEAL;
 }

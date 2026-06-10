@@ -11,10 +11,11 @@ interface GlobalReportProps {
   sensors: SensorState[];
   data: HistoryDataPoint[];
   presenceFilter: PresenceFilterType;
+  thresholds?: any;
 }
 
-export function GlobalReport({ sensors, data, presenceFilter }: GlobalReportProps) {
-  const { percentages, totalHours, metrics } = useMemo(() => calculateReportMetrics(data, presenceFilter), [data, presenceFilter]);
+export function GlobalReport({ sensors, data, presenceFilter, thresholds }: GlobalReportProps) {
+  const { percentages, totalHours, metrics } = useMemo(() => calculateReportMetrics(data, presenceFilter, thresholds), [data, presenceFilter, thresholds]);
 
   const pieData = useMemo(() => {
     // Red: Frío Severo(2), Calor Extremo(3), Atmósfera Nociva(4)

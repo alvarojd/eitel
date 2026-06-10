@@ -8,6 +8,8 @@ export async function getHeatmapData() {
   try {
     const heatmapRepository = getHeatmapRepository();
     const rows = await heatmapRepository.getHeatmapData();
+    const { getParsedThresholds } = require('./systemActions');
+    const thresholds = await getParsedThresholds();
 
     const heatmapMap = new Map<string, any>();
 
@@ -32,7 +34,7 @@ export async function getHeatmapData() {
           temperature: parseFloat(row.temperature) || 0,
           humidity: parseFloat(row.humidity) || 0,
           co2: parseFloat(row.co2) || 0
-        });
+        }, thresholds);
       }
 
       deviceEntry.data.push({

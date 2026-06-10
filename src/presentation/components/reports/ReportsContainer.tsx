@@ -20,6 +20,7 @@ export function ReportsContainer({ initialSensors }: ReportsContainerProps) {
   
   const [reportData, setReportData] = useState<HistoryDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [thresholds, setThresholds] = useState<any>(undefined);
 
   useEffect(() => {
     if (initialSensors.length > 0 && !selectedDeviceId) {
@@ -39,13 +40,19 @@ export function ReportsContainer({ initialSensors }: ReportsContainerProps) {
         : undefined;
 
       try {
-        const data = await getReports(days, devEui);
+        const { getParsedThresholds } = await import('@/infrastructure/actions/systemActions');
+        const [data, thresh] = await Promise.all([
+          getReports(days, devEui),
+          getParsedThresholds()
+        ]);
+        
         // Cast server data to Date objects to fit HistoryDataPoint signature
         const formattedData = data.map(d => ({
           ...d,
           timestamp: new Date(d.timestamp)
         }));
         setReportData(formattedData);
+        setThresholds(thresh);
       } catch (error) {
         console.error("Error loading report data:", error);
         setReportData([]);
@@ -166,12 +173,14 @@ export function ReportsContainer({ initialSensors }: ReportsContainerProps) {
               sensors={initialSensors} 
               data={reportData} 
               presenceFilter={presenceFilter} 
+              thresholds={thresholds}
            />
         ) : (
            <DeviceReport 
               sensor={initialSensors.find(s => s.id === selectedDeviceId) || null} 
               data={reportData} 
               presenceFilter={presenceFilter} 
+              thresholds={thresholds}
            />
         )}
       </div>
