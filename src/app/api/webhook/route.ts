@@ -184,11 +184,16 @@ export async function POST(req: NextRequest) {
     const estado_id = determineStatus({ temperature, humidity, co2 }, thresholds);
 
     // --- Alerta Inmediata en Segundo Plano (Fire-and-Forget) ---
-    let alertSentAt: Date | null = null;
+    let alertSentAt: Date | null = existingDevice?.lastBatteryAlertSentAt || null;
 
-    // Solo enviar si es la primera vez que baja del 20%
-    // Esto previene que envíe correos repetidos cada vez que la batería fluctúa o cambia de valor por debajo del 20%.
-    const isFirstTimeLow = (!existingDevice || existingDevice.battery === null || existingDevice.battery >= BATTERY_LOW_PERCENT);
+    // Si la batería se recupera por encima del 50%, reseteamos la fecha de la alerta
+    // para que si en un futuro vuelve a bajar, se envíe de nuevo la alerta inicial.
+    if (battery >= 50) {
+      alertSentAt = null;
+    }
+
+    // Solo enviar si nunca se ha enviado una alerta de batería (o si se reseteó tras recuperación)
+    const isFirstTimeLow = alertSentAt === null;
 
     if (battery < BATTERY_LOW_PERCENT && isFirstTimeLow) {
       alertSentAt = new Date();
@@ -255,7 +260,7 @@ export async function POST(req: NextRequest) {
             estadoId: sql`EXCLUDED.estado_id`,
             presence: sql`EXCLUDED.presence`,
             lastMeasuredAt: sql`EXCLUDED.last_measured_at`,
-            ...(alertSentAt ? { lastBatteryAlertSentAt: alertSentAt } : {})
+            lastBatteryAlertSentAt: alertSentAt
           }
         });
 

@@ -21,13 +21,7 @@ export async function GET(request: Request) {
 
     const lowBatteryDevices = await db.select().from(devices)
       .where(
-        and(
-          lt(devices.battery, BATTERY_LOW_PERCENT),
-          or(
-            isNull(devices.lastBatteryAlertSentAt),
-            lte(devices.lastBatteryAlertSentAt, reminderThreshold)
-          )
-        )
+        lt(devices.battery, BATTERY_LOW_PERCENT)
       );
 
     if (lowBatteryDevices.length === 0) {
