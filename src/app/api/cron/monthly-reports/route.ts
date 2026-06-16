@@ -118,6 +118,7 @@ export async function GET(request: Request) {
                 critical: red,
                 offline: gray
               },
+              rawPercentages: percentages,
               chartUrl,
             }),
           });

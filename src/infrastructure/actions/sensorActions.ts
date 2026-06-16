@@ -185,6 +185,7 @@ export async function sendManualMonthlyReport(devEui: string) {
           critical: red,
           offline: gray
         },
+        rawPercentages: percentages,
         chartUrl,
       }),
     });
