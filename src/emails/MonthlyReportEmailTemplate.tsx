@@ -80,15 +80,15 @@ export const MonthlyReportEmailTemplate: React.FC<Readonly<MonthlyReportEmailTem
 
           <Section style={metricsSection}>
             <Row>
-              <Column style={metricCol}>
+              <Column style={{ ...metricCol, width: '33.33%' }}>
                 <Text style={metricValue}>{metrics.avgTemp.toFixed(1)}°C</Text>
                 <Text style={metricLabel}>Temp. Media</Text>
               </Column>
-              <Column style={metricCol}>
+              <Column style={{ ...metricCol, width: '33.33%' }}>
                 <Text style={metricValue}>{metrics.avgHum.toFixed(1)}%</Text>
                 <Text style={metricLabel}>Hum. Media</Text>
               </Column>
-              <Column style={metricCol}>
+              <Column style={{ ...metricCol, width: '33.33%' }}>
                 <Text style={metricValue}>{metrics.avgCo2.toFixed(0)} ppm</Text>
                 <Text style={metricLabel}>CO2 Medio</Text>
               </Column>
@@ -109,11 +109,11 @@ export const MonthlyReportEmailTemplate: React.FC<Readonly<MonthlyReportEmailTem
                   const val = rawPercentages[id];
                   return (
                     <tr key={id} style={tableRow}>
-                      <td style={{ ...tableCellLabel, width: '75%', paddingRight: '10px' }}>
+                      <td style={{ ...tableCellLabel, width: '75%', paddingRight: '10px', paddingLeft: '8px' }}>
                         <span style={{ color: data.color, marginRight: '8px', fontSize: '16px' }}>●</span>
                         <span style={{ display: 'inline-block', verticalAlign: 'middle' }}>{data.label}</span>
                       </td>
-                      <td style={{ ...tableCellValue, width: '25%' }}>
+                      <td style={{ ...tableCellValue, width: '25%', paddingRight: '8px' }}>
                         <strong>{val.toFixed(1)}%</strong>
                       </td>
                     </tr>
@@ -191,8 +191,8 @@ const text = {
 };
 
 const metricsSection = {
-  margin: '30px 40px',
-  padding: '20px',
+  margin: '30px 20px',
+  padding: '20px 10px',
   backgroundColor: '#f8fafc',
   borderRadius: '8px',
   border: '1px solid #e2e8f0',
@@ -203,7 +203,7 @@ const metricCol = {
 };
 
 const metricValue = {
-  fontSize: '24px',
+  fontSize: '20px',
   fontWeight: '700',
   color: '#0ea5e9',
   margin: '0',
@@ -230,7 +230,7 @@ const image = {
 };
 
 const tableSection = {
-  margin: '30px 40px',
+  margin: '30px 20px',
 };
 
 const tableRow = {
@@ -255,7 +255,7 @@ const tableCellValue = {
 };
 
 const recommendationsSection = {
-  margin: '30px 40px',
+  margin: '30px 20px',
   padding: '24px',
   backgroundColor: '#f8fafc',
   borderRadius: '12px',
