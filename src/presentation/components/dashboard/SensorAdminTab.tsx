@@ -329,6 +329,15 @@ export function SensorAdminTab() {
  Enviar informe del último mes ahora
  </button>
  )}
+
+ <button 
+ onClick={handleSave}
+ disabled={isSaving}
+ className="w-full bg-sky-600 hover:bg-sky-500 disabled:bg-slate-800 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-sky-900/10 flex items-center justify-center gap-3 active:scale-[0.98] mt-6"
+ >
+ {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+ {successMsg || 'Guardar Configuración'}
+ </button>
  </div>
  </div>
  </div>
