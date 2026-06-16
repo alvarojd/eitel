@@ -160,18 +160,18 @@ const main = {
 const container = {
   backgroundColor: '#ffffff',
   margin: '0 auto',
-  padding: '20px 0 48px',
+  padding: '20px 40px 48px',
   marginBottom: '64px',
   borderRadius: '8px',
   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
-  maxWidth: '600px',
+  maxWidth: '680px',
 };
 
 const h1 = {
   color: '#0f172a',
   fontSize: '24px',
   fontWeight: '700',
-  margin: '30px 40px 10px',
+  margin: '30px 0 10px',
   padding: '0',
 };
 
@@ -186,12 +186,12 @@ const h2 = {
 const text = {
   color: '#475569',
   fontSize: '14px',
-  margin: '0 40px 10px',
+  margin: '0 0 10px',
   lineHeight: '1.5',
 };
 
 const metricsSection = {
-  margin: '30px 20px',
+  margin: '30px 0',
   padding: '20px 10px',
   backgroundColor: '#f8fafc',
   borderRadius: '8px',
@@ -218,7 +218,7 @@ const metricLabel = {
 };
 
 const chartSection = {
-  margin: '30px 40px',
+  margin: '30px 0',
   textAlign: 'center' as const,
 };
 
@@ -230,7 +230,7 @@ const image = {
 };
 
 const tableSection = {
-  margin: '30px 20px',
+  margin: '30px 0',
 };
 
 const tableRow = {
@@ -255,7 +255,7 @@ const tableCellValue = {
 };
 
 const recommendationsSection = {
-  margin: '30px 20px',
+  margin: '30px 0',
   padding: '24px',
   backgroundColor: '#f8fafc',
   borderRadius: '12px',
@@ -281,12 +281,12 @@ const recommendationText = {
 
 const hr = {
   borderColor: '#e2e8f0',
-  margin: '40px 40px 20px',
+  margin: '40px 0 20px',
 };
 
 const footer = {
   color: '#94a3b8',
   fontSize: '12px',
-  margin: '0 40px',
+  margin: '0',
 };
 
