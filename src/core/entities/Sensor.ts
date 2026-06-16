@@ -35,6 +35,10 @@ export interface Sensor {
   longitude?: number;
   registeredAt?: Date;
   lastSeen?: Date;
+  notificationEmail?: string;
+  notificationsEnabled?: boolean;
+  monthlyReportConfiguredAt?: Date;
+  lastMonthlyReportSentAt?: Date;
 }
 
 export interface Measurement {

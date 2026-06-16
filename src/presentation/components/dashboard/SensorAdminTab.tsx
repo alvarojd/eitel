@@ -10,12 +10,14 @@ import {
  Check, 
  RefreshCcw,
  ShieldAlert,
- Info
+ Info,
+ Mail,
+ Send
 } from 'lucide-react';
 import { useSensor } from '../../context/SensorContext';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { updateSensor, deleteSensorMeasurements, deleteSensor } from '@/infrastructure/actions/sensorActions';
+import { updateSensor, deleteSensorMeasurements, deleteSensor, sendManualMonthlyReport } from '@/infrastructure/actions/sensorActions';
 import dynamic from 'next/dynamic';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,8 +45,11 @@ export function SensorAdminTab() {
  const [name, setName] = useState(selectedSensor.name);
  const [lat, setLat] = useState(selectedSensor.latitude?.toString() || '');
  const [lng, setLng] = useState(selectedSensor.longitude?.toString() || '');
+ const [notificationEmail, setNotificationEmail] = useState(selectedSensor.notificationEmail || '');
+ const [notificationsEnabled, setNotificationsEnabled] = useState(selectedSensor.notificationsEnabled || false);
  
  const [isSaving, setIsSaving] = useState(false);
+ const [isSendingReport, setIsSendingReport] = useState(false);
  const [isDeleting, setIsDeleting] = useState(false);
  const [showMap, setShowMap] = useState(false);
  const [successMsg, setSuccessMsg] = useState('');
@@ -61,7 +66,9 @@ export function SensorAdminTab() {
  selectedSensor.devEui || selectedSensor.id,
  name,
  lat ? parseFloat(lat) : null,
- lng ? parseFloat(lng) : null
+ lng ? parseFloat(lng) : null,
+ notificationEmail,
+ notificationsEnabled
  );
  setSuccessMsg('Configuración actualizada con éxito');
  router.refresh();
@@ -73,6 +80,23 @@ export function SensorAdminTab() {
  setIsSaving(false);
  }
  };
+
+ const handleSendManualReport = async () => {
+ setIsSendingReport(true);
+ setSuccessMsg('');
+ try {
+ await sendManualMonthlyReport(selectedSensor.devEui || selectedSensor.id);
+ setSuccessMsg('Reporte enviado correctamente');
+ setTimeout(() => setSuccessMsg(''), 3000);
+ } catch (error: any) {
+ console.error(error);
+ alert(error.message || 'Error al enviar el reporte manual');
+ } finally {
+ setIsSendingReport(false);
+ }
+ };
+
+ const isValidEmail = notificationEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationEmail);
 
  const handleDeleteMeasurements = async () => {
  setIsDeleting(true);
@@ -270,6 +294,40 @@ export function SensorAdminTab() {
  No, Cancelar
  </button>
  </div>
+ )}
+ </div>
+ </div>
+
+ <div className="space-y-4 pt-4 border-t border-slate-800">
+ <h4 className="text-[10px] font-black text-slate-600 tracking-widest ml-1 flex items-center gap-2"><Mail size={12} /> Notificación Mensual</h4>
+ <div className="space-y-3">
+ <input 
+ value={notificationEmail}
+ onChange={e => setNotificationEmail(e.target.value)}
+ placeholder="Correo electrónico (Ej: admin@empresa.com)"
+ type="email"
+ className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-sky-500/50 transition-all font-bold"
+ />
+ <div className="flex items-center gap-3 px-4 py-3 bg-slate-950/50 rounded-2xl border border-slate-800">
+ <input 
+ type="checkbox" 
+ id="notificationsEnabled"
+ checked={notificationsEnabled}
+ onChange={e => setNotificationsEnabled(e.target.checked)}
+ className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-sky-500 focus:ring-sky-500/20" 
+ />
+ <label htmlFor="notificationsEnabled" className="text-[10px] font-bold text-slate-400 cursor-pointer">Activar envío automático mensual de informe</label>
+ </div>
+ 
+ {isValidEmail && (
+ <button 
+ onClick={handleSendManualReport}
+ disabled={isSendingReport || isSaving}
+ className="w-full bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:text-slate-600 text-sky-400 font-bold py-3 text-xs rounded-xl transition-all flex items-center justify-center gap-2 mt-2"
+ >
+ {isSendingReport ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+ Enviar informe del último mes ahora
+ </button>
  )}
  </div>
  </div>

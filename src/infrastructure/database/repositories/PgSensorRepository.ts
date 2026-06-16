@@ -26,6 +26,10 @@ export class PgSensorRepository implements SensorRepository {
       estado_id: number | null;
       measured_at: Date | null;
       has_recent_presence: boolean;
+      notification_email: string | null;
+      notifications_enabled: boolean | null;
+      monthly_report_configured_at: Date | null;
+      last_monthly_report_sent_at: Date | null;
     }> = await db.select({
       dev_eui: devices.devEui,
       device_id: devices.deviceId,
@@ -43,6 +47,10 @@ export class PgSensorRepository implements SensorRepository {
       presence: devices.presence,
       estado_id: devices.estadoId,
       measured_at: devices.lastMeasuredAt,
+      notification_email: devices.notificationEmail,
+      notifications_enabled: devices.notificationsEnabled,
+      monthly_report_configured_at: devices.monthlyReportConfiguredAt,
+      last_monthly_report_sent_at: devices.lastMonthlyReportSentAt,
       has_recent_presence: sql<boolean>`EXISTS(
         SELECT 1 FROM measurements m3 
         WHERE m3.dev_eui = devices.dev_eui 
@@ -89,13 +97,24 @@ export class PgSensorRepository implements SensorRepository {
           lowBattery: (row.battery ?? 0) < BATTERY_LOW_PERCENT,
           longTermNoOccupancy: !row.has_recent_presence,
         },
+        notificationEmail: row.notification_email ?? undefined,
+        notificationsEnabled: row.notifications_enabled ?? undefined,
+        monthlyReportConfiguredAt: row.monthly_report_configured_at ?? undefined,
+        lastMonthlyReportSentAt: row.last_monthly_report_sent_at ?? undefined,
       };
     });
   }
 
-  async updateSensor(devEui: string, name: string, latitude: number | null, longitude: number | null): Promise<void> {
+  async updateSensor(devEui: string, data: { name: string, latitude: number | null, longitude: number | null, notificationEmail?: string | null, notificationsEnabled?: boolean, monthlyReportConfiguredAt?: Date | null }): Promise<void> {
     await db.update(devices)
-      .set({ name, latitude, longitude })
+      .set({ 
+        name: data.name, 
+        latitude: data.latitude, 
+        longitude: data.longitude,
+        notificationEmail: data.notificationEmail,
+        notificationsEnabled: data.notificationsEnabled,
+        ...(data.monthlyReportConfiguredAt !== undefined && { monthlyReportConfiguredAt: data.monthlyReportConfiguredAt })
+      })
       .where(eq(devices.devEui, devEui.toUpperCase()));
   }
 

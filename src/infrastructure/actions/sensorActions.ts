@@ -11,7 +11,9 @@ const UpdateSensorSchema = z.object({
   devEui: z.string().min(1),
   name: z.string().min(1).max(100),
   latitude: z.number().nullable(),
-  longitude: z.number().nullable()
+  longitude: z.number().nullable(),
+  notificationEmail: z.string().email().nullable().optional().or(z.literal('')),
+  notificationsEnabled: z.boolean().optional()
 });
 
 async function requireSession(): Promise<TokenPayload> {
@@ -44,16 +46,36 @@ export async function updateSensor(
   devEui: string,
   name: string,
   latitude: number | null,
-  longitude: number | null
+  longitude: number | null,
+  notificationEmail?: string | null,
+  notificationsEnabled?: boolean
 ) {
   const session = await requireAdminSession();
 
   try {
-    const validated = UpdateSensorSchema.parse({ devEui, name, latitude, longitude });
+    const validated = UpdateSensorSchema.parse({ devEui, name, latitude, longitude, notificationEmail, notificationsEnabled });
     
-    await getSensorRepository().updateSensor(validated.devEui, validated.name, validated.latitude, validated.longitude);
+    const sensors = await getSensorRepository().getSensors();
+    const currentSensor = sensors.find(s => s.devEui === validated.devEui || s.id === validated.devEui);
     
-    await logAction(session.id, session.username, 'UPDATE_SENSOR', `Actualizado sensor ${validated.devEui}: ${validated.name} (${validated.latitude}, ${validated.longitude})`);
+    let monthlyReportConfiguredAt: Date | null | undefined = undefined;
+    
+    if (validated.notificationsEnabled && (!currentSensor?.notificationsEnabled || currentSensor?.notificationEmail !== validated.notificationEmail)) {
+       monthlyReportConfiguredAt = new Date();
+    } else if (!validated.notificationsEnabled || !validated.notificationEmail) {
+       monthlyReportConfiguredAt = null; // Reset if disabled
+    }
+
+    await getSensorRepository().updateSensor(validated.devEui, {
+      name: validated.name,
+      latitude: validated.latitude,
+      longitude: validated.longitude,
+      notificationEmail: validated.notificationEmail || null,
+      notificationsEnabled: validated.notificationsEnabled || false,
+      monthlyReportConfiguredAt
+    });
+    
+    await logAction(session.id, session.username, 'UPDATE_SENSOR', `Actualizado sensor ${validated.devEui}: ${validated.name}`);
     return { success: true };
   } catch (error) {
     console.error('updateSensor Action Error:', error);
@@ -89,5 +111,29 @@ export async function deleteSensor(
   } catch (error) {
     console.error('deleteSensor Action Error:', error);
     throw new Error('Error al eliminar el sensor');
+  }
+}
+
+export async function sendManualMonthlyReport(devEui: string) {
+  const session = await requireAdminSession();
+
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/cron/monthly-reports?devEui=${devEui}`, {
+      method: 'GET',
+      headers: {
+        'authorization': `Bearer ${process.env.CRON_SECRET || ''}`
+      }
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Error al enviar el reporte manualmente');
+    }
+
+    await logAction(session.id, session.username, 'SEND_MONTHLY_REPORT', `Reporte mensual enviado manualmente para el sensor ${devEui}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error('sendManualMonthlyReport Action Error:', error);
+    throw new Error(error.message || 'Error al enviar el reporte manual');
   }
 }

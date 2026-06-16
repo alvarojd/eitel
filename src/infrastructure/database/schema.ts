@@ -43,9 +43,9 @@ export const measurements = pgTable("measurements", {
 	estadoId: integer("estado_id").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [
-	index("idx_measurements_dev_eui_time").using("btree", table.devEui.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("text_ops")),
+	index("idx_measurements_dev_eui_time").using("btree", table.devEui.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
 	index("idx_measurements_time").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
-	index("idx_measurements_presence").using("btree", table.devEui.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("text_ops")).where(sql`presence = true`),
+	index("idx_measurements_presence").using("btree", table.devEui.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`presence = true`),
 	foreignKey({
 			columns: [table.devEui],
 			foreignColumns: [devices.devEui],
@@ -88,6 +88,10 @@ export const devices = pgTable("devices", {
 	lastMeasuredAt: timestamp("last_measured_at", { withTimezone: true, mode: 'date' }),
 	lastBatteryAlertSentAt: timestamp("last_battery_alert_sent_at", { withTimezone: true, mode: 'date' }),
 	lastOfflineAlertSentAt: timestamp("last_offline_alert_sent_at", { withTimezone: true, mode: 'date' }),
+	notificationEmail: varchar("notification_email", { length: 255 }),
+	notificationsEnabled: boolean("notifications_enabled").default(false),
+	monthlyReportConfiguredAt: timestamp("monthly_report_configured_at", { withTimezone: true, mode: 'date' }),
+	lastMonthlyReportSentAt: timestamp("last_monthly_report_sent_at", { withTimezone: true, mode: 'date' }),
 }, (table) => [
 	pgPolicy("Deny all public access", { as: "permissive", for: "all", to: ["public"], using: sql`false` }),
 ]);
