@@ -6,7 +6,14 @@ import { z } from 'zod';
 import { getSensorRepository } from '../di/container';
 import { cookies } from 'next/headers';
 import { verifyToken, TokenPayload } from '@/lib/auth';
-
+import { db } from '../database/db';
+import { devices } from '../database/schema';
+import { eq } from 'drizzle-orm';
+import { sendEmail } from '@/lib/email/mailer';
+import { MonthlyReportEmailTemplate } from '@/emails/MonthlyReportEmailTemplate';
+import React from 'react';
+import { getReports } from './historyActions';
+import { calculateReportMetrics, HistoryDataPoint } from '@/core/use-cases/reportsEngine';
 const UpdateSensorSchema = z.object({
   devEui: z.string().min(1),
   name: z.string().min(1).max(100),
@@ -118,16 +125,72 @@ export async function sendManualMonthlyReport(devEui: string) {
   const session = await requireAdminSession();
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/cron/monthly-reports?devEui=${devEui}`, {
-      method: 'GET',
-      headers: {
-        'authorization': `Bearer ${process.env.CRON_SECRET || ''}`
+    const eligibleDevices = await db.select().from(devices).where(eq(devices.devEui, devEui));
+    if (eligibleDevices.length === 0 || !eligibleDevices[0].notificationEmail) {
+      throw new Error('Sensor no encontrado o sin email configurado');
+    }
+
+    const device = eligibleDevices[0];
+    const reportsRaw = await getReports(30, device.devEui);
+        
+    const historyData: HistoryDataPoint[] = reportsRaw.map(r => ({
+      timestamp: new Date(r.timestamp),
+      temperature: r.temperature,
+      humidity: r.humidity,
+      co2: r.co2,
+      presence: r.presence,
+      deviceId: r.deviceId
+    }));
+
+    const { percentages, totalHours, metrics } = calculateReportMetrics(historyData, 'all');
+
+    if (totalHours === 0 || !device.notificationEmail) {
+      throw new Error('No hay datos suficientes para generar un reporte del último mes.');
+    }
+
+    const red = percentages[2] + percentages[3] + percentages[4];
+    const orange = percentages[5] + percentages[6] + percentages[7] + percentages[8];
+    const green = percentages[9];
+    const gray = percentages[1] + percentages[0];
+
+    const chartConfig = {
+      type: 'doughnut',
+      data: {
+        labels: ['Crítico', 'Riesgo / Aviso', 'Ideal', 'Desconectado'],
+        datasets: [{
+          data: [red.toFixed(1), orange.toFixed(1), green.toFixed(1), gray.toFixed(1)],
+          backgroundColor: ['#ef4444', '#f97316', '#10b981', '#64748b']
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: { display: false }
+        }
       }
+    };
+
+    const chartUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+
+    const result = await sendEmail({
+      to: [device.notificationEmail],
+      subject: `📊 Informe Mensual: ${device.name || device.devEui}`,
+      react: React.createElement(MonthlyReportEmailTemplate, {
+        sensorName: device.name || device.devEui,
+        devEui: device.devEui,
+        totalHours,
+        metrics,
+        percentages: {
+          ideal: green,
+          warning: orange,
+          critical: red,
+          offline: gray
+        },
+        chartUrl,
+      }),
     });
 
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Error al enviar el reporte manualmente');
+    if (!result.success) {
+      throw new Error('No se pudo enviar el correo.');
     }
 
     await logAction(session.id, session.username, 'SEND_MONTHLY_REPORT', `Reporte mensual enviado manualmente para el sensor ${devEui}`);
