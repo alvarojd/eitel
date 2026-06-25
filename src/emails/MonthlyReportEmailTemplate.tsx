@@ -64,6 +64,13 @@ export const MonthlyReportEmailTemplate: React.FC<Readonly<MonthlyReportEmailTem
   const sortOrder = [4, 3, 2, 5, 6, 7, 8, 9, 1];
   activeIds.sort((a, b) => sortOrder.indexOf(a) - sortOrder.indexOf(b));
 
+  const maxPercentage = Math.max(...(Object.values(rawPercentages) as number[]));
+  const recommendationIds = activeIds.filter(id => {
+    if (id === 1 || id === 0) return false;
+    if (id === 9) return rawPercentages[id] >= maxPercentage;
+    return true;
+  });
+
   return (
     <Html>
       <Head />
@@ -123,10 +130,10 @@ export const MonthlyReportEmailTemplate: React.FC<Readonly<MonthlyReportEmailTem
             </table>
           </Section>
 
-          {activeIds.length > 0 && (
+          {recommendationIds.length > 0 && (
             <Section style={recommendationsSection}>
               <Heading style={h2}>Recomendaciones y Buenas Prácticas</Heading>
-              {activeIds.filter(id => id !== 1 && id !== 0).map(id => {
+              {recommendationIds.map(id => {
                 const data = RECOMMENDATIONS[id];
                 return (
                   <div key={id} style={recommendationCard}>

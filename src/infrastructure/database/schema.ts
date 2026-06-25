@@ -58,7 +58,9 @@ export const systemSettings = pgTable("system_settings", {
 	key: varchar({ length: 255 }).primaryKey().notNull(),
 	value: text(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'date' }).default(sql`CURRENT_TIMESTAMP`),
-});
+}, (table) => [
+	pgPolicy("Deny all public access", { as: "permissive", for: "all", to: ["public"], using: sql`false` }),
+]);
 
 export const alertEmails = pgTable("alert_emails", {
 	id: uuid().defaultRandom().primaryKey().notNull(),

@@ -15,6 +15,13 @@
       "when": 1780668616845,
       "tag": "0001_cooing_vermin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781682381776,
+      "tag": "0002_slim_brother_voodoo",
+      "breakpoints": true
     }
   ]
 }
