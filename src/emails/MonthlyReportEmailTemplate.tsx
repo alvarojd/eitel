@@ -37,9 +37,9 @@ const RECOMMENDATIONS: Record<number, { label: string, color: string, desc: stri
   9: { label: 'Situación Ideal', color: '#10b981', desc: 'Mantenga sus hábitos actuales de ventilación periódica y climatización. Su vivienda se encuentra en un estado seguro y eficiente.' },
   8: { label: 'Aire Seco (Irritación)', color: '#f97316', desc: 'Coloque recipientes con agua o humidificadores sobre o cerca de los radiadores. Modere el uso de calefacciones por aire forzado y evite temperaturas excesivamente altas.' },
   7: { label: 'Frío Moderado (Pobreza Leve)', color: '#f97316', desc: 'Revise el aislamiento de cierres. Instale burletes autoadhesivos en los marcos de puertas y ventanas para evitar filtraciones de aire frío. Use ropa de abrigo adecuada en el hogar.' },
-  6: { label: 'Aire Viciado (Confinamiento)', color: '#f97316', desc: 'Realice una ventilación breve abriendo las ventanas entre 5 y 10 minutos. Es suficiente para renovar el oxígeno sin llegar a enfriar o calentar estructuralmente los muros de la vivienda.' },
+  6: { label: 'Aire Viciado (Confinamiento)', color: '#f97316', desc: 'Realice una ventilación de forma habitual abriendo las ventanas entre 5 y 10 minutos. Es suficiente para renovar el oxígeno sin llegar a enfriar o calentar estructuralmente los muros de la vivienda.' },
   5: { label: 'Riesgo Biológico (Moho)', color: '#f97316', desc: 'Ventile diariamente de 5 a 10 minutos, obligatoriamente tras cocinar o usar el baño. Evite secar ropa en el interior de la vivienda y separe los muebles unos centímetros de las paredes exteriores.' },
-  4: { label: 'Atmósfera Nociva', color: '#ef4444', desc: 'Abra de forma inmediata las ventanas de estancias opuestas para generar ventilación cruzada durante un mínimo de 10 minutos para renovar el aire por completo.' },
+  4: { label: 'Atmósfera Nociva', color: '#ef4444', desc: 'Abra de forma habitual las ventanas de estancias opuestas para generar ventilación cruzada durante un mínimo de 10 minutos para renovar el aire por completo.' },
   3: { label: 'Calor Extremo', color: '#ef4444', desc: 'Baje persianas y eche toldos durante las horas de sol. Ventile la vivienda únicamente de noche y madrugada (ventilación cruzada). Use ventiladores, manténgase hidratado y refrésquese con agua.' },
   2: { label: 'Frío Severo (Pobreza Energética)', color: '#ef4444', desc: 'Encienda la calefacción si dispone de ella. Si el gasto es inasumible, priorice calentar una única estancia ("habitación refugio"), baje persianas al anochecer para aislar y use ropa de abrigo por capas.' },
   1: { label: 'Desconectado', color: '#64748b', desc: 'El sensor ha estado apagado, desconectado o sin cobertura en este periodo.' },
@@ -70,6 +70,35 @@ export const MonthlyReportEmailTemplate: React.FC<Readonly<MonthlyReportEmailTem
     if (id === 9) return rawPercentages[id] >= maxPercentage;
     return true;
   });
+
+  const sortedDescIds = [...activeIds].sort((a, b) => rawPercentages[b] - rawPercentages[a]);
+  let descriptionText = '';
+  if (sortedDescIds.length > 0) {
+    const first = sortedDescIds[0];
+    descriptionText = `La condición predominante es "${RECOMMENDATIONS[first].label}" en un ${rawPercentages[first].toFixed(1)}% de las horas analizadas en el último mes`;
+    
+    if (sortedDescIds.length === 2) {
+      const second = sortedDescIds[1];
+      descriptionText += `, y finalmente "${RECOMMENDATIONS[second].label}" en un ${rawPercentages[second].toFixed(1)}%.`;
+    } else if (sortedDescIds.length === 3) {
+      const second = sortedDescIds[1];
+      const third = sortedDescIds[2];
+      descriptionText += `. Luego "${RECOMMENDATIONS[second].label}" en un ${rawPercentages[second].toFixed(1)}% y finalmente "${RECOMMENDATIONS[third].label}" en un ${rawPercentages[third].toFixed(1)}%.`;
+    } else if (sortedDescIds.length >= 4) {
+      const second = sortedDescIds[1];
+      const last = sortedDescIds[sortedDescIds.length - 1];
+      descriptionText += `. Luego "${RECOMMENDATIONS[second].label}" en un ${rawPercentages[second].toFixed(1)}%`;
+      
+      for (let i = 2; i < sortedDescIds.length - 1; i++) {
+        const id = sortedDescIds[i];
+        descriptionText += `, seguido de "${RECOMMENDATIONS[id].label}" en un ${rawPercentages[id].toFixed(1)}%`;
+      }
+      
+      descriptionText += `, y finalmente "${RECOMMENDATIONS[last].label}" en un ${rawPercentages[last].toFixed(1)}%.`;
+    } else {
+      descriptionText += '.';
+    }
+  }
 
   return (
     <Html>
@@ -128,10 +157,19 @@ export const MonthlyReportEmailTemplate: React.FC<Readonly<MonthlyReportEmailTem
                 })}
               </tbody>
             </table>
+            
+            {descriptionText && (
+              <Text style={{ ...text, marginTop: '20px' }}>
+                {descriptionText}
+              </Text>
+            )}
           </Section>
 
           {recommendationIds.length > 0 && (
             <Section style={recommendationsSection}>
+              <Text style={{ ...text, marginBottom: '16px', fontWeight: '500' }}>
+                A continuación se dan unas sugerencias que pueden ayudar a mejorar su situación en la vivienda.
+              </Text>
               <Heading style={h2}>Recomendaciones y Buenas Prácticas</Heading>
               {recommendationIds.map(id => {
                 const data = RECOMMENDATIONS[id];
