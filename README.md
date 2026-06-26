@@ -38,6 +38,8 @@ src/
 
 ## 🚀 Instalación y Desarrollo Local
 
+**Requisitos Previos:** Node.js 18+ (Recomendado 20+ LTS) y base de datos PostgreSQL.
+
 1.  **Clonar el repositorio**:
     ```bash
     git clone https://github.com/alvarojd/eitel.git
@@ -50,19 +52,25 @@ src/
     ```
 
 3.  **Variables de Entorno**:
-    Crea un archivo `.env.local` con:
-    - `POSTGRES_URL`: Conexión a la DB.
-    - `JWT_SECRET`: Secreto para autenticación.
+    Copia el archivo `.env.example` a `.env.local` y configura las siguientes variables principales:
+    - `POSTGRES_URL`: Conexión principal a la base de datos PostgreSQL.
+    - `JWT_SECRET`: Secreto para la firma de tokens JWT.
+    - `NEXT_PUBLIC_APP_URL`: URL base del dashboard.
     - `TTN_WEBHOOK_SECRET`: Secreto para validar datos de The Things Network.
+    - `CRON_SECRET`: Secreto para proteger ejecución de cron jobs.
 
-4.  **Ejecutar**:
+4.  **Ejecutar la aplicación**:
     ```bash
     npm run dev
     ```
+    El dashboard estará disponible en `http://localhost:3000`.
 
-## 🌐 Despliegue
+## 🌐 Despliegue en Producción
 
-Optimizado para despliegue continuo en **Vercel**. Configura tus variables de entorno en el panel y el dashboard se encargará del resto.
+El proyecto está optimizado para su despliegue continuo en **Vercel**. 
+Al importar el repositorio, asegúrate de configurar en el panel todas las variables de entorno mencionadas anteriormente. Vercel detectará automáticamente el framework (`Next.js`) y las tareas programadas definidas en `vercel.json`.
+
+> 📝 **Nota:** Para instrucciones detalladas paso a paso, consulta el archivo oficial [Guia_Instalacion.md](./Guia_Instalacion.md) incluido en el repositorio.
 
 ---
 
